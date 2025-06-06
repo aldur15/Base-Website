@@ -30,6 +30,11 @@
   justify-content: space-between;
 }
 
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
 .project-card h3 {
     font-size: 1.25rem;
     color: var(--text-primary);
