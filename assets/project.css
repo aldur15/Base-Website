@@ -1,14 +1,21 @@
 /* Projects Section */
 .projects {
     background-color: var(--bg-secondary);
-    padding: 4rem 0;
+    padding: 2rem 0;
 }
 
 .projects-grid {
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    margin-top: 2rem;
+    margin-top: 0rem;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
 }
 
 .project-card {
