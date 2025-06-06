@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alexander May – Developer & Researcher</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">Alexander May</a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="index.html" class="nav-link active">About</a>
+                <a href="projects.html" class="nav-link">Projects</a>
+                <a href="research.html" class="nav-link">Research</a>
+                <a href="cv.html" class="nav-link">CV</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </div>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <svg class="moon-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg class="sun-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Hello, I'm <span class="highlight">Alexander May</span></h1>
+                    <p class="hero-subtitle">Conversational AI & XR Developer</p>
+                    <p class="hero-description">
+                        I build modular, intelligent systems—from real-time VR agents to full-stack web apps. 
+                        Passionate about bridging human-computer interaction, emotion-driven design, and backend infrastructure.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="projects.html" class="btn btn-primary">View My Work</a>
+                        <a href="contact.html" class="btn btn-secondary">Get In Touch</a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div id="threejs-container" class="threejs-container">
+                        <div class="placeholder-3d">
+                            <div class="placeholder-cube"></div>
+                            <p>3D Visualization Coming Soon</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about">
+            <div class="container">
+                <h2>About Me</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>
+                            I'm a software developer and HCI researcher from Regensburg, Germany, with a strong focus on conversational AI, XR/VR environments, and modular system design.
+                            Over the past years, I've developed emotion-aware embodied agents in Unreal Engine, built scalable web backends using FastAPI and Docker, 
+                            and collaborated closely with academic partners on interdisciplinary research.
+                        </p>
+                        <p>
+                            I value technically sound, clean solutions—but also care deeply about user experience and emotional design. 
+                            I often serve as the lead technical contributor on small, focused teams, especially where backend and infrastructure reliability matter.
+                        </p>
+                    </div>
+                    <div class="about-image">
+                        <img src="assets/images/profile-placeholder.jpg" alt="Alexander May" class="profile-image">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="skills">
+            <div class="container">
+                <h2>Technical Skills</h2>
+                <div class="skills-grid">
+                    <div class="skill-category">
+                        <h3>Frontend</h3>
+                        <ul>
+                            <li>HTML5 & CSS3</li>
+                            <li>JavaScript (ES6+)</li>
+                            <li>React</li>
+                            <li>Unreal Engine (Blueprints & C++)</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <h3>Backend</h3>
+                        <ul>
+                            <li>Python (FastAPI)</li>
+                            <li>Docker & Docker Compose</li>
+                            <li>SQLite / PostgreSQL</li>
+                            <li>API & Service Architecture</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <h3>Tools & Methods</h3>
+                        <ul>
+                            <li>Git & GitHub Actions (CI/CD)</li>
+                            <li>Modular System Design</li>
+                            <li>Emotion Classification & STT/TTS Integration</li>
+                            <li>Academic & UX Research Methods</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Links Section -->
+        <section class="quick-links">
+            <div class="container">
+                <h2>Explore My Work</h2>
+                <div class="links-grid">
+                    <a href="projects.html" class="link-card">
+                        <h3>Projects</h3>
+                        <p>Explore full-stack apps, VR tools, and backend pipelines I’ve built or contributed to.</p>
+                    </a>
+                    <a href="research.html" class="link-card">
+                        <h3>Research</h3>
+                        <p>Read about my work on embodied conversational agents and HCI-driven interaction systems.</p>
+                    </a>
+                    <a href="cv.html" class="link-card">
+                        <h3>CV</h3>
+                        <p>Download my resume and learn more about my technical and academic background.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Alexander May. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="https://github.com/aldur15" target="_blank">GitHub</a>
+                <a href="mailto:alexander1996may@proton.me">Email</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

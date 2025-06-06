@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Your Name</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">Your Name</a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="index.html" class="nav-link">About</a>
+                <a href="projects.html" class="nav-link active">Projects</a>
+                <a href="research.html" class="nav-link">Research</a>
+                <a href="cv.html" class="nav-link">CV</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </div>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <svg class="moon-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg class="sun-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="container">
+                <h1>My Projects</h1>
+                <p class="page-subtitle">A showcase of my development work, from web applications to innovative solutions</p>
+            </div>
+        </section>
+
+<section class="projects">
+  <div class="container">
+    <p class="page-subtitle">A curated selection of development and research projects combining backend infrastructure, emotional AI, and immersive XR environments.</p>
+
+    <div class="projects-grid">
+
+      <!-- Master Thesis Project -->
+      <div class="project-card" data-category="ai vr">
+        <h3>Emotion-Aware Conversational Agent (VR)</h3>
+        <p>Modular VR software enabling real-time interaction with a German-speaking MetaHuman in Unreal Engine. Integrates STT (Whisper), emotion recognition (RoBERTa, Wav2Vec2.0), DiscoLM LLM, and TTS (Tacotron2 via Coqui TTS). Facial animation is synced using Audio2Face. Entire system is Dockerized and deployed on distributed Linux servers.</p>
+        <div class="project-tech">
+          <span class="tech-tag">Python</span>
+          <span class="tech-tag">FastAPI</span>
+          <span class="tech-tag">Docker</span>
+          <span class="tech-tag">Unreal Engine 5</span>
+          <span class="tech-tag">Audio2Face</span>
+        </div>
+        <div class="project-status">
+          <span class="status-badge completed">Completed</span>
+        </div>
+      </div>
+
+      <!-- Business Report App -->
+      <div class="project-card" data-category="web">
+        <h3>Business Report Organizer (Freelance)</h3>
+        <p>Daily reporting tool developed for a small business, enabling team leads to track and document staff activity. Built as a cross-platform web app using React.js, Python backend, and SQL database. Integrated testing and CI/CD using GitHub Actions.</p>
+        <div class="project-tech">
+          <span class="tech-tag">React.js</span>
+          <span class="tech-tag">FastAPI</span>
+          <span class="tech-tag">SQL</span>
+          <span class="tech-tag">Docker</span>
+        </div>
+        <div class="project-status">
+          <span class="status-badge in-progress">In Progress</span>
+        </div>
+      </div>
+
+      <!-- University Project -->
+      <div class="project-card" data-category="web">
+        <h3>Device Manager (University Project)</h3>
+        <p>Inventory application created as part of the Advanced Software Engineering course. Backend built with FastAPI and SQLite, frontend in React.js. Dockerized setup with automated deployment and CI/CD pipeline.</p>
+        <div class="project-tech">
+          <span class="tech-tag">FastAPI</span>
+          <span class="tech-tag">React.js</span>
+          <span class="tech-tag">SQLite</span>
+          <span class="tech-tag">Docker</span>
+        </div>
+        <div class="project-status">
+          <span class="status-badge completed">Completed</span>
+        </div>
+      </div>
+
+      <!-- Audio2Face Batch Tool -->
+      <div class="project-card" data-category="tools ai">
+        <h3>Audio2Face Batch Converter</h3>
+        <p>Automated export tool to batch-process audio files into facial animation data using Nvidia's Audio2Face. Handles scene loading, track assignment, and blendshape export via REST API and subprocess control. Built for fast production pipelines in VR environments.</p>
+        <div class="project-tech">
+          <span class="tech-tag">Python</span>
+          <span class="tech-tag">REST API</span>
+          <span class="tech-tag">Audio2Face</span>
+          <span class="tech-tag">Docker</span>
+        </div>
+        <div class="project-status">
+          <span class="status-badge planning">Planning</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+        <!-- Call to Action -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Interested in Working Together?</h2>
+                    <p>I'm always open to discussing new opportunities and interesting projects.</p>
+                    <div class="cta-buttons">
+                        <a href="contact.html" class="btn btn-primary">Get In Touch</a>
+                        <a href="cv.html" class="btn btn-secondary">View My CV</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Alexander May. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="https://github.com/yourusername" target="_blank">GitHub</a>
+                <a href="mailto:your.email@example.com">Email</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
