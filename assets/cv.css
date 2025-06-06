@@ -1,98 +1,87 @@
 .cv-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 2rem;
 }
 
 .cv-header {
     text-align: center;
-    margin-bottom: 4rem;
-    padding: 4rem 2rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-    color: var(--bg-primary);
+    margin: 2rem 0 4rem;
+    padding: 3rem 0;
+    background-color: var(--bg-secondary);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
 }
 
 .cv-header h1 {
-    font-size: 3.5rem;
-    font-weight: 800;
+    font-size: 2.5rem;
     margin-bottom: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .cv-header p {
-    font-size: 1.25rem;
-    opacity: 0.95;
-    max-width: 700px;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
     margin: 0 auto;
-    line-height: 1.7;
+    line-height: 1.6;
 }
 
+
+
 .cv-section {
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
 }
 
 .cv-section h2 {
-    font-size: 2.25rem;
-    color: var(--accent-color);
+    font-size: 1.75rem;
+    color: var(--text-primary);
     margin-bottom: 1.5rem;
     text-align: center;
+    font-weight: 500;
 }
 
 .cv-section p,
 .cv-section li {
-    font-size: 1.125rem;
+    font-size: 1rem;
     color: var(--text-secondary);
-    line-height: 1.7;
+    line-height: 1.6;
 }
 
 .cv-item {
     background: var(--bg-primary);
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-    transition: var(--transition);
-}
-
-.cv-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    margin-bottom: 1.5rem;
 }
 
 .cv-item h3 {
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 500;
     margin-bottom: 0.75rem;
 }
 
 .skills-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .skill-category {
     background: var(--bg-primary);
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    transition: var(--transition);
-}
-
-.skill-category:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
 }
 
 .skill-category h3 {
-    font-size: 1.25rem;
-    color: var(--primary-color);
+    font-size: 1.125rem;
+    color: var(--text-primary);
     margin-bottom: 1rem;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .skill-category ul {
@@ -101,17 +90,10 @@
 }
 
 .skill-category li {
-    position: relative;
-    padding-left: 1.25rem;
-    margin-bottom: 0.5rem;
-}
-
-.skill-category li::before {
-    content: '▶';
-    position: absolute;
-    left: 0;
-    font-size: 0.8rem;
-    color: var(--primary-color);
+    padding: 0.25rem 0;
+    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .cv-section ul {
@@ -126,19 +108,19 @@
 
 @media (max-width: 768px) {
     .cv-header {
-        padding: 3rem 1rem;
+        padding: 2rem 1rem;
     }
 
     .cv-header h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .cv-header p {
-        font-size: 1.125rem;
+        font-size: 1rem;
     }
 
     .cv-section h2 {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     .skills-grid {

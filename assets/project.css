@@ -1,4 +1,34 @@
 /* Projects Section */
+.projects-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.projects-header {
+    text-align: center;
+    margin: 2rem 0 4rem;
+    padding: 3rem 0;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.projects-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.projects-header p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
 .projects {
     background-color: var(--bg-secondary);
     padding: 2rem 0;
@@ -87,4 +117,10 @@
 .status-badge.planning {
     background-color: #3b82f6;
     color: #fff;
+}
+
+@media (max-width: 768px) {
+    .research-header h1 {
+        font-size: 2rem;
+    }
 }
