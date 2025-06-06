@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CV – Alexander May</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/cv.css"> <!-- optional for future custom styles -->
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <a href="index.html">Alexander May</a>
+      </div>
+      <div class="nav-menu" id="nav-menu">
+        <a href="index.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="research.html" class="nav-link">Research</a>
+        <a href="cv.html" class="nav-link active">CV</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg class="moon-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+        <svg class="sun-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="..."/></svg>
+      </button>
+      <div class="nav-toggle" id="nav-toggle">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <section class="page-header">
+      <div class="container">
+        <h1>Curriculum Vitae</h1>
+        <p class="page-subtitle">Technical profile, education, experience, and contact</p>
+        <a href="assets/cv.pdf" class="btn btn-primary" target="_blank">Download PDF</a>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <div class="container">
+        <h2>Profile</h2>
+        <p>
+          Software developer with 3+ years of experience in VR/XR and conversational AI, specializing in real-time modular systems. Lead Unreal Engine developer for interdisciplinary research projects at the University of Regensburg, integrating AI components (STT, TTS, LLMs, SER) into immersive environments. Skilled in Python, C++, and Docker-based distributed architectures.
+        </p>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <div class="container">
+        <h2>Skills</h2>
+        <div class="skills-grid">
+          <div class="skill-category">
+            <h3>Languages</h3>
+            <ul>
+              <li>Python</li>
+              <li>C++</li>
+              <li>JavaScript</li>
+              <li>SQL</li>
+            </ul>
+          </div>
+          <div class="skill-category">
+            <h3>Frameworks</h3>
+            <ul>
+              <li>FastAPI</li>
+              <li>React.js</li>
+            </ul>
+          </div>
+          <div class="skill-category">
+            <h3>Tools</h3>
+            <ul>
+              <li>Docker</li>
+              <li>Git & GitHub Actions</li>
+            </ul>
+          </div>
+          <div class="skill-category">
+            <h3>Platforms</h3>
+            <ul>
+              <li>Unreal Engine 5</li>
+              <li>Linux Servers</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <div class="container">
+        <h2>Experience</h2>
+        <div class="cv-item">
+          <h3>Emotion-Aware Conversational Agent in VR – Master’s Thesis (2024–2025)</h3>
+          <p>
+            Developed a modular, real-time embodied conversational agent system for VR. Integrated Whisper STT, Tacotron2 TTS, DiscoLM LLM, and RoBERTa/Wav2Vec2.0 SER. Fully Dockerized microservices architecture deployed on distributed Linux servers. Used Unreal Engine 5 and Audio2Face for MetaHuman-driven facial animation and Live Link sync.
+          </p>
+        </div>
+        <div class="cv-item">
+          <h3>Business Report Organizer – Freelance Project (2025)</h3>
+          <p>
+            Cross-platform web app for team report tracking. Developed CEO dashboard for desktop and mobile using FastAPI (backend), SQLite (database), and React.js (frontend).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <div class="container">
+        <h2>Education</h2>
+        <div class="cv-item">
+          <h3>M.Sc. Media Informatics (Expected 2025)</h3>
+          <p>University of Regensburg – Thesis: Emotion Recognition and Non-Verbal Behavior in VR Conversations with ECAs</p>
+        </div>
+        <div class="cv-item">
+          <h3>B.A. Media Informatics (2017–2022)</h3>
+          <p>University of Regensburg</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cv-section">
+      <div class="container">
+        <h2>Contact</h2>
+        <ul>
+          <li>📍 Regensburg, Germany</li>
+          <li>📧 <a href="mailto:alexander1996may@proton.me">alexander1996may@proton.me</a></li>
+          <li>💻 <a href="https://github.com/aldur15" target="_blank">github.com/aldur15</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Alexander May. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/aldur15" target="_blank">GitHub</a>
+        <a href="mailto:alexander1996may@proton.me">Email</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
