@@ -95,7 +95,7 @@
     opacity: 0;
     transition: opacity 0.3s ease;
 }
-
+/*
 .project-card:hover {
     transform: translateY(-2px);
     box-shadow: 
@@ -106,6 +106,8 @@
 .project-card:hover::before {
     opacity: 1;
 }
+*/
+
 
 .project-card:active {
     transform: translateY(1px);
@@ -155,13 +157,16 @@
     transition: all 0.2s ease;
     border: none;
 }
-
+/*
 .tech-tag:hover {
     transform: scale(1.05);
     box-shadow: 
         inset 2px 2px 4px var(--shadow-dark),
         inset -2px -2px 4px var(--shadow-light);
 }
+*/
+
+
 
 .project-status {
     position: relative;
@@ -217,10 +222,12 @@
         transparent);
     transition: left 0.5s ease;
 }
-
+/*
 .status-badge:hover::before {
     left: 100%;
 }
+*/
+
 
 /* Call to Action Section */
 .cta-section {

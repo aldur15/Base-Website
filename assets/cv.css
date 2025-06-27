@@ -175,13 +175,15 @@ body {
     height: 100%;
     background: linear-gradient(180deg, var(--neuro-accent), var(--neuro-accent-light));
 }
-
+/*
 .cv-item:hover {
     transform: translateY(-3px);
     box-shadow: 
         10px 10px 20px var(--neuro-shadow-dark),
         -10px -10px 20px var(--neuro-shadow-light);
 }
+*/
+
 
 .cv-item:last-child {
     margin-bottom: 0;
@@ -272,13 +274,15 @@ body {
     background: linear-gradient(90deg, var(--neuro-accent), var(--neuro-accent-light));
     border-radius: var(--neuro-border-radius) var(--neuro-border-radius) 0 0;
 }
-
+/*
 .skill-category:hover {
     transform: translateY(-3px);
     box-shadow: 
         10px 10px 20px var(--neuro-shadow-dark),
         -10px -10px 20px var(--neuro-shadow-light);
 }
+*/
+
 
 .skill-category h3 {
     font-size: 1.3rem;
@@ -321,7 +325,7 @@ body {
     transition: var(--neuro-transition);
     position: relative;
 }
-
+/*
 .skill-category li:hover {
     color: var(--neuro-text-primary);
     box-shadow: 
@@ -329,6 +333,8 @@ body {
         -2px -2px 4px var(--neuro-shadow-light);
     transform: translateY(-1px);
 }
+*/
+
 
 .skill-category li::before {
     content: '●';
@@ -399,23 +405,27 @@ body {
     font-size: 0.95rem;
     transition: var(--neuro-transition);
 }
-
+/*
 .cv-contact-info li:hover {
     color: var(--neuro-text-primary);
     box-shadow: 
         2px 2px 4px var(--neuro-shadow-dark),
         -2px -2px 4px var(--neuro-shadow-light);
 }
+*/
+
 
 .cv-contact-info a {
     color: inherit;
     text-decoration: none;
     transition: var(--neuro-transition);
 }
-
+/*
 .cv-contact-info a:hover {
     color: var(--neuro-accent);
 }
+*/
+
 
 /* Summary/Profile section */
 .cv-summary {
@@ -465,13 +475,15 @@ body {
     transition: var(--neuro-transition);
     position: relative;
 }
-
+/*
 .achievement-item:hover {
     transform: translateY(-2px);
     box-shadow: 
         8px 8px 16px var(--neuro-shadow-dark),
         -8px -8px 16px var(--neuro-shadow-light);
 }
+        */
+
 
 .achievement-item::before {
     content: '🏆';

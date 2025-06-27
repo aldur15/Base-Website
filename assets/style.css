@@ -288,11 +288,8 @@
         }
 
         .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 
-                12px 12px 24px rgba(74, 144, 226, 0.3),
-                -12px -12px 24px rgba(255, 255, 255, 0.1);
+            box-shadow: var(--neuro-shadow-pressed);
+            transform: scale(0.98);
         }
 
         .btn-secondary {
@@ -304,9 +301,8 @@
         }
 
         .btn-secondary:hover {
-            box-shadow: 
-                inset 4px 4px 8px var(--shadow-dark),
-                inset -4px -4px 8px var(--shadow-light);
+            box-shadow: var(--neuro-shadow-pressed);
+            transform: scale(0.98);
         }
 
         /* Three.js Container */
@@ -431,13 +427,15 @@
                 12px 12px 24px var(--shadow-dark),
                 -12px -12px 24px var(--shadow-light);
         }
-
+        /*
         .skill-category:hover {
             transform: translateY(-5px);
             box-shadow: 
                 16px 16px 32px var(--shadow-dark),
                 -16px -16px 32px var(--shadow-light);
         }
+        */
+        
 
         .skill-category h3 {
             font-size: 1.3rem;
