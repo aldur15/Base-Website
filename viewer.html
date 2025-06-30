@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Viewer - Alexander May</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/viewer.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">Alexander May</a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="index.html" class="nav-link">About</a>
+                <a href="projects.html" class="nav-link">Projects</a>
+                <a href="research.html" class="nav-link">Research</a>
+                <a href="cv.html" class="nav-link">CV</a>
+                <a href="viewer.html" class="nav-link">3D-View</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </div>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <svg class="moon-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg class="sun-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="fullscreen-viewer">
+        <a href="index.html" class="back-button">← Back to Portfolio</a>
+        
+        <div id="threejs-container" class="threejs-container">
+            <div class="placeholder-3d">
+                <div class="placeholder-cube"></div>
+                <p>3D Coffee Shop Environment</p>
+                <p style="font-size: 0.9rem; margin-top: 1rem;">Use mouse to rotate • Scroll to zoom</p>
+            </div>
+        </div>
+
+        <div class="viewer-info">
+            <strong>Interactive 3D Scene</strong><br>
+            This coffee shop model demonstrates my work with Three.js and 3D web environments. 
+            The scene features realistic lighting, shadows, and interactive camera controls.
+        </div>
+    </div>
+
+    <!-- Import Map for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "/node_modules/three/build/three.module.js",
+                "three/addons/": "/node_modules/three/examples/jsm/",
+                "three/nodes": "/node_modules/three/examples/jsm/nodes/Nodes.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        // Import Three.js and controls using the import map
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        let scene, camera, renderer, controls;
+        let model = null;
+        let isLoading = false;
+        let animationId = null;
+        let needsRender = true;
+        let lastTime = 0;
+        const TARGET_FPS = 60;
+        const FRAME_INTERVAL = 1000 / TARGET_FPS;
+        let isInitialized = false;
+
+        // Performance monitoring
+        let frameCount = 0;
+        let lastFpsTime = performance.now();
+
+        function showLoadingMessage() {
+            const container = document.getElementById('threejs-container');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-message';
+            loadingDiv.innerHTML = '<p>Loading 3D Model...</p>';
+            loadingDiv.id = 'loading-message';
+            container.appendChild(loadingDiv);
+        }
+
+        function hideLoadingMessage() {
+            const loadingMessage = document.getElementById('loading-message');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+
+        function showErrorMessage(message) {
+            const container = document.getElementById('threejs-container');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `
+                <h3>Unable to Load 3D Model</h3>
+                <p>${message}</p>
+                <p style="margin-top: 1rem; font-size: 0.9rem;">Please check that the model file exists in the assets folder.</p>
+            `;
+            container.appendChild(errorDiv);
+        }
+
+        function optimizeModel(model) {
+            let meshCount = 0;
+            let materialCount = 0;
+            const materials = new Set();
+
+            model.traverse((child) => {
+                child.matrixAutoUpdate = false;
+                child.updateMatrix();
+
+                if (child.isMesh) {
+                    meshCount++;
+                    
+                    // Enable shadows only for important objects
+                    child.castShadow = meshCount < 20; // Limit shadow casting
+                    child.receiveShadow = meshCount < 10; // Limit shadow receiving
+                    
+                    if (child.material) {
+                        // Optimize materials
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(mat => {
+                                optimizeMaterial(mat);
+                                materials.add(mat);
+                            });
+                        } else {
+                            optimizeMaterial(child.material);
+                            materials.add(child.material);
+                        }
+                    }
+
+                    // Optimize geometry
+                    if (child.geometry) {
+                        // Dispose of unnecessary vertex attributes
+                        if (child.geometry.attributes.uv2) {
+                            child.geometry.deleteAttribute('uv2');
+                        }
+                        
+                        // Use lower precision for positions if possible
+                        if (child.geometry.attributes.position) {
+                            child.geometry.attributes.position.array = new Float32Array(
+                                child.geometry.attributes.position.array
+                            );
+                        }
+                    }
+                }
+            });
+
+            materialCount = materials.size;
+            console.log(`Model optimized: ${meshCount} meshes, ${materialCount} materials`);
+        }
+
+        function optimizeMaterial(material) {
+            // Reduce material complexity
+            material.transparent = false;
+            material.opacity = 1;
+            
+            // Disable unnecessary features for performance
+            if (material.normalMap && !material.normalMap.image) {
+                material.normalMap = null;
+            }
+            
+            if (material.roughnessMap && !material.roughnessMap.image) {
+                material.roughnessMap = null;
+            }
+            
+            // Optimize texture settings
+            if (material.map) {
+                material.map.flipY = false;
+                material.map.generateMipmaps = true;
+                material.map.minFilter = THREE.LinearMipmapLinearFilter;
+                material.map.magFilter = THREE.LinearFilter;
+            }
+            
+            material.needsUpdate = true;
+        }
+
+        function init() {
+            const container = document.getElementById('threejs-container');
+            if (!container) {
+                console.error('Three.js container not found');
+                return;
+            }
+
+            try {
+                // Scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x1a1a1a);
+
+                // Camera with optimized settings
+                camera = new THREE.PerspectiveCamera(
+                    50, // Reduced FOV for better performance
+                    container.clientWidth / container.clientHeight,
+                    0.1,
+                    200 // Increased far plane for more zoom out
+                );
+                camera.position.set(5, 3, 5);
+
+                // Renderer with performance optimizations
+                renderer = new THREE.WebGLRenderer({ 
+                    antialias: false, // Disable AA on high-DPI displays
+                    powerPreference: "high-performance",
+                    stencil: false,
+                    depth: true,
+                    logarithmicDepthBuffer: false
+                });
+                
+                // Optimize renderer settings
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setPixelRatio(1.5); // Cap pixel ratio
+                
+                // Optimize shadow settings
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFShadowMap; // Use basic PCF instead of soft shadows
+                renderer.shadowMap.autoUpdate = false; // Manual shadow updates
+                
+                // Performance optimizations
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.0;
+
+                // Clear placeholder and add canvas
+                const placeholder = container.querySelector('.placeholder-3d');
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
+                container.appendChild(renderer.domElement);
+
+                // Optimized controls
+                controls = new OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.1; // Increased for smoother movement
+                controls.enableZoom = true;
+                controls.enablePan = true;
+                controls.maxDistance = 100;
+                controls.minDistance = 1;
+                
+                // Add change event listener for render on demand
+                controls.addEventListener('change', () => {
+                    needsRender = true;
+                });
+                
+                // Add interaction event listeners
+                controls.addEventListener('start', () => {
+                    needsRender = true;
+                });
+                
+                controls.addEventListener('end', () => {
+                    needsRender = true;
+                });
+
+                // Simplified lighting setup
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                scene.add(ambientLight);
+
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                dirLight.position.set(8, 10, 5);
+                dirLight.castShadow = true;
+                
+                // Optimize shadow camera
+                dirLight.shadow.mapSize.width = 1024; // Reduced shadow resolution
+                dirLight.shadow.mapSize.height = 1024;
+                dirLight.shadow.camera.near = 0.1;
+                dirLight.shadow.camera.far = 100; // Increased for larger zoom range
+                dirLight.shadow.camera.left = -20;
+                dirLight.shadow.camera.right = 20;
+                dirLight.shadow.camera.top = 20;
+                dirLight.shadow.camera.bottom = -20;
+                dirLight.shadow.bias = -0.0001;
+                
+                scene.add(dirLight);
+
+                // Reduced number of lights for better performance
+                const pointLight = new THREE.PointLight(0xffd700, 0.4, 8);
+                pointLight.position.set(-2, 3, 2);
+                scene.add(pointLight);
+
+                // Load 3D Model
+                loadModel();
+
+                // Optimized resize handler
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        camera.aspect = container.clientWidth / container.clientHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(container.clientWidth, container.clientHeight);
+                        needsRender = true;
+                    }, 100);
+                });
+
+                // Start render loop
+                animate();
+                
+                // Force initial render
+                isInitialized = true;
+                needsRender = true;
+                renderer.render(scene, camera);
+
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+                showErrorMessage('Failed to initialize 3D viewer');
+            }
+        }
+
+        function loadModel() {
+            if (isLoading) return;
+            isLoading = true;
+            
+            showLoadingMessage();
+
+            const loader = new GLTFLoader();
+            
+            // Try to load the primary model
+            loader.load(
+                'assets/cafeteria.glb',
+                (gltf) => {
+                    handleModelLoad(gltf);
+                },
+                (progress) => {
+                    const percentComplete = (progress.loaded / progress.total * 100);
+                    const loadingMessage = document.getElementById('loading-message');
+                    if (loadingMessage) {
+                        loadingMessage.innerHTML = `<p>Loading 3D Model... ${Math.round(percentComplete)}%</p>`;
+                    }
+                },
+                (error) => {
+                    console.error('Failed to load primary model:', error);
+                    
+                    // Try fallback model
+                    loader.load(
+                        'assets/coffeeshop.glb',
+                        (gltf) => {
+                            handleModelLoad(gltf);
+                        },
+                        undefined,
+                        (fallbackError) => {
+                            hideLoadingMessage();
+                            isLoading = false;
+                            console.error('Both models failed to load:', fallbackError);
+                            showErrorMessage('Model files not found. Please check that cafeteria.glb or coffeeshop.glb exists in the assets folder.');
+                        }
+                    );
+                }
+            );
+        }
+
+        function handleModelLoad(gltf) {
+            hideLoadingMessage();
+            isLoading = false;
+            
+            model = gltf.scene;
+            
+            // Optimize the model
+            optimizeModel(model);
+            
+            scene.add(model);
+
+            // Auto-fit camera to model
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+
+            // Update controls target
+            controls.target.copy(center);
+            controls.update();
+
+            // Position camera for good view
+            const maxDim = Math.max(size.x, size.y, size.z);
+            camera.position.set(
+                center.x + maxDim * 1.2, 
+                center.y + maxDim * 0.6, 
+                center.z + maxDim * 1.2
+            );
+
+            // Update shadows once after model load
+            renderer.shadowMap.needsUpdate = true;
+            needsRender = true;
+
+            console.log('Model loaded and optimized successfully');
+        }
+
+        // Optimized render loop with frame rate limiting
+        function animate(currentTime = 0) {
+            animationId = requestAnimationFrame(animate);
+            
+            // Always render for the first few frames or when explicitly needed
+            if (!isInitialized || needsRender || controls.enabled) {
+                controls.update();
+                renderer.render(scene, camera);
+                needsRender = false;
+                
+                // Stop forcing renders after initialization
+                if (!isInitialized) {
+                    setTimeout(() => { isInitialized = true; }, 1000);
+                }
+            }
+            
+            // Frame rate limiting for ongoing renders
+            const deltaTime = currentTime - lastTime;
+            if (deltaTime < FRAME_INTERVAL && isInitialized) {
+                return;
+            }
+            lastTime = currentTime;
+
+            // Performance monitoring (optional)
+            frameCount++;
+            if (currentTime - lastFpsTime >= 1000) {
+                console.log(`FPS: ${frameCount}`);
+                frameCount = 0;
+                lastFpsTime = currentTime;
+            }
+        }
+
+        // Pause rendering when page is not visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            } else {
+                if (!animationId) {
+                    needsRender = true;
+                    animate();
+                }
+            }
+        });
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            if (renderer) {
+                renderer.dispose();
+            }
+            if (model) {
+                model.traverse((child) => {
+                    child.matrixAutoUpdate = false;
+                    child.updateMatrix();
+
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(mat => mat.dispose());
+                        } else {
+                            child.material.dispose();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Set initial theme
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+        
+        // Mobile Navigation Toggle
+        const navToggle = document.getElementById('nav-toggle');
+        const navMenu = document.getElementById('nav-menu');
+        
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Add scroll effect to navbar
+        let lastScrollTop = 0;
+        const navbar = document.querySelector('.navbar');
+        
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                navbar.style.transform = 'translateY(-100%)';
+            } else {
+                // Scrolling up
+                navbar.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+        });
+
+        // Add click feedback for buttons
+        document.querySelectorAll('.back-button, .theme-toggle, .nav-toggle').forEach(el => {
+            el.addEventListener('mousedown', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+            
+            el.addEventListener('mouseup', function() {
+                this.style.transform = 'scale(1)';
+            });
+            
+            el.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
