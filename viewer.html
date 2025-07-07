@@ -1,3 +1,10 @@
+in a previous chat you otpimized my code pretty heavily now my coffeshop is portrayed flat and not like it used to, a lot is missing. Furthermore the Backdoor is not turning like it should
+Bearbeiten
+
+I can see the issues with your 3D viewer. The optimizations went too far and are causing problems with the model rendering and animations. Let me fix these issues:
+Sie haben bis 00:00 keine kostenlosen Nachrichten mehr
+
+Weiter
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,8 +13,69 @@
   <title>3D Viewer - Alexander May</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/viewer.css">
-  <script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    /* Enhanced loading and error states */
+    .loading-message, .error-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      padding: 2rem;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 10px;
+      color: white;
+      z-index: 100;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #333;
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .performance-info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 50;
+      display: none;
+    }
+    
+    .controls-info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 50;
+      transition: opacity 0.3s ease;
+    }
+    
+    .controls-info.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
 </head>
 
 <body>
@@ -51,6 +119,20 @@
             </div>
         </div>
 
+        <div class="performance-info" id="performance-info">
+            <div>FPS: <span id="fps-counter">0</span></div>
+            <div>Triangles: <span id="triangle-count">0</span></div>
+            <div>Render calls: <span id="render-calls">0</span></div>
+        </div>
+
+        <div class="controls-info" id="controls-info">
+            <strong>Controls:</strong><br>
+            • Left click + drag to rotate<br>
+            • Right click + drag to pan<br>
+            • Mouse wheel to zoom<br>
+            • Click on interactive elements
+        </div>
+
         <div class="viewer-info">
             <strong>Interactive 3D Scene</strong><br>
             This coffee shop model demonstrates my work with Three.js and 3D web environments. 
@@ -58,527 +140,615 @@
         </div>
     </div>
 
-    <!-- Import Map for Three.js -->
     <script type="importmap">
         {
             "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-  }
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
         }
     </script>
 
     <script type="module">
-        // Import Three.js and controls using the import map
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        let scene, camera, renderer, controls;
-        let model = null;
-        let isLoading = false;
-        let animationId = null;
-        let needsRender = true;
-        let lastTime = 0;
-        const TARGET_FPS = 60;
-        const FRAME_INTERVAL = 1000 / TARGET_FPS;
-        let isInitialized = false;
-
-        // Performance monitoring
-        let frameCount = 0;
-        let lastFpsTime = performance.now();
-
-        function showLoadingMessage() {
-            const container = document.getElementById('threejs-container');
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading-message';
-            loadingDiv.innerHTML = '<p>Loading 3D Model...</p>';
-            loadingDiv.id = 'loading-message';
-            container.appendChild(loadingDiv);
-        }
-
-        function hideLoadingMessage() {
-            const loadingMessage = document.getElementById('loading-message');
-            if (loadingMessage) {
-                loadingMessage.remove();
+        class OptimizedViewer {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.controls = null;
+                this.model = null;
+                this.raycaster = new THREE.Raycaster();
+                this.mouse = new THREE.Vector2();
+                
+                // Performance tracking
+                this.performance = {
+                    frameCount: 0,
+                    lastFpsTime: 0,
+                    fps: 0,
+                    triangles: 0,
+                    renderCalls: 0
+                };
+                
+                // Render optimization
+                this.needsRender = true;
+                this.isLoading = false;
+                this.animationId = null;
+                this.lastInteraction = Date.now();
+                
+                // Configuration - more balanced settings
+                this.config = {
+                    maxPixelRatio: Math.min(window.devicePixelRatio, 2),
+                    shadowMapSize: 2048,
+                    enablePerformanceMonitoring: false,
+                    interactionTimeout: 10000 // 10 seconds
+                };
+                
+                this.init();
             }
-        }
 
-        function showErrorMessage(message) {
-            const container = document.getElementById('threejs-container');
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.innerHTML = `
-                <h3>Unable to Load 3D Model</h3>
-                <p>${message}</p>
-                <p style="margin-top: 1rem; font-size: 0.9rem;">Please check that the model file exists in the assets folder.</p>
-            `;
-            container.appendChild(errorDiv);
-        }
-
-        function optimizeModel(model) {
-            let meshCount = 0;
-            let materialCount = 0;
-            const materials = new Set();
-
-            model.traverse((child) => {
-                child.matrixAutoUpdate = false;
-                child.updateMatrix();
-
-                if (child.isMesh) {
-                    meshCount++;
-                    
-                    // Enable shadows only for important objects
-                    child.castShadow = meshCount < 20; // Limit shadow casting
-                    child.receiveShadow = meshCount < 10; // Limit shadow receiving
-                    
-                    if (child.material) {
-                        // Optimize materials
-                        if (Array.isArray(child.material)) {
-                            child.material.forEach(mat => {
-                                optimizeMaterial(mat);
-                                materials.add(mat);
-                            });
-                        } else {
-                            optimizeMaterial(child.material);
-                            materials.add(child.material);
-                        }
-                    }
-
-                    // Optimize geometry
-                    if (child.geometry) {
-                        // Dispose of unnecessary vertex attributes
-                        if (child.geometry.attributes.uv2) {
-                            child.geometry.deleteAttribute('uv2');
-                        }
-                        
-                        // Use lower precision for positions if possible
-                        if (child.geometry.attributes.position) {
-                            child.geometry.attributes.position.array = new Float32Array(
-                                child.geometry.attributes.position.array
-                            );
-                        }
-                    }
+            init() {
+                const container = document.getElementById('threejs-container');
+                if (!container) {
+                    console.error('Three.js container not found');
+                    return;
                 }
-            });
 
-            materialCount = materials.size;
-            console.log(`Model optimized: ${meshCount} meshes, ${materialCount} materials`);
-        }
-
-        function optimizeMaterial(material) {
-            // Reduce material complexity
-            material.transparent = false;
-            material.opacity = 1;
-            
-            // Disable unnecessary features for performance
-            if (material.normalMap && !material.normalMap.image) {
-                material.normalMap = null;
-            }
-            
-            if (material.roughnessMap && !material.roughnessMap.image) {
-                material.roughnessMap = null;
-            }
-            
-            // Optimize texture settings
-            if (material.map) {
-                material.map.flipY = false;
-                material.map.generateMipmaps = true;
-                material.map.minFilter = THREE.LinearMipmapLinearFilter;
-                material.map.magFilter = THREE.LinearFilter;
-            }
-            
-            material.needsUpdate = true;
-        }
-
-        function init() {
-            const container = document.getElementById('threejs-container');
-            if (!container) {
-                console.error('Three.js container not found');
-                return;
+                try {
+                    this.setupScene();
+                    this.setupCamera(container);
+                    this.setupRenderer(container);
+                    this.setupControls();
+                    this.setupLighting();
+                    this.setupEventListeners();
+                    this.hideControlsInfo();
+                    
+                    // Start render loop and load model
+                    this.animate();
+                    this.loadModel();
+                    
+                } catch (error) {
+                    console.error('Error initializing Three.js:', error);
+                    this.showErrorMessage('Failed to initialize 3D viewer');
+                }
             }
 
-            try {
-                // Scene
-                scene = new THREE.Scene();
-                scene.background = new THREE.Color(0x1a1a1a);
+            setupScene() {
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x1a1a1a);
+                
+                // Keep automatic matrix updates for animations
+                this.scene.matrixAutoUpdate = true;
+            }
 
-                // Camera with optimized settings
-                camera = new THREE.PerspectiveCamera(
-                    50, // Reduced FOV for better performance
+            setupCamera(container) {
+                this.camera = new THREE.PerspectiveCamera(
+                    45,
                     container.clientWidth / container.clientHeight,
                     0.1,
-                    200 // Increased far plane for more zoom out
+                    1000
                 );
-                camera.position.set(5, 3, 5);
+                this.camera.position.set(8, 5, 8);
+                // Keep automatic matrix updates for smooth camera movements
+                this.camera.matrixAutoUpdate = true;
+            }
 
-                // Renderer with performance optimizations
-                renderer = new THREE.WebGLRenderer({ 
-                    antialias: false, // Disable AA on high-DPI displays
+            setupRenderer(container) {
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true, // Enable antialiasing for better quality
                     powerPreference: "high-performance",
                     stencil: false,
                     depth: true,
-                    logarithmicDepthBuffer: false
+                    alpha: false
                 });
                 
-                // Optimize renderer settings
-                renderer.setSize(container.clientWidth, container.clientHeight);
-                renderer.setPixelRatio(1.5); // Cap pixel ratio
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.renderer.setPixelRatio(this.config.maxPixelRatio);
                 
-                // Optimize shadow settings
-                renderer.shadowMap.enabled = true;
-                renderer.shadowMap.type = THREE.PCFShadowMap; // Use basic PCF instead of soft shadows
-                renderer.shadowMap.autoUpdate = false; // Manual shadow updates
+                // Better renderer settings
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Better shadow quality
+                this.renderer.shadowMap.autoUpdate = true; // Keep shadows updating
+                this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1.0;
                 
-                // Performance optimizations
-                renderer.outputColorSpace = THREE.SRGBColorSpace;
-                renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                renderer.toneMappingExposure = 1.0;
-
-                // Clear placeholder and add canvas
+                // Add to container
                 const placeholder = container.querySelector('.placeholder-3d');
-                if (placeholder) {
-                    placeholder.style.display = 'none';
-                }
-                container.appendChild(renderer.domElement);
+                if (placeholder) placeholder.style.display = 'none';
+                container.appendChild(this.renderer.domElement);
+            }
 
-                // Optimized controls
-                controls = new OrbitControls(camera, renderer.domElement);
-                controls.enableDamping = true;
-                controls.dampingFactor = 0.1; // Increased for smoother movement
-                controls.enableZoom = true;
-                controls.enablePan = true;
-                controls.maxDistance = 100;
-                controls.minDistance = 1;
+            setupControls() {
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                this.controls.enableZoom = true;
+                this.controls.enablePan = true;
+                this.controls.maxDistance = 50;
+                this.controls.minDistance = 1;
+                this.controls.maxPolarAngle = Math.PI * 0.8;
                 
-                // Add change event listener for render on demand
-                controls.addEventListener('change', () => {
-                    needsRender = true;
+                // Add event listeners
+                this.controls.addEventListener('change', () => {
+                    this.needsRender = true;
+                    this.lastInteraction = Date.now();
                 });
                 
-                // Add interaction event listeners
-                controls.addEventListener('start', () => {
-                    needsRender = true;
+                this.controls.addEventListener('start', () => {
+                    this.lastInteraction = Date.now();
                 });
                 
-                controls.addEventListener('end', () => {
-                    needsRender = true;
+                this.controls.addEventListener('end', () => {
+                    this.lastInteraction = Date.now();
                 });
+            }
 
-                // Simplified lighting setup
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-                scene.add(ambientLight);
+            setupLighting() {
+                // Ambient light
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+                this.scene.add(ambientLight);
 
+                // Main directional light
                 const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                dirLight.position.set(8, 10, 5);
+                dirLight.position.set(10, 10, 5);
                 dirLight.castShadow = true;
                 
-                // Optimize shadow camera
-                dirLight.shadow.mapSize.width = 1024; // Reduced shadow resolution
-                dirLight.shadow.mapSize.height = 1024;
+                // Good shadow settings
+                dirLight.shadow.mapSize.width = this.config.shadowMapSize;
+                dirLight.shadow.mapSize.height = this.config.shadowMapSize;
                 dirLight.shadow.camera.near = 0.1;
-                dirLight.shadow.camera.far = 100; // Increased for larger zoom range
+                dirLight.shadow.camera.far = 50;
                 dirLight.shadow.camera.left = -20;
                 dirLight.shadow.camera.right = 20;
                 dirLight.shadow.camera.top = 20;
                 dirLight.shadow.camera.bottom = -20;
                 dirLight.shadow.bias = -0.0001;
                 
-                scene.add(dirLight);
+                this.scene.add(dirLight);
 
-                // Reduced number of lights for better performance
-                const pointLight = new THREE.PointLight(0xffd700, 0.4, 8);
-                pointLight.position.set(-2, 3, 2);
-                scene.add(pointLight);
+                // Fill light
+                const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.3);
+                fillLight.position.set(-5, 3, -5);
+                this.scene.add(fillLight);
 
-                // Load 3D Model
-                loadModel();
+                // Accent light
+                const accentLight = new THREE.PointLight(0xffd700, 0.5, 10);
+                accentLight.position.set(-2, 4, 2);
+                this.scene.add(accentLight);
+            }
 
-                // Optimized resize handler
+            setupEventListeners() {
+                // Click interaction
+                this.renderer.domElement.addEventListener('click', (event) => {
+                    this.handleClick(event);
+                });
+
+                // Resize handler
                 let resizeTimeout;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
                     resizeTimeout = setTimeout(() => {
-                        camera.aspect = container.clientWidth / container.clientHeight;
-                        camera.updateProjectionMatrix();
-                        renderer.setSize(container.clientWidth, container.clientHeight);
-                        needsRender = true;
+                        this.handleResize();
                     }, 100);
                 });
 
-                // Start render loop
-                animate();
+                // Visibility change handler
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        this.pauseRendering();
+                    } else {
+                        this.resumeRendering();
+                    }
+                });
+
+                // Performance monitoring toggle
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'p' && event.ctrlKey) {
+                        this.togglePerformanceMonitoring();
+                    }
+                });
+            }
+
+            async loadModel() {
+                if (this.isLoading) return;
+                this.isLoading = true;
+                
+                this.showLoadingMessage();
+                
+                const loader = new GLTFLoader();
+                const modelPaths = ['assets/cafeteria.glb', 'assets/coffeeshop.glb'];
+                
+                for (const path of modelPaths) {
+                    try {
+                        const gltf = await this.loadGLTF(loader, path);
+                        this.handleModelLoad(gltf);
+                        return;
+                    } catch (error) {
+                        console.warn(`Failed to load ${path}:`, error);
+                    }
+                }
+                
+                // If both models failed
+                this.hideLoadingMessage();
+                this.isLoading = false;
+                this.showErrorMessage('Model files not found. Please check that cafeteria.glb or coffeeshop.glb exists in the assets folder.');
+            }
+
+            loadGLTF(loader, url) {
+                return new Promise((resolve, reject) => {
+                    loader.load(
+                        url,
+                        resolve,
+                        (progress) => {
+                            const percentComplete = (progress.loaded / progress.total * 100);
+                            this.updateLoadingProgress(percentComplete);
+                        },
+                        reject
+                    );
+                });
+            }
+
+            handleModelLoad(gltf) {
+                this.hideLoadingMessage();
+                this.isLoading = false;
+                
+                this.model = gltf.scene;
+                this.optimizeModel(this.model);
+                this.scene.add(this.model);
+                
+                // Auto-fit camera
+                this.fitCameraToModel();
+                
+                // Focus on blackboard if available
+                this.focusOnBlackboard();
+                
+                // Update performance counters
+                this.updatePerformanceCounters();
                 
                 // Force initial render
-                isInitialized = true;
-                needsRender = true;
-                renderer.render(scene, camera);
-
-            } catch (error) {
-                console.error('Error initializing Three.js:', error);
-                showErrorMessage('Failed to initialize 3D viewer');
-            }
-        }
-
-        function loadModel() {
-            if (isLoading) return;
-            isLoading = true;
-            
-            showLoadingMessage();
-
-            const loader = new GLTFLoader();
-            
-            // Try to load the primary model
-            loader.load(
-                'assets/cafeteria.glb',
-                (gltf) => {
-                    handleModelLoad(gltf);
-                },
-                (progress) => {
-                    const percentComplete = (progress.loaded / progress.total * 100);
-                    const loadingMessage = document.getElementById('loading-message');
-                    if (loadingMessage) {
-                        loadingMessage.innerHTML = `<p>Loading 3D Model... ${Math.round(percentComplete)}%</p>`;
-                    }
-                },
-                (error) => {
-                    console.error('Failed to load primary model:', error);
-                    
-                    // Try fallback model
-                    loader.load(
-                        'assets/coffeeshop.glb',
-                        (gltf) => {
-                            handleModelLoad(gltf);
-                        },
-                        undefined,
-                        (fallbackError) => {
-                            hideLoadingMessage();
-                            isLoading = false;
-                            console.error('Both models failed to load:', fallbackError);
-                            showErrorMessage('Model files not found. Please check that cafeteria.glb or coffeeshop.glb exists in the assets folder.');
-                        }
-                    );
-                }
-            );
-        }
-
-        function handleModelLoad(gltf) {
-            hideLoadingMessage();
-            isLoading = false;
-            
-            model = gltf.scene;
-            
-            // Optimize the model
-            optimizeModel(model);
-            
-            scene.add(model);
-
-            const blackboard = model.getObjectByName('Blackboard');
-if (blackboard) {
-    const box = new THREE.Box3().setFromObject(blackboard);
-    const center = box.getCenter(new THREE.Vector3());
-
-    // Set camera in front of blackboard
-    camera.position.set(center.x + 5, center.y + 0, center.z + 4);
-    controls.target.copy(center);
-    controls.update();
-}
-
-
-
-
-            // Auto-fit camera to model
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const center = box.getCenter(new THREE.Vector3());
-
-            // Update controls target
-            controls.target.copy(center);
-            controls.update();
-
-            // Position camera for good view
-            const maxDim = Math.max(size.x, size.y, size.z);
-         
-
-            // Update shadows once after model load
-            renderer.shadowMap.needsUpdate = true;
-            needsRender = true;
-
-            console.log('Model loaded and optimized successfully');
-        }
-
-        function focusOnTarget(targetName) {
-    const target = model.getObjectByName(targetName);
-    if (!target) return;
-
-    const box = new THREE.Box3().setFromObject(target);
-    const center = box.getCenter(new THREE.Vector3());
-
-    const offset = new THREE.Vector3(2, 1.5, 2); // Adjust as needed
-    const newPos = center.clone().add(offset);
-
-    gsap.to(camera.position, {
-        duration: 1.5,
-        x: newPos.x,
-        y: newPos.y,
-        z: newPos.z,
-        onUpdate: () => {
-            camera.lookAt(center);
-            controls.target.copy(center);
-            controls.update();
-            needsRender = true;
-        }
-    });
-}
-
-
-function handleNavigation(name) {
-    switch (name) {
-        case 'nav-about':
-            focusOnTarget('AboutSection');
-            break;
-        case 'nav-projects':
-            focusOnTarget('ProjectsArea');
-            break;
-        case 'nav-research':
-            focusOnTarget('ResearchBooth');
-            break;
-        case 'nav-contact':
-            focusOnTarget('ContactDesk');
-            openBackdoor();
-            break;
-    }
-}
-
-
-
-    function openBackdoor() {
-
-  const door = model.getObjectByName('Backdoor');
-  if (!door) {
-    console.warn('Backdoor not found in model.');
-    return;
-  }
-  console.warn('Backdoor raoting.');
-
-  // Set initial rotation if needed
-  door.rotation.y = 0;
-
-  gsap.to(door.rotation, {
-    duration: 1.2,
-    y: -Math.PI / 2, // swing door open (90 degrees)
-    ease: "power2.out"
-  });
-}
-
-
-
-
-        
-
-        // Optimized render loop with frame rate limiting
-        function animate(currentTime = 0) {
-            animationId = requestAnimationFrame(animate);
-            
-            // Always render for the first few frames or when explicitly needed
-            if (!isInitialized || needsRender || controls.enabled) {
-                controls.update();
-                renderer.render(scene, camera);
-                needsRender = false;
+                this.needsRender = true;
                 
-                // Stop forcing renders after initialization
-                if (!isInitialized) {
-                    setTimeout(() => { isInitialized = true; }, 1000);
-                }
+                console.log('Model loaded successfully');
             }
-            
-            // Frame rate limiting for ongoing renders
-            const deltaTime = currentTime - lastTime;
-            if (deltaTime < FRAME_INTERVAL && isInitialized) {
-                return;
-            }
-            lastTime = currentTime;
 
-            // Performance monitoring (optional)
-            frameCount++;
-            if (currentTime - lastFpsTime >= 1000) {
-                console.log(`FPS: ${frameCount}`);
-                frameCount = 0;
-                lastFpsTime = currentTime;
-            }
-        }
-
-        // Pause rendering when page is not visible
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                    animationId = null;
-                }
-            } else {
-                if (!animationId) {
-                    needsRender = true;
-                    animate();
-                }
-            }
-        });
-
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-renderer.domElement.addEventListener('click', (event) => {
-    const bounds = renderer.domElement.getBoundingClientRect();
-    mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
-    mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-
-    // Only test against model children
-    const intersects = raycaster.intersectObjects(model.children, true);
-
-    for (let i = 0; i < intersects.length; i++) {
-        const clickedObject = intersects[i].object;
-        const name = clickedObject.name;
-
-        if (name.startsWith('nav-')) {
-            console.log('Clicked button:', name);
-            handleNavigation(name);
-            break;
-        }
-    }
-});
-
-
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', () => {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
-            if (renderer) {
-                renderer.dispose();
-            }
-            if (model) {
+            optimizeModel(model) {
+                let meshCount = 0;
+                
                 model.traverse((child) => {
-                    child.matrixAutoUpdate = false;
-                    child.updateMatrix();
+                    // Keep automatic matrix updates for animations
+                    child.matrixAutoUpdate = true;
+                    
+                    if (child.isMesh) {
+                        meshCount++;
+                        
+                        // Enable shadows for most objects
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        
+                        // Only basic material optimization
+                        if (child.material) {
+                            if (child.material.map) {
+                                child.material.map.generateMipmaps = true;
+                            }
+                        }
+                        
+                        // Compute bounding sphere for frustum culling
+                        if (child.geometry && !child.geometry.boundingSphere) {
+                            child.geometry.computeBoundingSphere();
+                        }
+                        
+                        child.frustumCulled = true;
+                    }
+                });
+                
+                this.performance.triangles = this.countTriangles(model);
+                console.log(`Model optimized: ${meshCount} meshes, ${this.performance.triangles} triangles`);
+            }
 
-                    if (child.geometry) child.geometry.dispose();
-                    if (child.material) {
-                        if (Array.isArray(child.material)) {
-                            child.material.forEach(mat => mat.dispose());
-                        } else {
-                            child.material.dispose();
+            countTriangles(object) {
+                let count = 0;
+                object.traverse((child) => {
+                    if (child.isMesh && child.geometry) {
+                        const positions = child.geometry.attributes.position;
+                        if (positions) {
+                            count += positions.count / 3;
                         }
                     }
                 });
+                return Math.floor(count);
+            }
+
+            fitCameraToModel() {
+                const box = new THREE.Box3().setFromObject(this.model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = this.camera.fov * (Math.PI / 180);
+                const distance = maxDim / (2 * Math.tan(fov / 2)) * 1.2;
+                
+                this.camera.position.set(
+                    center.x + distance * 0.5,
+                    center.y + distance * 0.3,
+                    center.z + distance * 0.5
+                );
+                
+                this.controls.target.copy(center);
+                this.controls.update();
+            }
+
+            focusOnBlackboard() {
+                const blackboard = this.model?.getObjectByName('Blackboard');
+                if (blackboard) {
+                    const box = new THREE.Box3().setFromObject(blackboard);
+                    const center = box.getCenter(new THREE.Vector3());
+                    
+                    this.camera.position.set(center.x + 5, center.y, center.z + 4);
+                    this.controls.target.copy(center);
+                    this.controls.update();
+                }
+            }
+
+            handleClick(event) {
+                if (!this.model) return;
+                
+                const bounds = this.renderer.domElement.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+                this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+                
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.model.children, true);
+                
+                if (intersects.length > 0) {
+                    const clickedObject = intersects[0].object;
+                    const name = clickedObject.name;
+                    
+                    if (name.startsWith('nav-')) {
+                        this.handleNavigation(name);
+                    }
+                }
+            }
+
+            handleNavigation(name) {
+                const navigationMap = {
+                    'nav-about': 'AboutSection',
+                    'nav-projects': 'ProjectsArea',
+                    'nav-research': 'ResearchBooth',
+                    'nav-contact': 'ContactDesk'
+                };
+                
+                const targetName = navigationMap[name];
+                if (targetName) {
+                    this.focusOnTarget(targetName);
+                    
+                    if (name === 'nav-contact') {
+                        this.openBackdoor();
+                    }
+                }
+            }
+
+            focusOnTarget(targetName) {
+                const target = this.model?.getObjectByName(targetName);
+                if (!target) return;
+                
+                const box = new THREE.Box3().setFromObject(target);
+                const center = box.getCenter(new THREE.Vector3());
+                const offset = new THREE.Vector3(2, 1.5, 2);
+                const newPos = center.clone().add(offset);
+                
+                gsap.to(this.camera.position, {
+                    duration: 1.5,
+                    x: newPos.x,
+                    y: newPos.y,
+                    z: newPos.z,
+                    ease: "power2.out",
+                    onUpdate: () => {
+                        this.camera.updateMatrixWorld();
+                        this.controls.target.copy(center);
+                        this.controls.update();
+                        this.needsRender = true;
+                    }
+                });
+            }
+
+            openBackdoor() {
+                const door = this.model?.getObjectByName('Backdoor');
+                if (!door) return;
+                
+                // Reset door position
+                door.rotation.y = 0;
+                door.updateMatrixWorld();
+                
+                gsap.to(door.rotation, {
+                    duration: 1.2,
+                    y: -Math.PI / 2,
+                    ease: "power2.out",
+                    onUpdate: () => {
+                        door.updateMatrixWorld();
+                        this.needsRender = true;
+                    }
+                });
+            }
+
+            handleResize() {
+                const container = document.getElementById('threejs-container');
+                if (!container) return;
+                
+                this.camera.aspect = container.clientWidth / container.clientHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.needsRender = true;
+            }
+
+            animate() {
+                this.animationId = requestAnimationFrame(() => this.animate());
+                
+                const currentTime = Date.now();
+                const shouldRender = this.needsRender || 
+                                   (currentTime - this.lastInteraction < this.config.interactionTimeout);
+                
+                if (shouldRender) {
+                    this.controls.update();
+                    this.renderer.render(this.scene, this.camera);
+                    this.needsRender = false;
+                    
+                    // Update performance counters
+                    if (this.config.enablePerformanceMonitoring) {
+                        this.updatePerformanceStats();
+                    }
+                }
+            }
+
+            updatePerformanceStats() {
+                this.performance.frameCount++;
+                const now = performance.now();
+                
+                if (now - this.performance.lastFpsTime >= 1000) {
+                    this.performance.fps = this.performance.frameCount;
+                    this.performance.frameCount = 0;
+                    this.performance.lastFpsTime = now;
+                    this.performance.renderCalls = this.renderer.info.render.calls;
+                    
+                    this.updatePerformanceDisplay();
+                    this.renderer.info.reset();
+                }
+            }
+
+            updatePerformanceDisplay() {
+                const fpsElement = document.getElementById('fps-counter');
+                const triangleElement = document.getElementById('triangle-count');
+                const renderCallsElement = document.getElementById('render-calls');
+                
+                if (fpsElement) fpsElement.textContent = this.performance.fps;
+                if (triangleElement) triangleElement.textContent = this.performance.triangles;
+                if (renderCallsElement) renderCallsElement.textContent = this.performance.renderCalls;
+            }
+
+            updatePerformanceCounters() {
+                this.performance.triangles = this.countTriangles(this.model);
+                this.updatePerformanceDisplay();
+            }
+
+            togglePerformanceMonitoring() {
+                this.config.enablePerformanceMonitoring = !this.config.enablePerformanceMonitoring;
+                const perfInfo = document.getElementById('performance-info');
+                if (perfInfo) {
+                    perfInfo.style.display = this.config.enablePerformanceMonitoring ? 'block' : 'none';
+                }
+            }
+
+            pauseRendering() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+
+            resumeRendering() {
+                if (!this.animationId) {
+                    this.needsRender = true;
+                    this.animate();
+                }
+            }
+
+            hideControlsInfo() {
+                setTimeout(() => {
+                    const controlsInfo = document.getElementById('controls-info');
+                    if (controlsInfo) {
+                        controlsInfo.classList.add('fade-out');
+                    }
+                }, 5000);
+            }
+
+            showLoadingMessage() {
+                const container = document.getElementById('threejs-container');
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading-message';
+                loadingDiv.id = 'loading-message';
+                loadingDiv.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <p>Loading 3D Model...</p>
+                    <p id="loading-progress">0%</p>
+                `;
+                container.appendChild(loadingDiv);
+            }
+
+            updateLoadingProgress(percent) {
+                const progressElement = document.getElementById('loading-progress');
+                if (progressElement) {
+                    progressElement.textContent = `${Math.round(percent)}%`;
+                }
+            }
+
+            hideLoadingMessage() {
+                const loadingMessage = document.getElementById('loading-message');
+                if (loadingMessage) {
+                    loadingMessage.remove();
+                }
+            }
+
+            showErrorMessage(message) {
+                const container = document.getElementById('threejs-container');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.innerHTML = `
+                    <h3>Unable to Load 3D Model</h3>
+                    <p>${message}</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem;">Please check that the model file exists in the assets folder.</p>
+                `;
+                container.appendChild(errorDiv);
+            }
+
+            dispose() {
+                // Cleanup resources
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                
+                if (this.model) {
+                    this.model.traverse((child) => {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(mat => mat.dispose());
+                            } else {
+                                child.material.dispose();
+                            }
+                        }
+                    });
+                }
+                
+                if (this.renderer) {
+                    this.renderer.dispose();
+                }
+            }
+        }
+
+        // Initialize viewer
+        let viewer;
+        
+        function initViewer() {
+            if (viewer) {
+                viewer.dispose();
+            }
+            viewer = new OptimizedViewer();
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initViewer);
+        } else {
+            initViewer();
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (viewer) {
+                viewer.dispose();
             }
         });
     </script>
@@ -588,7 +758,6 @@ renderer.domElement.addEventListener('click', (event) => {
         const themeToggle = document.getElementById('theme-toggle');
         const currentTheme = localStorage.getItem('theme') || 'light';
         
-        // Set initial theme
         document.documentElement.setAttribute('data-theme', currentTheme);
         
         themeToggle.addEventListener('click', () => {
@@ -602,8 +771,6 @@ renderer.domElement.addEventListener('click', (event) => {
         // Mobile Navigation Toggle
         const navToggle = document.getElementById('nav-toggle');
         const navMenu = document.getElementById('nav-menu');
-
-        
         
         navToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
@@ -616,7 +783,7 @@ renderer.domElement.addEventListener('click', (event) => {
             });
         });
 
-        // Add scroll effect to navbar
+        // Enhanced navbar scroll effect
         let lastScrollTop = 0;
         const navbar = document.querySelector('.navbar');
         
@@ -624,20 +791,21 @@ renderer.domElement.addEventListener('click', (event) => {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             
             if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // Scrolling down
                 navbar.style.transform = 'translateY(-100%)';
+                navbar.style.transition = 'transform 0.3s ease-in-out';
             } else {
-                // Scrolling up
                 navbar.style.transform = 'translateY(0)';
+                navbar.style.transition = 'transform 0.3s ease-in-out';
             }
             
             lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
         });
 
-        // Add click feedback for buttons
+        // Enhanced button feedback
         document.querySelectorAll('.back-button, .theme-toggle, .nav-toggle').forEach(el => {
             el.addEventListener('mousedown', function() {
                 this.style.transform = 'scale(0.95)';
+                this.style.transition = 'transform 0.1s ease';
             });
             
             el.addEventListener('mouseup', function() {
@@ -648,6 +816,43 @@ renderer.domElement.addEventListener('click', (event) => {
                 this.style.transform = 'scale(1)';
             });
         });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'h':
+                        event.preventDefault();
+                        window.location.href = 'index.html';
+                        break;
+                    case 'r':
+                        event.preventDefault();
+                        if (viewer) {
+                            viewer.fitCameraToModel();
+                        }
+                        break;
+                }
+            }
+        });
+
+        // Add tooltips for interactive elements
+        const tooltips = {
+            'theme-toggle': 'Toggle dark/light theme',
+            'nav-toggle': 'Toggle navigation menu',
+            'back-button': 'Return to portfolio (Ctrl+H)'
+        };
+
+        Object.entries(tooltips).forEach(([id, text]) => {
+            const element = document.getElementById(id) || document.querySelector(`.${id}`);
+            if (element) {
+                element.setAttribute('title', text);
+            }
+        });
+
+        // Performance monitoring shortcut hint
+        console.log('💡 Press Ctrl+P to toggle performance monitoring');
+        console.log('💡 Press Ctrl+R to reset camera position');
+        console.log('💡 Press Ctrl+H to go back to portfolio');
     </script>
 </body>
 </html>
