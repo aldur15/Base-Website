@@ -360,7 +360,7 @@ Weiter
                 this.showLoadingMessage();
                 
                 const loader = new GLTFLoader();
-                const modelPaths = ['assets/cafeteria.glb', 'assets/coffeeshop.glb'];
+                const modelPaths = ['assets/coffeeshop.glb', 'assets/coffeeshop.glb'];
                 
                 for (const path of modelPaths) {
                     try {
@@ -397,6 +397,15 @@ Weiter
                 this.isLoading = false;
                 
                 this.model = gltf.scene;
+
+                const box = new THREE.Box3().setFromObject(this.model);
+const center = box.getCenter(new THREE.Vector3());
+this.model.position.sub(center);
+
+// Reset orbit target to match new center
+this.controls.target.set(0, 1, 0); // or (0, 0, 0) for exact center
+this.controls.update();
+
                 this.optimizeModel(this.model);
                 this.scene.add(this.model);
                 
@@ -534,38 +543,92 @@ Weiter
                 }
             }
 
-            focusOnTarget(targetName) {
-                const target = this.model?.getObjectByName(targetName);
-                if (!target) return;
+focusOnTarget(targetName) {
+    const target = this.model?.getObjectByName(targetName);
+    if (!target) return;
 
-                    const box = new THREE.Box3().setFromObject(target);
-                    const center = box.getCenter(new THREE.Vector3());
+    const box = new THREE.Box3().setFromObject(target);
+    const center = box.getCenter(new THREE.Vector3());
 
-                    const offset = this.camera.position.clone().sub(center);
-                    const spherical = new THREE.Spherical().setFromVector3(offset);
+    // Get the ACTUAL current camera position and where it's currently looking
+    const startCameraPosition = this.camera.position.clone();
+    const startTarget = this.controls.target.clone();
+    
+    // Calculate the offset from current target to current camera position
+    const currentOffset = startCameraPosition.clone().sub(startTarget);
+    const spherical = new THREE.Spherical().setFromVector3(currentOffset);
 
-                    // Rotate around more and in the opposite direction (e.g., -120°)
-                    spherical.theta -= THREE.MathUtils.degToRad(120);
+    // Store the starting values
+    const startTheta = spherical.theta;
+    const startPhi = spherical.phi;
+    const startRadius = spherical.radius;
+    
+    // Calculate the end values for the animation
+    const endTheta = startTheta + THREE.MathUtils.degToRad(230);
+    const zoomOutRadius = startRadius * 5.0;
+    const endRadius = Math.max(startRadius, 8); // Ensure minimum distance
+    const endPhi = startPhi; // Keep the same vertical angle
 
-                    // Optional: raise or lower camera a bit
-                    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
+    const duration = 2.7;  //Set speed of camera turning
+    const steps = Math.floor(60 * duration);
+    let step = 0;
 
-                    const newPos = new THREE.Vector3().setFromSpherical(spherical).add(center);
+    const animateOrbit = () => {
+        step++;
+        const t = step / steps;
+        const easedT = gsap.parseEase("power2.inOut")(t);
 
-                    gsap.to(this.camera.position, {
-                            duration: 2,
-                            x: newPos.x,
-                            y: newPos.y,
-                            z: newPos.z,
-                            ease: "power2.inOut",
-                            onUpdate: () => {
-                                this.camera.lookAt(center);
-                                this.controls.target.copy(center);
-                                this.controls.update();
-                                this.needsRender = true;
-                    }
-                });
-            }
+        // Interpolate between start and end target positions
+        const currentTarget = startTarget.clone().lerp(center, easedT);
+        
+        // Calculate current rotation angle
+        const currentTheta = startTheta + (endTheta - startTheta) * easedT;
+        
+        // Calculate current radius (zoom out then in)
+        let currentRadius;
+        if (t < 0.5) {
+            // First half: zoom out
+            currentRadius = startRadius + (zoomOutRadius - startRadius) * (easedT * 2);
+        } else {
+            // Second half: zoom in
+            currentRadius = zoomOutRadius + (endRadius - zoomOutRadius) * ((easedT - 0.5) * 2);
+        }
+
+        // Apply the spherical coordinates
+        spherical.radius = currentRadius;
+        spherical.theta = currentTheta;
+        spherical.phi = endPhi;
+
+        // Calculate new camera position relative to current target
+        const newCameraPosition = new THREE.Vector3()
+            .setFromSpherical(spherical)
+            .add(currentTarget);
+
+        // Update camera and controls
+        this.camera.position.copy(newCameraPosition);
+        this.controls.target.copy(currentTarget);
+        this.camera.lookAt(currentTarget);
+        this.controls.update();
+        this.needsRender = true;
+
+        if (step < steps) {
+            requestAnimationFrame(animateOrbit);
+        } else {
+            // Ensure final position is set correctly
+            this.controls.target.copy(center);
+            this.controls.update();
+            this.needsRender = true;
+        }
+    };
+
+    animateOrbit();
+}
+
+
+
+
+
+
 
 
 
