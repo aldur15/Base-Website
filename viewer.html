@@ -379,7 +379,7 @@ if (blackboard) {
     const center = box.getCenter(new THREE.Vector3());
 
     // Set camera in front of blackboard
-    camera.position.set(center.x + 7, center.y + 1.5, center.z + 8);
+    camera.position.set(center.x + 5, center.y + 0, center.z + 4);
     controls.target.copy(center);
     controls.update();
 }
@@ -445,9 +445,33 @@ function handleNavigation(name) {
             break;
         case 'nav-contact':
             focusOnTarget('ContactDesk');
+            openBackdoor();
             break;
     }
 }
+
+
+
+    function openBackdoor() {
+
+  const door = model.getObjectByName('Backdoor');
+  if (!door) {
+    console.warn('Backdoor not found in model.');
+    return;
+  }
+  console.warn('Backdoor raoting.');
+
+  // Set initial rotation if needed
+  door.rotation.y = 0;
+
+  gsap.to(door.rotation, {
+    duration: 1.2,
+    y: -Math.PI / 2, // swing door open (90 degrees)
+    ease: "power2.out"
+  });
+}
+
+
 
 
         
@@ -578,6 +602,8 @@ renderer.domElement.addEventListener('click', (event) => {
         // Mobile Navigation Toggle
         const navToggle = document.getElementById('nav-toggle');
         const navMenu = document.getElementById('nav-menu');
+
+        
         
         navToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
