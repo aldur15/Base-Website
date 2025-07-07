@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Viewer - Alexander May</title>
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="assets/viewer.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Viewer - Alexander May</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/viewer.css">
+  <script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
-<script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
 <body>
     <nav class="navbar">
         <div class="nav-container">
@@ -371,6 +373,20 @@
             
             scene.add(model);
 
+            const blackboard = model.getObjectByName('Blackboard');
+if (blackboard) {
+    const box = new THREE.Box3().setFromObject(blackboard);
+    const center = box.getCenter(new THREE.Vector3());
+
+    // Set camera in front of blackboard
+    camera.position.set(center.x + 7, center.y + 1.5, center.z + 8);
+    controls.target.copy(center);
+    controls.update();
+}
+
+
+
+
             // Auto-fit camera to model
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
@@ -382,11 +398,7 @@
 
             // Position camera for good view
             const maxDim = Math.max(size.x, size.y, size.z);
-            camera.position.set(
-                center.x + maxDim * 1.2, 
-                center.y + maxDim * 0.6, 
-                center.z + maxDim * 1.2
-            );
+         
 
             // Update shadows once after model load
             renderer.shadowMap.needsUpdate = true;
@@ -394,6 +406,51 @@
 
             console.log('Model loaded and optimized successfully');
         }
+
+        function focusOnTarget(targetName) {
+    const target = model.getObjectByName(targetName);
+    if (!target) return;
+
+    const box = new THREE.Box3().setFromObject(target);
+    const center = box.getCenter(new THREE.Vector3());
+
+    const offset = new THREE.Vector3(2, 1.5, 2); // Adjust as needed
+    const newPos = center.clone().add(offset);
+
+    gsap.to(camera.position, {
+        duration: 1.5,
+        x: newPos.x,
+        y: newPos.y,
+        z: newPos.z,
+        onUpdate: () => {
+            camera.lookAt(center);
+            controls.target.copy(center);
+            controls.update();
+            needsRender = true;
+        }
+    });
+}
+
+
+function handleNavigation(name) {
+    switch (name) {
+        case 'nav-about':
+            focusOnTarget('AboutSection');
+            break;
+        case 'nav-projects':
+            focusOnTarget('ProjectsArea');
+            break;
+        case 'nav-research':
+            focusOnTarget('ResearchBooth');
+            break;
+        case 'nav-contact':
+            focusOnTarget('ContactDesk');
+            break;
+    }
+}
+
+
+        
 
         // Optimized render loop with frame rate limiting
         function animate(currentTime = 0) {
@@ -448,6 +505,33 @@
         } else {
             init();
         }
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+renderer.domElement.addEventListener('click', (event) => {
+    const bounds = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+    mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    // Only test against model children
+    const intersects = raycaster.intersectObjects(model.children, true);
+
+    for (let i = 0; i < intersects.length; i++) {
+        const clickedObject = intersects[i].object;
+        const name = clickedObject.name;
+
+        if (name.startsWith('nav-')) {
+            console.log('Clicked button:', name);
+            handleNavigation(name);
+            break;
+        }
+    }
+});
+
+
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
