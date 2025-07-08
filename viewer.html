@@ -134,6 +134,22 @@
         </div>
     </div>
 
+    <button id="back-to-blackboard" style="
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 100;
+    display: none;
+">← Back to Blackboard</button>
+
+
     <script type="importmap">
         {
             "imports": {
@@ -208,7 +224,30 @@
                     console.error('Error initializing Three.js:', error);
                     this.showErrorMessage('Failed to initialize 3D viewer');
                 }
+
+                document.getElementById('back-to-blackboard')?.addEventListener('click', () => {
+    if (viewer) {
+        viewer.focusOnBlackboard();
+        viewer.hideBackButton();
+    }
+});
+
             }
+
+            showBackButton() {
+    const btn = document.getElementById('back-to-blackboard');
+    if (btn) {
+        btn.style.display = 'block';
+    }
+}
+
+hideBackButton() {
+    const btn = document.getElementById('back-to-blackboard');
+    if (btn) {
+        btn.style.display = 'none';
+    }
+}
+
 
             setupScene() {
                 this.scene = new THREE.Scene();
@@ -565,6 +604,7 @@ this.controls.target.copy(buildingCenter);
     const target = cameraTargets[name];
     if (target) {
         this.focusCameraTo(target);
+        this.showBackButton(); // 👈 Show back button
 
         if (name === 'nav-contact') {
             setTimeout(() => {
@@ -575,52 +615,79 @@ this.controls.target.copy(buildingCenter);
 }
 
 
-focusCameraTo({ position, lookAt }) {
-    const startPos = this.camera.position.clone();
 
-    // Offset camera and target to get spherical coordinates relative to lookAt point
+focusCameraTo({ position, lookAt, duration = 2.0 }) {
+    const startPos = this.camera.position.clone();
     const startOffset = startPos.clone().sub(lookAt);
     const endOffset = position.clone().sub(lookAt);
 
     const sphericalStart = new THREE.Spherical().setFromVector3(startOffset);
     const sphericalEnd = new THREE.Spherical().setFromVector3(endOffset);
 
-    // Ensure counter-clockwise rotation
-    if (sphericalEnd.theta < sphericalStart.theta) {
-        sphericalEnd.theta += Math.PI * 2;
+    // Prevent excessive spin — clamp to reasonable counter-clockwise arc
+    let deltaTheta = sphericalEnd.theta - sphericalStart.theta;
+    if (deltaTheta < 0) {
+        deltaTheta += Math.PI * 2;
+    } else if (deltaTheta > Math.PI * 1.5) {
+        deltaTheta -= Math.PI * 2;
     }
+    deltaTheta *= 0.3;
+    sphericalEnd.theta = sphericalStart.theta + deltaTheta;
 
-    const steps = 90;
-    let step = 0;
+    // Calculate a zoom-out radius
+    const zoomOutRadius = Math.max(sphericalStart.radius, sphericalEnd.radius) * 1.2;
 
-    const animate = () => {
-        const t = step / steps;
+    // Mid-point spherical for orbiting
+    const midSpherical = new THREE.Spherical(
+        zoomOutRadius,
+        (sphericalStart.phi + sphericalEnd.phi) / 2,
+        (sphericalStart.theta + sphericalEnd.theta) / 2
+    );
+
+    const startTime = performance.now();
+    const totalTime = duration * 1000;
+
+    const animate = (now) => {
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed / totalTime, 1);
         const easedT = gsap.parseEase("power2.inOut")(t);
 
-        const spherical = new THREE.Spherical(
-            THREE.MathUtils.lerp(sphericalStart.radius, sphericalEnd.radius, easedT),
-            THREE.MathUtils.lerp(sphericalStart.phi, sphericalEnd.phi, easedT),
-            THREE.MathUtils.lerp(sphericalStart.theta, sphericalEnd.theta, easedT)
-        );
+        let spherical = new THREE.Spherical();
+
+        if (t < 0.33) {
+            const tt = easedT / 0.33;
+            spherical.radius = THREE.MathUtils.lerp(sphericalStart.radius, zoomOutRadius, tt);
+            spherical.phi = THREE.MathUtils.lerp(sphericalStart.phi, midSpherical.phi, tt);
+            spherical.theta = THREE.MathUtils.lerp(sphericalStart.theta, midSpherical.theta, tt);
+        } else if (t < 0.66) {
+            const tt = (easedT - 0.33) / 0.33;
+            spherical.radius = zoomOutRadius;
+            spherical.phi = THREE.MathUtils.lerp(midSpherical.phi, sphericalEnd.phi, tt);
+            spherical.theta = THREE.MathUtils.lerp(midSpherical.theta, sphericalEnd.theta, tt);
+        } else {
+            const tt = (easedT - 0.66) / 0.34;
+            spherical.radius = THREE.MathUtils.lerp(zoomOutRadius, sphericalEnd.radius, tt);
+            spherical.phi = sphericalEnd.phi;
+            spherical.theta = sphericalEnd.theta;
+        }
 
         const newPos = new THREE.Vector3().setFromSpherical(spherical).add(lookAt);
         this.camera.position.copy(newPos);
         this.camera.lookAt(lookAt);
 
-        // Keep free rotation pivot on building center
         this.controls.target.set(0, 0, 0);
         this.controls.update();
 
         this.needsRender = true;
 
-        if (step < steps) {
-            step++;
+        if (t < 1) {
             requestAnimationFrame(animate);
         }
     };
 
-    animate();
+    requestAnimationFrame(animate);
 }
+
 
 
 
