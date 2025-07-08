@@ -12,8 +12,9 @@
     --neuro-text-primary: #2d3748;
     --neuro-text-secondary: #4a5568;
     --neuro-text-muted: #718096;
-    --neuro-accent: #667eea;
-    --neuro-accent-light: #764ba2;
+    --neuro-accent: #4a90e2;
+    --neuro-accent-background: #e6e7ee;
+    --neuro-accent-light: #4a90e2;
     --neuro-border-radius: 20px;
     --neuro-border-radius-sm: 12px;
     --neuro-border-radius-lg: 30px;
@@ -75,7 +76,7 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    background: linear-gradient(135deg, var(--neuro-accent-background) 0%, var(--neuro-accent-background) 100%);
     border-radius: var(--neuro-border-radius-lg) var(--neuro-border-radius-lg) 0 0;
 }
 
@@ -130,15 +131,15 @@ body {
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    background: linear-gradient(135deg, var(--neuro-accent-background) 0%, var(--neuro-accent-background) 100%);
     border-radius: var(--neuro-border-radius) var(--neuro-border-radius) 0 0;
 }
-
+/*
 .project-card:hover {
     box-shadow: var(--neuro-shadow-floating);
     transform: translateY(-2px);
 }
-
+*/
 .project-card:active {
     box-shadow: var(--neuro-shadow-pressed);
     transform: translateY(0);
@@ -186,12 +187,12 @@ body {
     box-shadow: var(--neuro-shadow-subtle);
     transition: var(--neuro-transition);
 }
-
+/*
 .tech-tag:hover {
     box-shadow: var(--neuro-shadow-pressed);
     transform: scale(0.98);
 }
-
+*/
 .project-status {
     position: relative;
     z-index: 1;
@@ -227,12 +228,12 @@ body {
     color: #ffffff;
     box-shadow: 4px 4px 8px rgba(59, 130, 246, 0.3);
 }
-
+/*
 .status-badge:hover {
     transform: translateY(-1px);
     box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.15);
 }
-
+*/
 /* Project Statistics Section */
 .project-stats {
     display: grid;
@@ -250,12 +251,12 @@ body {
     transition: var(--neuro-transition);
     position: relative;
 }
-
+/*
 .stat-card:hover {
     box-shadow: var(--neuro-shadow-floating);
     transform: translateY(-4px);
 }
-
+*/
 .stat-card::before {
     content: '';
     position: absolute;
@@ -264,7 +265,7 @@ body {
     transform: translateX(-50%);
     width: 40px;
     height: 3px;
-    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    background: linear-gradient(135deg, var(--neuro-accent-background) 0%, var(--neuro-accent-background) 100%);
     border-radius: 2px;
 }
 
@@ -303,7 +304,7 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    background: linear-gradient(135deg, var(--neuro-accent-background) 0%, var(--neuro-accent-background) 100%);
     border-radius: var(--neuro-border-radius-lg) var(--neuzh-border-radius-lg) 0 0;
 }
 
