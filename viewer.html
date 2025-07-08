@@ -543,110 +543,84 @@ this.controls.target.copy(buildingCenter);
             }
 
             handleNavigation(name) {
-                const navigationMap = {
-                    'nav-about': 'AboutSection',
-                    'nav-projects': 'ProjectsArea',
-                    'nav-research': 'ResearchBooth',
-                    'nav-contact': 'ContactDesk'
-                };
-                
-                const targetName = navigationMap[name];
-                    if (targetName) {
-                        this.focusOnTarget(targetName);
-
-                        if (name === 'nav-contact') {
-                        // Delay the door opening by 1.5 seconds (1500 ms)
-                            setTimeout(() => {
-                            this.openBackdoor();
-                        }, 1500);
-                    }
-                }
-            }
-
-focusOnTarget(targetName) {
-    const target = this.model?.getObjectByName(targetName);
-    if (!target) return;
-
-    const box = new THREE.Box3().setFromObject(target);
-    const center = box.getCenter(new THREE.Vector3());
-
-    // Get the ACTUAL current camera position and where it's currently looking
-    const startCameraPosition = this.camera.position.clone();
-    const startTarget = this.controls.target.clone();
-    
-    // Calculate the offset from current target to current camera position
-    const currentOffset = startCameraPosition.clone().sub(startTarget);
-    const spherical = new THREE.Spherical().setFromVector3(currentOffset);
-
-    // Store the starting values
-    const startTheta = spherical.theta;
-    const startPhi = spherical.phi;
-    const startRadius = spherical.radius;
-    
-    // Calculate the end values for the animation
-    const endTheta = startTheta + THREE.MathUtils.degToRad(230);
-    const zoomOutRadius = startRadius * 5.0;
-    const endRadius = Math.max(startRadius, 8); // Ensure minimum distance
-    const endPhi = startPhi; // Keep the same vertical angle
-
-    const duration = 2.7;  //Set speed of camera turning
-    const steps = Math.floor(60 * duration);
-    let step = 0;
-
-    const animateOrbit = () => {
-        step++;
-        const t = step / steps;
-        const easedT = gsap.parseEase("power2.inOut")(t);
-
-        // Interpolate between start and end target positions
-        const currentTarget = startTarget.clone().lerp(center, easedT);
-        
-        // Calculate current rotation angle
-        const currentTheta = startTheta + (endTheta - startTheta) * easedT;
-        
-        // Calculate current radius (zoom out then in)
-        let currentRadius;
-        if (t < 0.5) {
-            // First half: zoom out
-            currentRadius = startRadius + (zoomOutRadius - startRadius) * (easedT * 2);
-        } else {
-            // Second half: zoom in
-            currentRadius = zoomOutRadius + (endRadius - zoomOutRadius) * ((easedT - 0.5) * 2);
-        }
-
-        // Apply the spherical coordinates
-        spherical.radius = currentRadius;
-        spherical.theta = currentTheta;
-        spherical.phi = endPhi;
-
-        // Calculate new camera position relative to current target
-        const newCameraPosition = new THREE.Vector3()
-            .setFromSpherical(spherical)
-            .add(currentTarget);
-
-        // Update camera and controls
-        this.camera.position.copy(newCameraPosition);
-        this.controls.target.copy(currentTarget);
-        this.camera.lookAt(currentTarget);
-        this.controls.update();
-        this.needsRender = true;
-
-        if (step < steps) {
-            requestAnimationFrame(animateOrbit);
-        } else {
-            // Ensure final position is set correctly
-            // Keep rotating around model center (0, 0, 0) or building center
-const buildingCenter = new THREE.Vector3(0, 0, 0);
-this.controls.target.copy(buildingCenter);
-
-            this.controls.update();
-            this.needsRender = true;
+    const cameraTargets = {
+        'nav-about': {
+            position: new THREE.Vector3(5, 3, 10),
+            lookAt: new THREE.Vector3(0, 1.5, 0)
+        },
+        'nav-projects': {
+            position: new THREE.Vector3(-4, 2.5, 8),
+            lookAt: new THREE.Vector3(-6, 1.5, 0)
+        },
+        'nav-research': {
+            position: new THREE.Vector3(-10, 3, -6),
+            lookAt: new THREE.Vector3(-8, 2, 0)
+        },
+        'nav-contact': {
+            position: new THREE.Vector3(-16.5, 0.18, 9.01),
+            lookAt: new THREE.Vector3(-17, 0.2, 8.5)
         }
     };
 
-    animateOrbit();
+    const target = cameraTargets[name];
+    if (target) {
+        this.focusCameraTo(target);
+
+        if (name === 'nav-contact') {
+            setTimeout(() => {
+                this.openBackdoor();
+            }, 1500);
+        }
+    }
 }
 
+
+focusCameraTo({ position, lookAt }) {
+    const startPos = this.camera.position.clone();
+
+    // Offset camera and target to get spherical coordinates relative to lookAt point
+    const startOffset = startPos.clone().sub(lookAt);
+    const endOffset = position.clone().sub(lookAt);
+
+    const sphericalStart = new THREE.Spherical().setFromVector3(startOffset);
+    const sphericalEnd = new THREE.Spherical().setFromVector3(endOffset);
+
+    // Ensure counter-clockwise rotation
+    if (sphericalEnd.theta < sphericalStart.theta) {
+        sphericalEnd.theta += Math.PI * 2;
+    }
+
+    const steps = 90;
+    let step = 0;
+
+    const animate = () => {
+        const t = step / steps;
+        const easedT = gsap.parseEase("power2.inOut")(t);
+
+        const spherical = new THREE.Spherical(
+            THREE.MathUtils.lerp(sphericalStart.radius, sphericalEnd.radius, easedT),
+            THREE.MathUtils.lerp(sphericalStart.phi, sphericalEnd.phi, easedT),
+            THREE.MathUtils.lerp(sphericalStart.theta, sphericalEnd.theta, easedT)
+        );
+
+        const newPos = new THREE.Vector3().setFromSpherical(spherical).add(lookAt);
+        this.camera.position.copy(newPos);
+        this.camera.lookAt(lookAt);
+
+        // Keep free rotation pivot on building center
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+
+        this.needsRender = true;
+
+        if (step < steps) {
+            step++;
+            requestAnimationFrame(animate);
+        }
+    };
+
+    animate();
+}
 
 
 
