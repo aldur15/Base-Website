@@ -203,7 +203,7 @@
         lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
     },
     'nav-projects': {
-        position: new THREE.Vector3(12, 12, 15), //position: new THREE.Vector3(12, 12, 15),
+        position: new THREE.Vector3(12, 16, 15), //position: new THREE.Vector3(12, 12, 15),
         lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
     },
     'nav-research': {
@@ -713,6 +713,21 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
                     }
                 });
             }
+
+            closeBackdoor() {
+    const door = this.model?.getObjectByName('Backdoor');
+    if (!door) return;
+    
+    gsap.to(door.rotation, {
+        duration: 4.2,
+        y: 0, // Close the door back to original position
+        ease: "power2.out",
+        onUpdate: () => {
+            door.updateMatrixWorld();
+            this.needsRender = true;
+        }
+    });
+}
 
             handleResize() {
                 const container = document.getElementById('threejs-container');
