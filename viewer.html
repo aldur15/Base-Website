@@ -523,61 +523,38 @@ this.controls.update();
             }
 
             optimizeModel(model) {
-    let meshCount = 0;
-    
-    model.traverse((child) => {
-        child.matrixAutoUpdate = true;
-        
-        if (child.isMesh) {
-            meshCount++;
-            
-            // Enable shadows for most objects
-            child.castShadow = true;
-            child.receiveShadow = true;
-            
-            // Fix material brightness
-            if (child.material) {
-                // Ensure proper color space
-                if (child.material.map) {
-                    child.material.map.generateMipmaps = true;
-                    child.material.map.colorSpace = THREE.SRGBColorSpace;
-                }
+                let meshCount = 0;
                 
-                // Increase material brightness for dark materials
-                if (child.material.color) {
-                    // If the material is too dark, brighten it
-                    const currentColor = child.material.color;
-                    const brightness = (currentColor.r + currentColor.g + currentColor.b) / 3;
+                model.traverse((child) => {
+                    // Keep automatic matrix updates for animations
+                    child.matrixAutoUpdate = true;
                     
-                    if (brightness < 0.3) {
-                        child.material.color.multiplyScalar(1.5); // Brighten dark materials
+                    if (child.isMesh) {
+                        meshCount++;
+                        
+                        // Enable shadows for most objects
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        
+                        // Only basic material optimization
+                        if (child.material) {
+                            if (child.material.map) {
+                                child.material.map.generateMipmaps = true;
+                            }
+                        }
+                        
+                        // Compute bounding sphere for frustum culling
+                        if (child.geometry && !child.geometry.boundingSphere) {
+                            child.geometry.computeBoundingSphere();
+                        }
+                        
+                        child.frustumCulled = true;
                     }
-                }
+                });
                 
-                // Adjust metalness and roughness for better lighting response
-                if (child.material.metalness !== undefined) {
-                    child.material.metalness = Math.min(child.material.metalness, 0.3);
-                }
-                if (child.material.roughness !== undefined) {
-                    child.material.roughness = Math.max(child.material.roughness, 0.4);
-                }
-                
-                // Ensure materials receive light properly
-                child.material.needsUpdate = true;
+                this.performance.triangles = this.countTriangles(model);
+                console.log(`Model optimized: ${meshCount} meshes, ${this.performance.triangles} triangles`);
             }
-            
-            // Compute bounding sphere for frustum culling
-            if (child.geometry && !child.geometry.boundingSphere) {
-                child.geometry.computeBoundingSphere();
-            }
-            
-            child.frustumCulled = true;
-        }
-    });
-    
-    this.performance.triangles = this.countTriangles(model);
-    console.log(`Model optimized: ${meshCount} meshes, ${this.performance.triangles} triangles`);
-}
 
             countTriangles(object) {
                 let count = 0;
