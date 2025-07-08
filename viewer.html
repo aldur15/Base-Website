@@ -262,6 +262,21 @@ Weiter
                 container.appendChild(this.renderer.domElement);
             }
 
+            focusOnBlackboard() {
+    const blackboard = this.model?.getObjectByName('Blackboard');
+    if (!blackboard) return;
+
+    const box = new THREE.Box3().setFromObject(blackboard);
+    const center = box.getCenter(new THREE.Vector3());
+
+    // Position camera near blackboard but still rotate around center
+    this.camera.position.set(center.x + 5, center.y, center.z + 4);
+
+    this.camera.lookAt(center); // look at blackboard
+    this.controls.target.set(0, 0, 0); // keep rotation centered on whole model
+    this.controls.update();
+}
+
             setupControls() {
                 this.controls = new OrbitControls(this.camera, this.renderer.domElement);
                 this.controls.enableDamping = true;
@@ -403,8 +418,12 @@ const center = box.getCenter(new THREE.Vector3());
 this.model.position.sub(center);
 
 // Reset orbit target to match new center
-this.controls.target.set(0, 1, 0); // or (0, 0, 0) for exact center
+// Keep rotating around model center (0, 0, 0) or building center
+const buildingCenter = new THREE.Vector3(0, 0, 0);
+this.controls.target.copy(buildingCenter);
+
 this.controls.update();
+
 
                 this.optimizeModel(this.model);
                 this.scene.add(this.model);
@@ -472,21 +491,25 @@ this.controls.update();
             }
 
             fitCameraToModel() {
-                const box = new THREE.Box3().setFromObject(this.model);
+const box = new THREE.Box3().setFromObject(this.model);
                 const size = box.getSize(new THREE.Vector3());
-                const center = box.getCenter(new THREE.Vector3());
-                
+const center = box.getCenter(new THREE.Vector3());
+this.model.position.sub(center);
+
                 const maxDim = Math.max(size.x, size.y, size.z);
                 const fov = this.camera.fov * (Math.PI / 180);
                 const distance = maxDim / (2 * Math.tan(fov / 2)) * 1.2;
                 
-                this.camera.position.set(
-                    center.x + distance * 0.5,
-                    center.y + distance * 0.3,
-                    center.z + distance * 0.5
-                );
+                //this.camera.position.set(
+                //    center.x + distance * 0.5,
+                //    center.y + distance * 0.3,
+                //    center.z + distance * 0.5
+                //);
                 
-                this.controls.target.copy(center);
+                // Keep rotating around model center (0, 0, 0) or building center
+const buildingCenter = new THREE.Vector3(0, 0, 0);
+this.controls.target.copy(buildingCenter);
+
                 this.controls.update();
             }
 
@@ -497,7 +520,10 @@ this.controls.update();
                     const center = box.getCenter(new THREE.Vector3());
                     
                     this.camera.position.set(center.x + 5, center.y, center.z + 4);
-                    this.controls.target.copy(center);
+                    // Keep rotating around model center (0, 0, 0) or building center
+const buildingCenter = new THREE.Vector3(0, 0, 0);
+this.controls.target.copy(buildingCenter);
+
                     this.controls.update();
                 }
             }
@@ -615,7 +641,10 @@ focusOnTarget(targetName) {
             requestAnimationFrame(animateOrbit);
         } else {
             // Ensure final position is set correctly
-            this.controls.target.copy(center);
+            // Keep rotating around model center (0, 0, 0) or building center
+const buildingCenter = new THREE.Vector3(0, 0, 0);
+this.controls.target.copy(buildingCenter);
+
             this.controls.update();
             this.needsRender = true;
         }
