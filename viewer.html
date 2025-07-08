@@ -196,6 +196,30 @@
                     enablePerformanceMonitoring: false,
                     interactionTimeout: 10000 // 10 seconds
                 };
+
+                this.cameraTargets = {
+    'nav-about': {
+        position: new THREE.Vector3(5, 3, 10),
+        lookAt: new THREE.Vector3(0, 1.5, 0)
+    },
+    'nav-projects': {
+        position: new THREE.Vector3(-4, 2.5, 8),
+        lookAt: new THREE.Vector3(-6, 1.5, 0)
+    },
+    'nav-research': {
+        position: new THREE.Vector3(-10, 3, -6),
+        lookAt: new THREE.Vector3(-8, 2, 0)
+    },
+    'nav-contact': {
+        position: new THREE.Vector3(-16.5, 0.18, 9.01),
+        lookAt: new THREE.Vector3(-17, 0.2, 8.5)
+    },
+    blackboard: {
+        position: new THREE.Vector3(10.85, -1.14, 6.68),
+        lookAt: new THREE.Vector3(16, -2.5, 7)
+    }
+};
+
                 
                 this.init();
             }
@@ -220,6 +244,7 @@
                     this.animate();
                     this.loadModel();
                     
+                    
                 } catch (error) {
                     console.error('Error initializing Three.js:', error);
                     this.showErrorMessage('Failed to initialize 3D viewer');
@@ -227,10 +252,12 @@
 
                 document.getElementById('back-to-blackboard')?.addEventListener('click', () => {
     if (viewer) {
-        viewer.focusOnBlackboard();
-        viewer.hideBackButton();
+        viewer.focusOnBlackboardCamera();
+        viewer.hideBackButton(); // ✅ Optional: hide the button after returning
     }
 });
+
+
 
             }
 
@@ -241,12 +268,7 @@
     }
 }
 
-hideBackButton() {
-    const btn = document.getElementById('back-to-blackboard');
-    if (btn) {
-        btn.style.display = 'none';
-    }
-}
+
 
 
             setupScene() {
@@ -304,11 +326,26 @@ hideBackButton() {
 
     // Position camera near blackboard but still rotate around center
     this.camera.position.set(center.x + 5, center.y, center.z + 4);
+    console.log('Camera position:', this.camera.position);
+
 
     this.camera.lookAt(center); // look at blackboard
     this.controls.target.set(0, 0, 0); // keep rotation centered on whole model
     this.controls.update();
 }
+
+focusOnBlackboardCamera() {
+    if (!this.cameraTargets?.blackboard) return;
+
+    this.focusCameraTo({
+        ...this.cameraTargets.blackboard,
+        duration: 2.5
+    });
+
+    // Optionally close the backdoor
+    this.closeBackdoor?.();
+}
+
 
             setupControls() {
                 this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -336,38 +373,47 @@ hideBackButton() {
             }
 
             setupLighting() {
-                // Ambient light
-                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
-                this.scene.add(ambientLight);
+    // Increase ambient light for better overall illumination
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.8); // Increased from 0.4
+    this.scene.add(ambientLight);
 
-                // Main directional light
-                const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                dirLight.position.set(10, 10, 5);
-                dirLight.castShadow = true;
-                
-                // Good shadow settings
-                dirLight.shadow.mapSize.width = this.config.shadowMapSize;
-                dirLight.shadow.mapSize.height = this.config.shadowMapSize;
-                dirLight.shadow.camera.near = 0.1;
-                dirLight.shadow.camera.far = 50;
-                dirLight.shadow.camera.left = -20;
-                dirLight.shadow.camera.right = 20;
-                dirLight.shadow.camera.top = 20;
-                dirLight.shadow.camera.bottom = -20;
-                dirLight.shadow.bias = -0.0001;
-                
-                this.scene.add(dirLight);
+    // Main directional light - increase intensity
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); // Increased from 0.8
+    dirLight.position.set(10, 10, 5);
+    dirLight.castShadow = true;
+    
+    // Shadow settings remain the same
+    dirLight.shadow.mapSize.width = this.config.shadowMapSize;
+    dirLight.shadow.mapSize.height = this.config.shadowMapSize;
+    dirLight.shadow.camera.near = 0.1;
+    dirLight.shadow.camera.far = 50;
+    dirLight.shadow.camera.left = -20;
+    dirLight.shadow.camera.right = 20;
+    dirLight.shadow.camera.top = 20;
+    dirLight.shadow.camera.bottom = -20;
+    dirLight.shadow.bias = -0.0001;
+    
+    this.scene.add(dirLight);
 
-                // Fill light
-                const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.3);
-                fillLight.position.set(-5, 3, -5);
-                this.scene.add(fillLight);
+    // Increase fill light intensity
+    const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.6); // Increased from 0.3
+    fillLight.position.set(-5, 3, -5);
+    this.scene.add(fillLight);
 
-                // Accent light
-                const accentLight = new THREE.PointLight(0xffd700, 0.5, 10);
-                accentLight.position.set(-2, 4, 2);
-                this.scene.add(accentLight);
-            }
+    // Add additional fill light from opposite direction
+    const fillLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+    fillLight2.position.set(5, 3, -5);
+    this.scene.add(fillLight2);
+
+    // Increase accent light
+    const accentLight = new THREE.PointLight(0xffd700, 0.8, 15); // Increased intensity and range
+    accentLight.position.set(-2, 4, 2);
+    this.scene.add(accentLight);
+
+    // Add hemisphere light for more natural lighting
+    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.3);
+    this.scene.add(hemiLight);
+}
 
             setupEventListeners() {
                 // Click interaction
@@ -477,38 +523,61 @@ this.controls.update();
             }
 
             optimizeModel(model) {
-                let meshCount = 0;
+    let meshCount = 0;
+    
+    model.traverse((child) => {
+        child.matrixAutoUpdate = true;
+        
+        if (child.isMesh) {
+            meshCount++;
+            
+            // Enable shadows for most objects
+            child.castShadow = true;
+            child.receiveShadow = true;
+            
+            // Fix material brightness
+            if (child.material) {
+                // Ensure proper color space
+                if (child.material.map) {
+                    child.material.map.generateMipmaps = true;
+                    child.material.map.colorSpace = THREE.SRGBColorSpace;
+                }
                 
-                model.traverse((child) => {
-                    // Keep automatic matrix updates for animations
-                    child.matrixAutoUpdate = true;
+                // Increase material brightness for dark materials
+                if (child.material.color) {
+                    // If the material is too dark, brighten it
+                    const currentColor = child.material.color;
+                    const brightness = (currentColor.r + currentColor.g + currentColor.b) / 3;
                     
-                    if (child.isMesh) {
-                        meshCount++;
-                        
-                        // Enable shadows for most objects
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                        
-                        // Only basic material optimization
-                        if (child.material) {
-                            if (child.material.map) {
-                                child.material.map.generateMipmaps = true;
-                            }
-                        }
-                        
-                        // Compute bounding sphere for frustum culling
-                        if (child.geometry && !child.geometry.boundingSphere) {
-                            child.geometry.computeBoundingSphere();
-                        }
-                        
-                        child.frustumCulled = true;
+                    if (brightness < 0.3) {
+                        child.material.color.multiplyScalar(1.5); // Brighten dark materials
                     }
-                });
+                }
                 
-                this.performance.triangles = this.countTriangles(model);
-                console.log(`Model optimized: ${meshCount} meshes, ${this.performance.triangles} triangles`);
+                // Adjust metalness and roughness for better lighting response
+                if (child.material.metalness !== undefined) {
+                    child.material.metalness = Math.min(child.material.metalness, 0.3);
+                }
+                if (child.material.roughness !== undefined) {
+                    child.material.roughness = Math.max(child.material.roughness, 0.4);
+                }
+                
+                // Ensure materials receive light properly
+                child.material.needsUpdate = true;
             }
+            
+            // Compute bounding sphere for frustum culling
+            if (child.geometry && !child.geometry.boundingSphere) {
+                child.geometry.computeBoundingSphere();
+            }
+            
+            child.frustumCulled = true;
+        }
+    });
+    
+    this.performance.triangles = this.countTriangles(model);
+    console.log(`Model optimized: ${meshCount} meshes, ${this.performance.triangles} triangles`);
+}
 
             countTriangles(object) {
                 let count = 0;
@@ -562,49 +631,36 @@ this.controls.target.copy(buildingCenter);
             }
 
             handleClick(event) {
-                if (!this.model) return;
-                
-                const bounds = this.renderer.domElement.getBoundingClientRect();
-                this.mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
-                this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
-                
-                this.raycaster.setFromCamera(this.mouse, this.camera);
-                const intersects = this.raycaster.intersectObjects(this.model.children, true);
-                
-                if (intersects.length > 0) {
-                    const clickedObject = intersects[0].object;
-                    const name = clickedObject.name;
-                    
-                    if (name.startsWith('nav-')) {
-                        this.handleNavigation(name);
-                    }
-                }
+    if (!this.model) return;
+
+    const bounds = this.renderer.domElement.getBoundingClientRect();
+    this.mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+    this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects(this.model.children, true);
+
+    if (intersects.length > 0) {
+        const clickedObject = intersects[0].object;
+        const name = clickedObject.name;
+
+        if (name.startsWith('nav-')) {
+            if (name.startsWith('nav-blackboard')) {
+                this.focusOnBlackboardCamera();
+                this.hideBackButton();
+            } else {
+                this.handleNavigation(name);
             }
-
-            handleNavigation(name) {
-    const cameraTargets = {
-        'nav-about': {
-            position: new THREE.Vector3(5, 3, 10),
-            lookAt: new THREE.Vector3(0, 1.5, 0)
-        },
-        'nav-projects': {
-            position: new THREE.Vector3(-4, 2.5, 8),
-            lookAt: new THREE.Vector3(-6, 1.5, 0)
-        },
-        'nav-research': {
-            position: new THREE.Vector3(-10, 3, -6),
-            lookAt: new THREE.Vector3(-8, 2, 0)
-        },
-        'nav-contact': {
-            position: new THREE.Vector3(-16.5, 0.18, 9.01),
-            lookAt: new THREE.Vector3(-17, 0.2, 8.5)
         }
-    };
+    }
+}
 
-    const target = cameraTargets[name];
+
+handleNavigation(name) {
+    const target = this.cameraTargets[name];
     if (target) {
         this.focusCameraTo(target);
-        this.showBackButton(); // 👈 Show back button
+        this.showBackButton();
 
         if (name === 'nav-contact') {
             setTimeout(() => {
@@ -613,6 +669,7 @@ this.controls.target.copy(buildingCenter);
         }
     }
 }
+
 
 
 
