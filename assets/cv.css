@@ -1,37 +1,53 @@
-/* Neuromorphic CV Page Styles */
+/* Neuromorphic CV Page Styles - Research Design Match */
+
+/* Base neuromorphic variables matching research style */
 :root {
-    /* Neuromorphic color palette */
     --neuro-bg: #e6e7ee;
-    --neuro-bg-dark: #d1d9e6;
-    --neuro-bg-light: #ffffff;
-    --neuro-shadow-dark: #a3b1c6;
+    --neuro-surface: #e6e7ee;
+    --neuro-highlight: #ffffff;
     --neuro-shadow-light: #ffffff;
-    --neuro-text-primary: #4a5568;
-    --neuro-text-secondary: #718096;
+    --neuro-shadow-dark: #a3b1c6;
+    --neuro-shadow-inset-light: #d1d9e6;
+    --neuro-shadow-inset-dark: #b8c5d1;
+    --neuro-text-primary: #2d3748;
+    --neuro-text-secondary: #4a5568;
+    --neuro-text-muted: #718096;
     --neuro-accent: #667eea;
     --neuro-accent-light: #764ba2;
-    --neuro-accent-secondary: #f093fb;
     --neuro-border-radius: 20px;
+    --neuro-border-radius-sm: 12px;
+    --neuro-border-radius-lg: 30px;
     --neuro-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Neuromorphic shadow combinations */
+    --neuro-shadow-raised: 9px 9px 16px var(--neuro-shadow-dark), 
+                          -9px -9px 16px var(--neuro-shadow-light);
+    --neuro-shadow-pressed: inset 6px 6px 10px var(--neuro-shadow-inset-dark), 
+                           inset -6px -6px 10px var(--neuro-shadow-inset-light);
+    --neuro-shadow-floating: 12px 12px 20px var(--neuro-shadow-dark), 
+                            -12px -12px 20px var(--neuro-shadow-light);
+    --neuro-shadow-subtle: 4px 4px 8px var(--neuro-shadow-dark), 
+                          -4px -4px 8px var(--neuro-shadow-light);
 }
 
-/* Dark mode support 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --neuro-bg: #2d3748;
-        --neuro-bg-dark: #1a202c;
-        --neuro-bg-light: #4a5568;
-        --neuro-shadow-dark: #1a202c;
-        --neuro-shadow-light: #4a5568;
-        --neuro-text-primary: #e2e8f0;
-        --neuro-text-secondary: #a0aec0;
-    }
+/* Dark theme support */
+[data-theme="dark"] {
+    --neuro-bg: #2d3748;
+    --neuro-surface: #2d3748;
+    --neuro-highlight: #4a5568;
+    --neuro-shadow-light: #4a5568;
+    --neuro-shadow-dark: #1a202c;
+    --neuro-shadow-inset-light: #374151;
+    --neuro-shadow-inset-dark: #1f2937;
+    --neuro-text-primary: #f7fafc;
+    --neuro-text-secondary: #e2e8f0;
+    --neuro-text-muted: #a0aec0;
 }
-*/
+
 body {
     background: var(--neuro-bg);
     color: var(--neuro-text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     line-height: 1.6;
 }
 
@@ -47,11 +63,9 @@ body {
     text-align: center;
     margin: 2rem 0 4rem;
     padding: 3rem 2rem;
-    background: var(--neuro-bg);
-    border-radius: var(--neuro-border-radius);
-    box-shadow: 
-        12px 12px 24px var(--neuro-shadow-dark),
-        -12px -12px 24px var(--neuro-shadow-light);
+    background: var(--neuro-surface);
+    border-radius: var(--neuro-border-radius-lg);
+    box-shadow: var(--neuro-shadow-raised);
     position: relative;
     overflow: hidden;
 }
@@ -63,32 +77,17 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--neuro-accent), var(--neuro-accent-light), var(--neuro-accent-secondary));
-    border-radius: var(--neuro-border-radius) var(--neuro-border-radius) 0 0;
-}
-
-.cv-header::after {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
+    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    border-radius: var(--neuro-border-radius-lg) var(--neuro-border-radius-lg) 0 0;
 }
 
 .cv-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 2.75rem;
+    margin-bottom: 1.5rem;
     font-weight: 700;
     color: var(--neuro-text-primary);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    background: linear-gradient(135deg, var(--neuro-accent), var(--neuro-accent-light), var(--neuro-accent-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    letter-spacing: -0.025em;
 }
 
 .cv-header p {
@@ -97,10 +96,11 @@ body {
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.7;
+    font-weight: 400;
 }
 
 .cv-section {
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
     animation: fadeInUp 0.6s ease-out forwards;
     opacity: 0;
     transform: translateY(20px);
@@ -123,10 +123,10 @@ body {
 
 .cv-section h2 {
     font-size: 1.75rem;
-    color: var(--neuro-text-primary);
     margin-bottom: 2rem;
-    text-align: center;
+    color: var(--neuro-text-primary);
     font-weight: 600;
+    text-align: center;
     position: relative;
     padding-bottom: 1rem;
 }
@@ -137,13 +137,10 @@ body {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 80px;
+    width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, var(--neuro-accent), var(--neuro-accent-light));
+    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
     border-radius: 2px;
-    box-shadow: 
-        2px 2px 4px rgba(0, 0, 0, 0.1),
-        -1px -1px 2px rgba(255, 255, 255, 0.7);
 }
 
 .cv-section p,
@@ -154,13 +151,11 @@ body {
 }
 
 .cv-item {
-    background: var(--neuro-bg);
+    background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
     margin-bottom: 2rem;
-    box-shadow: 
-        8px 8px 16px var(--neuro-shadow-dark),
-        -8px -8px 16px var(--neuro-shadow-light);
+    box-shadow: var(--neuro-shadow-raised);
     transition: var(--neuro-transition);
     position: relative;
     overflow: hidden;
@@ -171,19 +166,11 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(180deg, var(--neuro-accent), var(--neuro-accent-light));
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    border-radius: var(--neuro-border-radius) var(--neuro-border-radius) 0 0;
 }
-/*
-.cv-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 
-        10px 10px 20px var(--neuro-shadow-dark),
-        -10px -10px 20px var(--neuro-shadow-light);
-}
-*/
-
 
 .cv-item:last-child {
     margin-bottom: 0;
@@ -191,55 +178,61 @@ body {
 
 .cv-item h3 {
     color: var(--neuro-text-primary);
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    position: relative;
-    padding-left: 1rem;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
 }
 
 .cv-item h4 {
-    color: var(--neuro-accent);
+    color: var(--neuro-text-secondary);
     font-size: 1.1rem;
     font-weight: 500;
-    margin-bottom: 0.5rem;
-    padding-left: 1rem;
+    margin-bottom: 0.75rem;
+    font-style: italic;
 }
 
 .cv-item .date-range {
-    background: var(--neuro-bg);
+    background: var(--neuro-surface);
     color: var(--neuro-text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 600;
     padding: 0.5rem 1rem;
-    border-radius: 12px;
+    border-radius: var(--neuro-border-radius-sm);
     display: inline-block;
-    margin-bottom: 1rem;
-    margin-left: 1rem;
-    box-shadow: 
-        inset 2px 2px 4px var(--neuro-shadow-dark),
-        inset -2px -2px 4px var(--neuro-shadow-light);
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: var(--neuro-shadow-pressed);
 }
 
-.cv-item p,
-.cv-item ul {
-    padding-left: 1rem;
+.cv-item p {
+    color: var(--neuro-text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
 }
 
 .cv-item ul {
     list-style: none;
-    padding-left: 2rem;
+    padding: 0;
+    margin: 0;
 }
 
 .cv-item ul li {
     position: relative;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--neuro-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding-left: 1.5rem;
 }
 
 .cv-item ul li::before {
     content: '▶';
     position: absolute;
-    left: -1.5rem;
+    left: 0;
     color: var(--neuro-accent);
     font-size: 0.8rem;
     top: 0.1rem;
@@ -253,12 +246,10 @@ body {
 }
 
 .skill-category {
-    background: var(--neuro-bg);
+    background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: 
-        8px 8px 16px var(--neuro-shadow-dark),
-        -8px -8px 16px var(--neuro-shadow-light);
+    box-shadow: var(--neuro-shadow-raised);
     transition: var(--neuro-transition);
     position: relative;
     overflow: hidden;
@@ -270,19 +261,10 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--neuro-accent), var(--neuro-accent-light));
+    height: 4px;
+    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
     border-radius: var(--neuro-border-radius) var(--neuro-border-radius) 0 0;
 }
-/*
-.skill-category:hover {
-    transform: translateY(-3px);
-    box-shadow: 
-        10px 10px 20px var(--neuro-shadow-dark),
-        -10px -10px 20px var(--neuro-shadow-light);
-}
-*/
-
 
 .skill-category h3 {
     font-size: 1.3rem;
@@ -291,6 +273,7 @@ body {
     font-weight: 600;
     text-align: center;
     position: relative;
+    letter-spacing: -0.01em;
 }
 
 .skill-category h3::after {
@@ -301,7 +284,7 @@ body {
     transform: translateX(-50%);
     width: 40px;
     height: 2px;
-    background: linear-gradient(90deg, var(--neuro-accent), var(--neuro-accent-light));
+    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
     border-radius: 1px;
 }
 
@@ -317,24 +300,13 @@ body {
     margin-bottom: 0;
     color: var(--neuro-text-secondary);
     font-size: 0.95rem;
-    background: var(--neuro-bg);
-    border-radius: 12px;
-    box-shadow: 
-        inset 3px 3px 6px var(--neuro-shadow-dark),
-        inset -3px -3px 6px var(--neuro-shadow-light);
+    font-weight: 500;
+    background: var(--neuro-surface);
+    border-radius: var(--neuro-border-radius-sm);
+    box-shadow: var(--neuro-shadow-subtle);
     transition: var(--neuro-transition);
     position: relative;
 }
-/*
-.skill-category li:hover {
-    color: var(--neuro-text-primary);
-    box-shadow: 
-        2px 2px 4px var(--neuro-shadow-dark),
-        -2px -2px 4px var(--neuro-shadow-light);
-    transform: translateY(-1px);
-}
-*/
-
 
 .skill-category li::before {
     content: '●';
@@ -343,23 +315,27 @@ body {
     font-size: 0.8rem;
 }
 
-/* Education and Experience specific styling */
+/* Timeline styling for Experience and Education */
 .cv-section.experience .cv-item,
 .cv-section.education .cv-item {
     position: relative;
     margin-left: 2rem;
 }
 
-.cv-section.experience .cv-item::before,
-.cv-section.education .cv-item::before {
+.cv-section.experience .cv-item::after,
+.cv-section.education .cv-item::after {
+    content: '';
+    position: absolute;
     left: -2rem;
+    top: 0;
     width: 4px;
-    background: linear-gradient(180deg, var(--neuro-accent), var(--neuro-accent-light));
+    height: 100%;
+    background: linear-gradient(180deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
     border-radius: 2px;
 }
 
-.cv-section.experience .cv-item::after,
-.cv-section.education .cv-item::after {
+.cv-section.experience .cv-item::before,
+.cv-section.education .cv-item::before {
     content: '';
     position: absolute;
     left: -2.5rem;
@@ -368,21 +344,29 @@ body {
     height: 12px;
     background: var(--neuro-accent);
     border-radius: 50%;
-    box-shadow: 
-        2px 2px 4px rgba(0, 0, 0, 0.2),
-        -1px -1px 2px rgba(255, 255, 255, 0.7);
+    box-shadow: var(--neuro-shadow-subtle);
 }
 
-/* Contact info in CV */
+/* Contact info */
 .cv-contact-info {
-    background: var(--neuro-bg);
+    background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: 
-        8px 8px 16px var(--neuro-shadow-dark),
-        -8px -8px 16px var(--neuro-shadow-light);
+    box-shadow: var(--neuro-shadow-raised);
     margin-bottom: 3rem;
     text-align: center;
+    position: relative;
+}
+
+.cv-contact-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    border-radius: var(--neuro-border-radius) var(--neuro-border-radius) 0 0;
 }
 
 .cv-contact-info ul {
@@ -395,46 +379,28 @@ body {
 }
 
 .cv-contact-info li {
-    background: var(--neuro-bg);
+    background: var(--neuro-surface);
     padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    box-shadow: 
-        inset 3px 3px 6px var(--neuro-shadow-dark),
-        inset -3px -3px 6px var(--neuro-shadow-light);
+    border-radius: var(--neuro-border-radius-sm);
+    box-shadow: var(--neuro-shadow-subtle);
     color: var(--neuro-text-secondary);
     font-size: 0.95rem;
+    font-weight: 500;
     transition: var(--neuro-transition);
 }
-/*
-.cv-contact-info li:hover {
-    color: var(--neuro-text-primary);
-    box-shadow: 
-        2px 2px 4px var(--neuro-shadow-dark),
-        -2px -2px 4px var(--neuro-shadow-light);
-}
-*/
-
 
 .cv-contact-info a {
     color: inherit;
     text-decoration: none;
     transition: var(--neuro-transition);
 }
-/*
-.cv-contact-info a:hover {
-    color: var(--neuro-accent);
-}
-*/
-
 
 /* Summary/Profile section */
 .cv-summary {
-    background: var(--neuro-bg);
-    padding: 2rem;
-    border-radius: var(--neuro-border-radius);
-    box-shadow: 
-        8px 8px 16px var(--neuro-shadow-dark),
-        -8px -8px 16px var(--neuro-shadow-light);
+    background: var(--neuro-surface);
+    padding: 3rem 2rem;
+    border-radius: var(--neuro-border-radius-lg);
+    box-shadow: var(--neuro-shadow-raised);
     margin-bottom: 3rem;
     position: relative;
     overflow: hidden;
@@ -446,8 +412,9 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--neuro-accent), var(--neuro-accent-secondary));
+    height: 4px;
+    background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    border-radius: var(--neuro-border-radius-lg) var(--neuro-border-radius-lg) 0 0;
 }
 
 .cv-summary p {
@@ -456,60 +423,62 @@ body {
     color: var(--neuro-text-secondary);
     text-align: center;
     margin: 0;
+    font-weight: 400;
 }
 
 /* Achievements section */
 .achievements-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 .achievement-item {
-    background: var(--neuro-bg);
-    padding: 1.5rem;
-    border-radius: 15px;
-    box-shadow: 
-        6px 6px 12px var(--neuro-shadow-dark),
-        -6px -6px 12px var(--neuro-shadow-light);
+    background: var(--neuro-surface);
+    padding: 2rem;
+    border-radius: var(--neuro-border-radius);
+    box-shadow: var(--neuro-shadow-raised);
     transition: var(--neuro-transition);
     position: relative;
+    overflow: hidden;
 }
-/*
-.achievement-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-        8px 8px 16px var(--neuro-shadow-dark),
-        -8px -8px 16px var(--neuro-shadow-light);
-}
-        */
-
 
 .achievement-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
+    border-radius: 2px 0 0 2px;
+}
+
+.achievement-item::after {
     content: '🏆';
     position: absolute;
-    top: -0.5rem;
+    top: 1rem;
     right: 1rem;
     font-size: 1.5rem;
-    background: var(--neuro-bg);
+    background: var(--neuro-surface);
     padding: 0.5rem;
     border-radius: 50%;
-    box-shadow: 
-        3px 3px 6px var(--neuro-shadow-dark),
-        -3px -3px 6px var(--neuro-shadow-light);
+    box-shadow: var(--neuro-shadow-subtle);
 }
 
 .achievement-item h4 {
     color: var(--neuro-text-primary);
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
 }
 
 .achievement-item p {
-    color: var(--neuro-text-secondary);
+    color: var(--neuro-text-muted);
     font-size: 0.95rem;
     margin: 0;
+    line-height: 1.6;
 }
 
 /* Print styles */
@@ -540,12 +509,12 @@ body {
     }
 
     .cv-header {
-        padding: 2rem 1rem;
-        margin: 1rem 0 2rem;
+        padding: 2rem 1.5rem;
+        margin: 1rem 0 3rem;
     }
 
     .cv-header h1 {
-        font-size: 2rem;
+        font-size: 2.25rem;
     }
 
     .cv-header p {
@@ -574,19 +543,23 @@ body {
         margin-left: 1rem;
     }
 
-    .cv-section.experience .cv-item::before,
-    .cv-section.education .cv-item::before {
+    .cv-section.experience .cv-item::after,
+    .cv-section.education .cv-item::after {
         left: -1rem;
     }
 
-    .cv-section.experience .cv-item::after,
-    .cv-section.education .cv-item::after {
+    .cv-section.experience .cv-item::before,
+    .cv-section.education .cv-item::before {
         left: -1.25rem;
     }
 
     .cv-contact-info ul {
         flex-direction: column;
         align-items: center;
+    }
+
+    .cv-summary {
+        padding: 2rem 1.5rem;
     }
 }
 
@@ -621,10 +594,34 @@ body {
         margin-left: 0;
     }
 
-    .cv-section.experience .cv-item::before,
-    .cv-section.education .cv-item::before,
     .cv-section.experience .cv-item::after,
-    .cv-section.education .cv-item::after {
+    .cv-section.education .cv-item::after,
+    .cv-section.experience .cv-item::before,
+    .cv-section.education .cv-item::before {
         display: none;
     }
+
+    .cv-summary {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* Focus styles for accessibility */
+.cv-contact-info a:focus {
+    outline: 2px solid var(--neuro-accent);
+    outline-offset: 2px;
+}
+
+/* Animation for loading states */
+@keyframes neuro-pulse {
+    0%, 100% {
+        box-shadow: var(--neuro-shadow-raised);
+    }
+    50% {
+        box-shadow: var(--neuro-shadow-floating);
+    }
+}
+
+.loading {
+    animation: neuro-pulse 2s ease-in-out infinite;
 }
