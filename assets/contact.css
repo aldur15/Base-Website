@@ -17,7 +17,7 @@
     --neuro-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark mode support */
+/* Dark mode support 
 @media (prefers-color-scheme: dark) {
     :root {
         --neuro-bg: #2d3748;
@@ -29,7 +29,7 @@
         --neuro-text-secondary: #a0aec0;
     }
 }
-
+*/
 body {
     background: var(--neuro-bg);
     color: var(--neuro-text-primary);
