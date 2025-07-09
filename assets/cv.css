@@ -65,7 +65,7 @@ body {
     padding: 3rem 2rem;
     background: var(--neuro-surface);
     border-radius: var(--neuro-border-radius-lg);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     position: relative;
     overflow: hidden;
 }
@@ -155,7 +155,7 @@ body {
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
     margin-bottom: 2rem;
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
     overflow: hidden;
@@ -204,7 +204,7 @@ body {
     margin-bottom: 1.25rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    box-shadow: var(--neuro-shadow-pressed);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .cv-item p {
@@ -249,7 +249,7 @@ body {
     background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
     overflow: hidden;
@@ -303,7 +303,7 @@ body {
     font-weight: 500;
     background: var(--neuro-surface);
     border-radius: var(--neuro-border-radius-sm);
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
 }
@@ -344,7 +344,7 @@ body {
     height: 12px;
     background: var(--neuro-accent);
     border-radius: 50%;
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 /* Contact info */
@@ -352,7 +352,7 @@ body {
     background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     margin-bottom: 3rem;
     text-align: center;
     position: relative;
@@ -382,7 +382,7 @@ body {
     background: var(--neuro-surface);
     padding: 0.75rem 1.5rem;
     border-radius: var(--neuro-border-radius-sm);
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     color: var(--neuro-text-secondary);
     font-size: 0.95rem;
     font-weight: 500;
@@ -400,7 +400,7 @@ body {
     background: var(--neuro-surface);
     padding: 3rem 2rem;
     border-radius: var(--neuro-border-radius-lg);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     margin-bottom: 3rem;
     position: relative;
     overflow: hidden;
@@ -437,7 +437,7 @@ body {
     background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
     overflow: hidden;
@@ -463,7 +463,7 @@ body {
     background: var(--neuro-surface);
     padding: 0.5rem;
     border-radius: 50%;
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .achievement-item h4 {
@@ -615,10 +615,10 @@ body {
 /* Animation for loading states */
 @keyframes neuro-pulse {
     0%, 100% {
-        box-shadow: var(--neuro-shadow-raised);
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     }
     50% {
-        box-shadow: var(--neuro-shadow-floating);
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     }
 }
 

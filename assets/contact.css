@@ -65,7 +65,7 @@ body {
     padding: 3rem 2rem;
     background: var(--neuro-surface);
     border-radius: var(--neuro-border-radius-lg);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     position: relative;
     overflow: hidden;
 }
@@ -132,7 +132,7 @@ body {
     border-radius: var(--neuro-border-radius);
     text-align: center;
     margin-bottom: 2rem;
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
 }
@@ -172,7 +172,7 @@ body {
     border-radius: var(--neuro-border-radius-sm);
     display: inline-block;
     letter-spacing: 0.05em;
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
 }
 
@@ -197,7 +197,7 @@ body {
     border-radius: var(--neuro-border-radius);
     text-align: center;
     margin-bottom: 2rem;
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
 }
@@ -242,7 +242,7 @@ body {
     background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
     overflow: hidden;
@@ -275,13 +275,13 @@ body {
     background: var(--neuro-surface);
     border-radius: var(--neuro-border-radius-sm);
     transition: var(--neuro-transition);
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     cursor: pointer;
     position: relative;
 }
 
 .contact-item:hover {
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transform: translateY(-2px);
 }
 
@@ -318,7 +318,7 @@ body {
     color: white;
     font-size: 1rem;
     flex-shrink: 0;
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .contact-details h3 {
@@ -353,7 +353,7 @@ body {
     background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
     overflow: hidden;
@@ -406,7 +406,7 @@ body {
     background: var(--neuro-surface);
     color: var(--neuro-text-primary);
     transition: var(--neuro-transition);
-    box-shadow: var(--neuro-shadow-pressed);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     box-sizing: border-box;
     font-weight: 400;
 }
@@ -438,18 +438,18 @@ body {
     width: 100%;
     transition: var(--neuro-transition);
     margin-top: 1rem;
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .form-submit:hover {
-    box-shadow: var(--neuro-shadow-floating);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transform: translateY(-2px);
 }
 
 .form-submit:active {
-    box-shadow: var(--neuro-shadow-pressed);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transform: translateY(0);
 }
 
@@ -460,7 +460,7 @@ body {
     border-radius: var(--neuro-border-radius-lg);
     text-align: center;
     margin-bottom: 2rem;
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     position: relative;
 }
 
@@ -497,7 +497,7 @@ body {
     text-decoration: none;
     display: block;
     transition: var(--neuro-transition);
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     position: relative;
     overflow: hidden;
 }
@@ -520,7 +520,7 @@ body {
 }
 
 .social-item:hover {
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transform: translateY(-3px);
 }
 
@@ -652,10 +652,10 @@ body {
 /* Animation for loading states */
 @keyframes neuro-pulse {
     0%, 100% {
-        box-shadow: var(--neuro-shadow-raised);
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     }
     50% {
-        box-shadow: var(--neuro-shadow-floating);
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     }
 }
 

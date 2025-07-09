@@ -64,7 +64,7 @@ body {
     padding: 3rem 2rem;
     background: var(--neuro-surface);
     border-radius: var(--neuro-border-radius-lg);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     position: relative;
     overflow: hidden;
 }
@@ -114,7 +114,7 @@ body {
     background: var(--neuro-surface);
     padding: 2rem;
     border-radius: var(--neuro-border-radius);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     display: flex;
     flex-direction: column;
@@ -184,7 +184,7 @@ body {
     font-size: 0.8rem;
     margin: 0.3rem 0.4rem 0.3rem 0;
     font-weight: 500;
-    box-shadow: var(--neuro-shadow-subtle);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
 }
 /*
@@ -214,19 +214,19 @@ body {
 .status-badge.completed {
     background: linear-gradient(135deg, #10b981, #059669);
     color: #ffffff;
-    box-shadow: 4px 4px 8px rgba(16, 185, 129, 0.3);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .status-badge.in-progress {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     color: #ffffff;
-    box-shadow: 4px 4px 8px rgba(245, 158, 11, 0.3);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .status-badge.planning {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: #ffffff;
-    box-shadow: 4px 4px 8px rgba(59, 130, 246, 0.3);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 /*
 .status-badge:hover {
@@ -247,7 +247,7 @@ body {
     padding: 2rem 1.5rem;
     background: var(--neuro-surface);
     border-radius: var(--neuro-border-radius);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transition: var(--neuro-transition);
     position: relative;
 }
@@ -291,7 +291,7 @@ body {
     padding: 3rem 2rem;
     background: var(--neuro-surface);
     border-radius: var(--neuro-border-radius-lg);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -353,22 +353,22 @@ body {
     background: linear-gradient(135deg, var(--neuro-accent) 0%, var(--neuro-accent-light) 100%);
     color: #ffffff;
     font-weight: 600;
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .btn-primary:hover {
-    box-shadow: var(--neuro-shadow-floating);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transform: translateY(-2px);
 }
 
 .btn-secondary {
     background: var(--neuro-surface);
     color: var(--neuro-text-secondary);
-    box-shadow: var(--neuro-shadow-raised);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .btn-secondary:hover {
-    box-shadow: var(--neuro-shadow-floating);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     transform: translateY(-2px);
 }
 
@@ -456,10 +456,10 @@ body {
 /* Animation for loading states */
 @keyframes neuro-pulse {
     0%, 100% {
-        box-shadow: var(--neuro-shadow-raised);
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     }
     50% {
-        box-shadow: var(--neuro-shadow-floating);
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
     }
 }
 

@@ -47,30 +47,22 @@ body {
 /* Neumorphic Mixins */
 .neu-outset {
     background: var(--bg-primary);
-    box-shadow: 
-        9px 9px 16px var(--shadow-dark),
-        -9px -9px 16px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .neu-inset {
     background: var(--bg-primary);
-    box-shadow: 
-        inset 6px 6px 10px var(--shadow-dark),
-        inset -6px -6px 10px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .neu-floating {
     background: var(--bg-primary);
-    box-shadow: 
-        12px 12px 20px var(--shadow-dark),
-        -12px -12px 20px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .neu-subtle {
     background: var(--bg-primary);
-    box-shadow: 
-        4px 4px 8px var(--shadow-dark),
-        -4px -4px 8px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .container {
@@ -94,9 +86,8 @@ body {
     padding: 3rem 2rem;
     background: var(--bg-primary);
     border-radius: var(--border-radius-large);
-    box-shadow: 
-        9px 9px 16px var(--shadow-dark),
-        -9px -9px 16px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     position: relative;
     overflow: hidden;
 }
@@ -163,9 +154,8 @@ body {
     border-radius: var(--border-radius);
     padding: 2rem;
     margin-bottom: 2rem;
-    box-shadow: 
-        9px 9px 16px var(--shadow-dark),
-        -9px -9px 16px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     transition: var(--transition);
     position: relative;
     overflow: hidden;
@@ -193,9 +183,7 @@ body {
     margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    box-shadow: 
-        inset 6px 6px 10px var(--shadow-dark),
-        inset -6px -6px 10px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 .publication-title {
@@ -239,10 +227,7 @@ body {
     font-size: 0.8rem;
     font-weight: 500;
     margin: 0.3rem 0.4rem 0.3rem 0;
-    box-shadow: 
-        4px 4px 8px var(--shadow-dark),
-        -4px -4px 8px var(--shadow-light);
-    transition: var(--transition);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
 }
 
 /* Publication Links */
@@ -263,23 +248,20 @@ body {
     font-weight: 500;
     background: var(--bg-primary);
     color: var(--text-secondary);
-    box-shadow: 
-        8px 8px 16px var(--shadow-dark),
-        -8px -8px 16px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     transition: var(--transition);
 }
 
 .pub-link:hover {
-    box-shadow: 
-        inset 4px 4px 8px var(--shadow-dark),
-        inset -4px -4px 8px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     transform: scale(0.98);
 }
 
 .pub-link:active {
-    box-shadow: 
-        inset 6px 6px 12px var(--shadow-dark),
-        inset -6px -6px 12px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     transform: translateY(0);
 }
 
@@ -302,17 +284,15 @@ body {
     padding: 2rem 1.5rem;
     background: var(--bg-primary);
     border-radius: var(--border-radius);
-    box-shadow: 
-        9px 9px 16px var(--shadow-dark),
-        -9px -9px 16px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     transition: var(--transition);
     position: relative;
 }
 
 .stat-card:hover {
-    box-shadow: 
-        12px 12px 20px var(--shadow-dark),
-        -12px -12px 20px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     transform: translateY(-4px);
 }
 
@@ -350,9 +330,8 @@ body {
     padding: 3rem 2rem;
     border-radius: var(--border-radius-large);
     margin: 3rem 0;
-    box-shadow: 
-        9px 9px 16px var(--shadow-dark),
-        -9px -9px 16px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     position: relative;
 }
 
@@ -378,9 +357,8 @@ body {
     background: var(--bg-primary);
     padding: 2rem;
     border-radius: var(--border-radius);
-    box-shadow: 
-        4px 4px 8px var(--shadow-dark),
-        -4px -4px 8px var(--shadow-light);
+    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     transition: var(--transition);
     position: relative;
 }
@@ -500,15 +478,12 @@ body {
 /* Animation for loading states */
 @keyframes neuro-pulse {
     0%, 100% {
-        box-shadow: 
-            9px 9px 16px var(--shadow-dark),
-            -9px -9px 16px var(--shadow-light);
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+
     }
     50% {
-        box-shadow: 
-            12px 12px 20px var(--shadow-dark),
-            -12px -12px 20px var(--shadow-light);
-    }
+        box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+}
 }
 
 .loading {
