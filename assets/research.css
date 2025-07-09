@@ -25,7 +25,7 @@
 /* Dark Mode Variables */
 [data-theme="dark"] {
     --primary-color: #4a90e2;
-    --primary-color-background: #e6e7ee;
+    --primary-color-background: #2d3748;
     --primary-hover: #4a90e2;
     --text-primary: #f7fafc;
     --text-secondary: #e2e8f0;
