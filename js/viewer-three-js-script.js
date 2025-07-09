@@ -91,7 +91,7 @@ import * as THREE from 'three';
                 document.getElementById('back-to-blackboard')?.addEventListener('click', () => {
     if (viewer) {
         viewer.focusOnBlackboardCamera();
-        viewer.hideBackButton(); // ✅ Optional: hide the button after returning
+        //viewer.hideBackButton(); // ✅ Optional: hide the button after returning
     }
 });
 
@@ -462,7 +462,7 @@ this.controls.target.copy(buildingCenter);
         if (name.startsWith('nav-')) {
             if (name.startsWith('nav-blackboard')) {
                 this.focusOnBlackboardCamera();
-                this.hideBackButton();
+                //this.hideBackButton();
             } else {
                 this.handleNavigation(name);
             }
