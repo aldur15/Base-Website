@@ -58,6 +58,29 @@ import * as THREE from 'three';
     }
 };
 
+this.paperData = {
+    'paper_1': {
+        title: 'Research Paper 1',
+        content: `
+            <h2>Abstract</h2>
+            <p>This is the abstract of the first research paper...</p>
+            <h2>Introduction</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+            <h2>Methodology</h2>
+            <p>Our research methodology involved...</p>
+        `
+    },
+    'paper_2': {
+        title: 'Research Paper 2',
+        content: `
+            <h2>Abstract</h2>
+            <p>This is the abstract of the second research paper...</p>
+            <h2>Introduction</h2>
+            <p>Different research topic with various findings...</p>
+        `
+    }
+    // Add more papers as needed
+};
                 
                 this.init();
             }
@@ -106,7 +129,64 @@ import * as THREE from 'three';
     }
 }
 
+createPaperOverlay(paperName) {
+    const paperInfo = this.paperData[paperName];
+    if (!paperInfo) return;
 
+    // Create overlay container
+    const overlay = document.createElement('div');
+    overlay.className = 'paper-overlay';
+    overlay.innerHTML = `
+        <div class="paper-modal">
+            <div class="paper-header">
+                <h1>${paperInfo.title}</h1>
+                <button class="close-paper" aria-label="Close paper">×</button>
+            </div>
+            <div class="paper-content">
+                ${paperInfo.content}
+            </div>
+        </div>
+    `;
+
+    // Add to document
+    document.body.appendChild(overlay);
+
+    // Add event listeners
+    const closeBtn = overlay.querySelector('.close-paper');
+    closeBtn.addEventListener('click', () => {
+        this.closePaperOverlay(overlay);
+    });
+
+    // Close on overlay click (not modal)
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            this.closePaperOverlay(overlay);
+        }
+    });
+
+    // Close on escape key
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            this.closePaperOverlay(overlay);
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+
+    // Animate in
+    requestAnimationFrame(() => {
+        overlay.classList.add('show');
+    });
+}
+
+closePaperOverlay(overlay) {
+    overlay.classList.remove('show');
+    setTimeout(() => {
+        if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+        }
+    }, 300);
+}
 
 
             setupScene() {
@@ -445,7 +525,7 @@ this.controls.target.copy(buildingCenter);
                 }
             }
 
-            handleClick(event) {
+           handleClick(event) {
     if (!this.model) return;
 
     const bounds = this.renderer.domElement.getBoundingClientRect();
@@ -462,10 +542,15 @@ this.controls.target.copy(buildingCenter);
         if (name.startsWith('nav-')) {
             if (name.startsWith('nav-blackboard')) {
                 this.focusOnBlackboardCamera();
-                //this.hideBackButton();
             } else {
                 this.handleNavigation(name);
             }
+        }
+
+        if (name.startsWith('paper_')) {
+            console.log('Paper clicked:', name); // Debug log
+            this.createPaperOverlay(name);
+            return;
         }
     }
 }
