@@ -297,14 +297,12 @@ body {
 
 .skill-category li {
     padding: 0.75rem 1rem;
-    margin-bottom: 0;
-    color: var(--neuro-text-secondary);
-    font-size: 0.95rem;
-    font-weight: 500;
-    background: var(--neuro-surface);
-    border-radius: var(--neuro-border-radius-sm);
-    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
-    transition: var(--neuro-transition);
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius-small);
+  background: var(--bg-primary);
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  font-weight: 500;
     position: relative;
 }
 

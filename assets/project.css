@@ -177,15 +177,13 @@ body {
 
 .tech-tag {
     display: inline-block;
-    background: var(--neuro-surface);
-    color: var(--neuro-text-secondary);
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--neuro-border-radius-sm);
-    font-size: 0.8rem;
-    margin: 0.3rem 0.4rem 0.3rem 0;
-    font-weight: 500;
-    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
-    transition: var(--neuro-transition);
+    padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius-small);
+  background: var(--bg-primary);
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  font-weight: 500;
 }
 /*
 .tech-tag:hover {
@@ -213,20 +211,35 @@ body {
 
 .status-badge.completed {
     background: linear-gradient(135deg, #10b981, #059669);
-    color: #ffffff;
-    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+    padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius-small);
+  
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  font-weight: 500;
 }
 
 .status-badge.in-progress {
     background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #ffffff;
-    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+    padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius-small);
+  
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  font-weight: 500;
 }
 
 .status-badge.planning {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: #ffffff;
-    box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+    padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius-small);
+  
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  font-weight: 500;
 }
 /*
 .status-badge:hover {
