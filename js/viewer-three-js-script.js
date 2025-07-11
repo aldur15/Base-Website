@@ -129,6 +129,90 @@ this.paperData = {
     }
 }
 
+
+setupAutoCollisionObjects() {
+    if (!this.model) return;
+    
+    console.log('Setting up auto-collision objects...');
+    
+    // Define naming patterns for collision objects
+    const collisionPatterns = [
+        'collision-',     // collision-letterA, collision-sign1, etc.
+        'click-',         // click-menu, click-board, etc.
+        'button-',        // button-letter, button-sign, etc.
+        'nav-',           // Your existing nav objects
+        'interact-',      // interact-welcome, interact-menu, etc.
+        'trigger-'        // trigger-door, trigger-light, etc.
+    ];
+    
+    this.model.traverse((child) => {
+        if (child.isMesh && child.name) {
+            const name = child.name.toLowerCase();
+            
+            // Check if this object should be a collision object
+            const isCollisionObject = collisionPatterns.some(pattern => 
+                name.startsWith(pattern.toLowerCase())
+            );
+            
+            if (isCollisionObject) {
+                console.log('Found collision object:', child.name);
+                
+                // Make it invisible but keep it clickable
+                this.makeInvisibleCollision(child);
+                
+                // Store reference for easy access
+                if (!this.collisionObjects) {
+                    this.collisionObjects = new Map();
+                }
+                this.collisionObjects.set(child.name, child);
+            }
+        }
+    });
+    
+    console.log(`Set up ${this.collisionObjects?.size || 0} collision objects`);
+}
+
+makeInvisibleCollision(object) {
+    // Store original material for debugging purposes
+    object.userData.originalMaterial = object.material;
+    
+    // Create invisible material
+    const invisibleMaterial = new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0,
+        alphaTest: 0.01, // Helps with raycasting
+        side: THREE.DoubleSide // Detect clicks from both sides
+    });
+    
+    // Apply invisible material
+    object.material = invisibleMaterial;
+    
+    // Mark as collision object
+    object.userData.isCollision = true;
+    object.userData.clickable = true;
+    
+    // Ensure it's still raycastable
+    object.raycast = THREE.Mesh.prototype.raycast;
+    
+    // Optional: Add wireframe for debugging (hidden by default)
+    if (object.userData.showWireframe) {
+        const wireframeGeometry = object.geometry.clone();
+        const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
+        wireframe.position.copy(object.position);
+        wireframe.rotation.copy(object.rotation);
+        wireframe.scale.copy(object.scale);
+        wireframe.visible = false; // Hidden by default
+        object.add(wireframe);
+        object.userData.debugWireframe = wireframe;
+    }
+}
+
 createPaperOverlay(paperName) {
     const paperInfo = this.paperData[paperName];
     if (!paperInfo) return;
@@ -348,6 +432,15 @@ focusOnBlackboardCamera() {
                     }, 100);
                 });
 
+                document.addEventListener('keydown', (event) => {
+        if (event.key === 'b' && event.ctrlKey) {
+            this.toggleCollisionVisibility();
+        }
+        if (event.key === 'p' && event.ctrlKey) {
+            this.togglePerformanceMonitoring();
+        }
+    });
+
                 // Visibility change handler
                 document.addEventListener('visibilitychange', () => {
                     if (document.hidden) {
@@ -405,40 +498,32 @@ focusOnBlackboardCamera() {
             }
 
             handleModelLoad(gltf) {
-                this.hideLoadingMessage();
-                this.isLoading = false;
-                
-                this.model = gltf.scene;
+    this.hideLoadingMessage();
+    this.isLoading = false;
+    
+    this.model = gltf.scene;
 
-                const box = new THREE.Box3().setFromObject(this.model);
-const center = box.getCenter(new THREE.Vector3());
-this.model.position.sub(center);
+    const box = new THREE.Box3().setFromObject(this.model);
+    const center = box.getCenter(new THREE.Vector3());
+    this.model.position.sub(center);
 
-// Reset orbit target to match new center
-// Keep rotating around model center (0, 0, 0) or building center
-const buildingCenter = new THREE.Vector3(0, 0, 0);
-this.controls.target.copy(buildingCenter);
+    const buildingCenter = new THREE.Vector3(0, 0, 0);
+    this.controls.target.copy(buildingCenter);
+    this.controls.update();
 
-this.controls.update();
-
-
-                this.optimizeModel(this.model);
-                this.scene.add(this.model);
-                
-                // Auto-fit camera
-                this.fitCameraToModel();
-                
-                // Focus on blackboard if available
-                this.focusOnBlackboard();
-                
-                // Update performance counters
-                this.updatePerformanceCounters();
-                
-                // Force initial render
-                this.needsRender = true;
-                
-                console.log('Model loaded successfully');
-            }
+    this.optimizeModel(this.model);
+    this.scene.add(this.model);
+    
+    // Setup auto-collision objects
+    this.setupAutoCollisionObjects();
+    
+    this.fitCameraToModel();
+    this.focusOnBlackboard();
+    this.updatePerformanceCounters();
+    this.needsRender = true;
+    
+    console.log('Model loaded successfully');
+}
 
             optimizeModel(model) {
                 let meshCount = 0;
@@ -533,28 +618,304 @@ this.controls.target.copy(buildingCenter);
     this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
 
     this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects(this.model.children, true);
+    
+    // Get all objects for raycasting (including collision objects)
+    const allObjects = [];
+    this.model.traverse((child) => {
+        if (child.isMesh) {
+            allObjects.push(child);
+        }
+    });
+    
+    const intersects = this.raycaster.intersectObjects(allObjects, false);
 
     if (intersects.length > 0) {
         const clickedObject = intersects[0].object;
         const name = clickedObject.name;
+        
+        console.log('Clicked object:', name, clickedObject.userData);
 
-        if (name.startsWith('nav-')) {
-            if (name.startsWith('nav-blackboard')) {
-                this.focusOnBlackboardCamera();
-            } else {
-                this.handleNavigation(name);
-            }
-        }
-
-        if (name.startsWith('paper_')) {
-            console.log('Paper clicked:', name); // Debug log
-            this.createPaperOverlay(name);
+        // Handle different types of clicks based on name patterns
+        if (this.handleClickByName(name, clickedObject)) {
             return;
         }
+        
+        // Fallback for unnamed objects
+        console.log('Unhandled click on:', name);
     }
 }
 
+handleClickByName(name, clickedObject) {
+    if (!name) return false;
+    
+    const lowerName = name.toLowerCase();
+    
+    // Handle collision objects
+    if (lowerName.startsWith('collision-')) {
+        return this.handleCollisionClick(name, clickedObject);
+    }
+    
+    // Handle click objects
+    if (lowerName.startsWith('click-')) {
+        return this.handleClickObjectClick(name, clickedObject);
+    }
+    
+    // Handle button objects
+    if (lowerName.startsWith('button-')) {
+        return this.handleButtonClick(name, clickedObject);
+    }
+    
+    // Handle interact objects
+    if (lowerName.startsWith('interact-')) {
+        return this.handleInteractClick(name, clickedObject);
+    }
+    
+    // Handle trigger objects
+    if (lowerName.startsWith('trigger-')) {
+        return this.handleTriggerClick(name, clickedObject);
+    }
+    
+    // Handle existing nav objects
+    if (lowerName.startsWith('nav-')) {
+        if (lowerName.startsWith('nav-blackboard')) {
+            this.focusOnBlackboardCamera();
+        } else {
+            this.handleNavigation(name);
+        }
+        return true;
+    }
+    
+    // Handle existing paper objects
+    if (lowerName.startsWith('paper_')) {
+        console.log('Paper clicked:', name);
+        this.createPaperOverlay(name);
+        return true;
+    }
+    
+    return false;
+}
+
+
+handleCollisionClick(name, clickedObject) {
+    console.log('Collision object clicked:', name);
+    
+    // Extract the actual object name (remove 'collision-' prefix)
+    const objectName = name.substring(10); // Remove 'collision-'
+    
+    // Handle based on object type
+    if (objectName.includes('letter')) {
+        this.handleLetterCollision(objectName, clickedObject);
+    } else if (objectName.includes('sign')) {
+        this.handleSignCollision(objectName, clickedObject);
+    } else if (objectName.includes('menu')) {
+        this.handleMenuCollision(objectName, clickedObject);
+    } else if (objectName.includes('door')) {
+        this.handleDoorCollision(objectName, clickedObject);
+    } else {
+        this.handleGenericCollision(objectName, clickedObject);
+    }
+    
+    return true;
+}
+
+handleClickObjectClick(name, clickedObject) {
+    console.log('Click object clicked:', name);
+    const objectName = name.substring(6); // Remove 'click-'
+    
+    // Add click animation
+    this.animateClick(clickedObject);
+    
+    // Handle specific click actions
+    if (objectName.includes('menu')) {
+        this.showMenuOverlay();
+    } else if (objectName.includes('info')) {
+        this.showInfoOverlay(objectName);
+    }
+    
+    return true;
+}
+
+handleButtonClick(name, clickedObject) {
+    console.log('Button clicked:', name);
+    const buttonName = name.substring(7); // Remove 'button-'
+    
+    // Add button press animation
+    this.animateButtonPress(clickedObject);
+    
+    // Handle button actions
+    this.executeButtonAction(buttonName);
+    
+    return true;
+}
+
+handleInteractClick(name, clickedObject) {
+    console.log('Interact object clicked:', name);
+    const interactName = name.substring(9); // Remove 'interact-'
+    
+    // Add interaction feedback
+    this.showInteractionFeedback(clickedObject);
+    
+    return true;
+}
+
+handleTriggerClick(name, clickedObject) {
+    console.log('Trigger activated:', name);
+    const triggerName = name.substring(8); // Remove 'trigger-'
+    
+    // Handle trigger actions
+    this.executeTriggerAction(triggerName, clickedObject);
+    
+    return true;
+}
+
+// Animation methods
+animateClick(object) {
+    gsap.to(object.scale, {
+        duration: 0.15,
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.out",
+        onUpdate: () => {
+            this.needsRender = true;
+        }
+    });
+}
+
+animateButtonPress(object) {
+    gsap.to(object.position, {
+        duration: 0.1,
+        y: object.position.y - 0.1,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.out",
+        onUpdate: () => {
+            this.needsRender = true;
+        }
+    });
+}
+
+showInteractionFeedback(object) {
+    // Create temporary glow effect
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        transparent: true,
+        opacity: 0.5
+    });
+    
+    const originalMaterial = object.material;
+    object.material = glowMaterial;
+    
+    setTimeout(() => {
+        object.material = originalMaterial;
+        this.needsRender = true;
+    }, 300);
+}
+
+// Specific collision handlers
+handleLetterCollision(letterName, clickedObject) {
+    console.log('Letter collision:', letterName);
+    this.showMessage(`You clicked on: ${letterName}`);
+    this.animateClick(clickedObject);
+}
+
+handleSignCollision(signName, clickedObject) {
+    console.log('Sign collision:', signName);
+    this.showMessage(`Sign: ${signName}`);
+    this.animateClick(clickedObject);
+}
+
+handleMenuCollision(menuName, clickedObject) {
+    console.log('Menu collision:', menuName);
+    this.showMenuOverlay();
+}
+
+handleDoorCollision(doorName, clickedObject) {
+    console.log('Door collision:', doorName);
+    this.handleDoorInteraction(doorName);
+}
+
+handleGenericCollision(objectName, clickedObject) {
+    console.log('Generic collision:', objectName);
+    this.showMessage(`Clicked: ${objectName}`);
+    this.animateClick(clickedObject);
+}
+
+// Action executors
+executeButtonAction(buttonName) {
+    switch (buttonName) {
+        case 'lights':
+            this.toggleLights();
+            break;
+        case 'music':
+            this.toggleMusic();
+            break;
+        case 'info':
+            this.showInfoOverlay();
+            break;
+        default:
+            this.showMessage(`Button activated: ${buttonName}`);
+    }
+}
+
+executeTriggerAction(triggerName, triggerObject) {
+    switch (triggerName) {
+        case 'door':
+            this.openDoor(triggerObject);
+            break;
+        case 'light':
+            this.toggleAreaLight(triggerObject);
+            break;
+        default:
+            this.showMessage(`Trigger activated: ${triggerName}`);
+    }
+}
+
+// Debug methods
+toggleCollisionVisibility() {
+    if (!this.collisionObjects) return;
+    
+    this.collisionObjects.forEach((object, name) => {
+        if (object.userData.isCollision) {
+            const isVisible = object.material.opacity > 0;
+            object.material.opacity = isVisible ? 0 : 0.3;
+            object.material.wireframe = !isVisible;
+            
+            // Toggle debug wireframe if it exists
+            if (object.userData.debugWireframe) {
+                object.userData.debugWireframe.visible = !isVisible;
+            }
+        }
+    });
+    
+    this.needsRender = true;
+}
+
+// Message helper
+showMessage(text) {
+    const message = document.createElement('div');
+    message.className = 'collision-message';
+    message.textContent = text;
+    message.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 1rem;
+        border-radius: 5px;
+        z-index: 1000;
+        animation: fadeInOut 2s ease-in-out;
+    `;
+    
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.remove();
+    }, 2000);
+}
 
 handleNavigation(name) {
     const target = this.cameraTargets[name];
