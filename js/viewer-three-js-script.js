@@ -81,6 +81,9 @@ this.paperData = {
     }
     // Add more papers as needed
 };
+
+this.fanObjects = new Map(); // Store fan objects and their settings
+    this.animatedObjects = new Map(); // Store all animated objects
                 
                 this.init();
             }
@@ -121,6 +124,79 @@ this.paperData = {
 
 
             }
+
+            setupFanAnimation() {
+    if (!this.model) return;
+    
+    // Find fan objects in the model
+    this.model.traverse((child) => {
+        if (child.name && child.name.toLowerCase().includes('fan')) {
+            console.log('Found fan object:', child.name);
+            this.addFanAnimation(child);
+        }
+    });
+}
+
+// Add a fan to the animation system
+addFanAnimation(fanObject, settings = {}) {
+    const defaultSettings = {
+        axis: 'x',           // Rotation axis
+        speed: 2,            // Rotation speed
+        direction: 1,        // 1 for clockwise, -1 for counterclockwise
+        enabled: true
+    };
+    
+    const fanSettings = { ...defaultSettings, ...settings };
+    
+    // Create a pivot group if the fan doesn't already have one
+    if (!fanObject.userData.pivotGroup) {
+        // Store the original parent
+        const originalParent = fanObject.parent;
+        
+        // Create pivot group at the fan's current position
+        const pivotGroup = new THREE.Group();
+        pivotGroup.name = fanObject.name + '_pivot';
+        
+        // Position the pivot group at the fan's world position
+        const worldPosition = new THREE.Vector3();
+        fanObject.getWorldPosition(worldPosition);
+        
+        // Convert world position to local position relative to the original parent
+        const localPosition = new THREE.Vector3();
+        originalParent.worldToLocal(worldPosition.clone());
+        pivotGroup.position.copy(fanObject.position);
+        
+        // Add pivot group to the original parent
+        originalParent.add(pivotGroup);
+        
+        // Remove fan from original parent and add to pivot group
+        originalParent.remove(fanObject);
+        
+        // Reset fan's position to be relative to pivot
+        // If you want the fan to rotate around its base, you might need to adjust this
+        fanObject.position.set(0, 0, 0);
+        
+        // Add fan to pivot group
+        pivotGroup.add(fanObject);
+        
+        // Store reference to pivot group
+        fanObject.userData.pivotGroup = pivotGroup;
+        
+        console.log(`Created pivot group for fan ${fanObject.name}`);
+    }
+    
+    // Store the fan and its settings
+    this.fanObjects.set(fanObject.name, {
+        object: fanObject,
+        pivotGroup: fanObject.userData.pivotGroup,
+        settings: fanSettings,
+        lastTime: performance.now()
+    });
+    
+    console.log(`Fan ${fanObject.name} added to animation system with pivot`);
+}
+
+
 
             showBackButton() {
     const btn = document.getElementById('back-to-blackboard');
@@ -376,11 +452,11 @@ focusOnBlackboardCamera() {
 
             setupLighting() {
     // Increase ambient light for better overall illumination
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.8); // Increased from 0.4
+    const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Increased from 0.8
     this.scene.add(ambientLight);
 
     // Main directional light - increase intensity
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); // Increased from 0.8
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5); // Increased from 1.2
     dirLight.position.set(10, 10, 5);
     dirLight.castShadow = true;
     
@@ -398,23 +474,33 @@ focusOnBlackboardCamera() {
     this.scene.add(dirLight);
 
     // Increase fill light intensity
-    const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.6); // Increased from 0.3
+    const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.8); // Increased from 0.6
     fillLight.position.set(-5, 3, -5);
     this.scene.add(fillLight);
 
     // Add additional fill light from opposite direction
-    const fillLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+    const fillLight2 = new THREE.DirectionalLight(0xffffff, 0.6); // Increased from 0.4
     fillLight2.position.set(5, 3, -5);
     this.scene.add(fillLight2);
 
     // Increase accent light
-    const accentLight = new THREE.PointLight(0xffd700, 0.8, 15); // Increased intensity and range
+    const accentLight = new THREE.PointLight(0xffd700, 1.0, 18); // Increased intensity and range
     accentLight.position.set(-2, 4, 2);
     this.scene.add(accentLight);
 
     // Add hemisphere light for more natural lighting
-    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.3);
+    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.4); // Increased from 0.3
     this.scene.add(hemiLight);
+
+    // Add rim light for better object definition
+    const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    rimLight.position.set(-10, 5, -10);
+    this.scene.add(rimLight);
+
+    // Add warm accent light from another angle
+    const warmLight = new THREE.PointLight(0xffa500, 0.6, 12);
+    warmLight.position.set(3, 2, -3);
+    this.scene.add(warmLight);
 }
 
             setupEventListeners() {
@@ -516,6 +602,9 @@ focusOnBlackboardCamera() {
     
     // Setup auto-collision objects
     this.setupAutoCollisionObjects();
+
+    this.setupFanAnimation();
+
     
     this.fitCameraToModel();
     this.focusOnBlackboard();
@@ -1032,6 +1121,9 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
                 
                 if (shouldRender) {
                     this.controls.update();
+
+                    this.updateFanAnimations();
+
                     this.renderer.render(this.scene, this.camera);
                     this.needsRender = false;
                     
@@ -1040,7 +1132,49 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
                         this.updatePerformanceStats();
                     }
                 }
+
+                
             }
+
+updateFanAnimations() {
+    if (this.fanObjects.size === 0) return;
+    
+    const currentTime = performance.now();
+    
+    this.fanObjects.forEach((fanData, fanName) => {
+        const { object, pivotGroup, settings, lastTime } = fanData;
+        
+        if (!settings.enabled) return;
+        
+        // Calculate time delta
+        const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
+        
+        // Calculate rotation amount
+        const rotationAmount = settings.speed * settings.direction * deltaTime;
+        
+        // Apply rotation to the pivot group instead of the fan object directly
+        const targetObject = pivotGroup || object;
+        
+        // Apply rotation based on axis
+        switch (settings.axis.toLowerCase()) {
+            case 'x':
+                targetObject.rotation.x += rotationAmount;
+                break;
+            case 'y':
+                targetObject.rotation.y += rotationAmount;
+                break;
+            case 'z':
+                targetObject.rotation.z += rotationAmount;
+                break;
+        }
+        
+        // Update the stored time
+        fanData.lastTime = currentTime;
+        
+        // Mark that we need to render
+        this.needsRender = true;
+    });
+}
 
             updatePerformanceStats() {
                 this.performance.frameCount++;
@@ -1165,6 +1299,69 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
                     this.renderer.dispose();
                 }
             }
+
+
+// Control functions for fans
+toggleFan(fanName) {
+    const fanData = this.fanObjects.get(fanName);
+    if (fanData) {
+        fanData.settings.enabled = !fanData.settings.enabled;
+        console.log(`Fan ${fanName} ${fanData.settings.enabled ? 'started' : 'stopped'}`);
+    }
+}
+
+setFanSpeed(fanName, speed) {
+    const fanData = this.fanObjects.get(fanName);
+    if (fanData) {
+        fanData.settings.speed = speed;
+        console.log(`Fan ${fanName} speed set to ${speed}`);
+    }
+}
+
+setFanDirection(fanName, direction) {
+    const fanData = this.fanObjects.get(fanName);
+    if (fanData) {
+        fanData.settings.direction = direction;
+        console.log(`Fan ${fanName} direction set to ${direction > 0 ? 'clockwise' : 'counterclockwise'}`);
+    }
+}
+
+// Stop all fans
+stopAllFans() {
+    this.fanObjects.forEach((fanData, fanName) => {
+        fanData.settings.enabled = false;
+    });
+}
+
+// Start all fans
+startAllFans() {
+    this.fanObjects.forEach((fanData, fanName) => {
+        fanData.settings.enabled = true;
+    });
+}
+
+// Add specific fan by name (if you know the exact name)
+addFanByName(fanName, settings = {}) {
+    const fanObject = this.model?.getObjectByName(fanName);
+    if (fanObject) {
+        this.addFanAnimation(fanObject, settings);
+    } else {
+        console.warn(`Fan object '${fanName}' not found in model`);
+    }
+}
+
+addFanAnimationWithGeometryPivot(fanObject, settings = {}) {
+    // Calculate the fan's bounding box to determine a good pivot point
+    const box = new THREE.Box3().setFromObject(fanObject);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    
+    // For a typical fan, the pivot should be at the center of the base
+    // Adjust this based on your fan's geometry
+    const pivotOffset = new THREE.Vector3(0, -size.y * 0.4, 0); // Pivot at lower part of fan
+    
+    this.addFanAnimationWithCustomPivot(fanObject, pivotOffset, settings);
+}
         }
 
         // Initialize viewer
@@ -1190,3 +1387,10 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
                 viewer.dispose();
             }
         });
+
+
+
+        
+
+
+        

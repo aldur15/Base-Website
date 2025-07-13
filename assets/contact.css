@@ -65,7 +65,7 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    background: linear-gradient(135deg);
     border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 

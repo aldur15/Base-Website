@@ -1,23 +1,46 @@
-// Mobile Navigation Toggle
+
+class PortfolioManager {
+    constructor() {
+        this.lastScrollTop = 0;
+        this.navbar = document.querySelector('.navbar');
+        this.init();
+    }
+
+    init() {
+        this.initMobileNavigation();
+        this.initSmoothScrolling();
+        this.initScrollEffects();
+        this.initAnimations();
+        this.initInteractiveElements();
+    }
+
+    initMobileNavigation() {
         const navToggle = document.getElementById('nav-toggle');
         const navMenu = document.getElementById('nav-menu');
         
+        if (!navToggle || !navMenu) return;
+
+        // Toggle mobile menu
         navToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
         });
-        
-        // Close mobile menu when clicking on a link
+
+        // Close mobile menu when clicking on navigation links
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
             });
         });
-        
-        // Smooth scrolling for anchor links
+    }
+
+    initSmoothScrolling() {
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', (e) => {
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
+                
+                const targetId = anchor.getAttribute('href');
+                const target = document.querySelector(targetId);
+                
                 if (target) {
                     target.scrollIntoView({
                         behavior: 'smooth',
@@ -26,31 +49,33 @@
                 }
             });
         });
-        
-        // Add scroll effect to navbar
-        let lastScrollTop = 0;
-        const navbar = document.querySelector('.navbar');
-        
+    }
+
+    initScrollEffects() {
+        if (!this.navbar) return;
+
         window.addEventListener('scroll', () => {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // Scrolling down
-                navbar.style.transform = 'translateY(-100%)';
+            // Hide/show navbar based on scroll direction
+            if (scrollTop > this.lastScrollTop && scrollTop > 100) {
+                // Scrolling down - hide navbar
+                this.navbar.style.transform = 'translateY(-100%)';
             } else {
-                // Scrolling up
-                navbar.style.transform = 'translateY(0)';
+                // Scrolling up - show navbar
+                this.navbar.style.transform = 'translateY(0)';
             }
             
-            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+            this.lastScrollTop = Math.max(0, scrollTop);
         });
-        
-        // Add intersection observer for animations
+    }
+
+    initAnimations() {
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
         };
-        
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -59,37 +84,73 @@
                 }
             });
         }, observerOptions);
+
+        // Setup elements for animation
+        const animatedElements = document.querySelectorAll('.skill-category, .link-card, .about-content');
         
-        // Observe elements for animation
-        document.querySelectorAll('.skill-category, .link-card, .about-content').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
-        });
-        
-        // Add hover effects for interactive elements
-        //document.querySelectorAll('.btn, .skill-category, .link-card').forEach(el => {
-        //    el.addEventListener('mouseenter', function() {
-        //        this.style.transform = 'translateY(-3px) scale(1.02)';
-        //    });
-        //    
-        //    el.addEventListener('mouseleave', function() {
-        //        this.style.transform = 'translateY(0) scale(1)';
-        //    });
-        //});
-        
-        // Add click feedback for buttons
-        document.querySelectorAll('.btn, .theme-toggle, .nav-toggle').forEach(el => {
-            el.addEventListener('mousedown', function() {
-                this.style.transform = 'scale(0.95)';
+        animatedElements.forEach(element => {
+            // Set initial animation state
+            Object.assign(element.style, {
+                opacity: '0',
+                transform: 'translateY(20px)',
+                transition: 'opacity 0.6s ease, transform 0.6s ease'
             });
             
-            el.addEventListener('mouseup', function() {
-                this.style.transform = 'scale(1)';
+            observer.observe(element);
+        });
+    }
+
+    initInteractiveElements() {
+        // Add click feedback for buttons and interactive elements
+        const interactiveElements = document.querySelectorAll('.btn, .theme-toggle, .nav-toggle');
+        
+        interactiveElements.forEach(element => {
+            // Mouse down effect
+            element.addEventListener('mousedown', () => {
+                element.style.transform = 'scale(0.95)';
             });
-            
-            el.addEventListener('mouseleave', function() {
-                this.style.transform = 'scale(1)';
+
+            // Mouse up effect
+            element.addEventListener('mouseup', () => {
+                element.style.transform = 'scale(1)';
+            });
+
+            // Reset on mouse leave
+            element.addEventListener('mouseleave', () => {
+                element.style.transform = 'scale(1)';
             });
         });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    new PortfolioManager();
+});
+
+
+// Debounce function for performance optimization
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Throttle function for scroll events
+function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
