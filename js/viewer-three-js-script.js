@@ -382,9 +382,9 @@ closePaperOverlay(overlay) {
                 this.renderer.setPixelRatio(this.config.maxPixelRatio);
                 
                 // Better renderer settings
-                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.enabled = false;
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Better shadow quality
-                this.renderer.shadowMap.autoUpdate = true; // Keep shadows updating
+                this.renderer.shadowMap.autoUpdate = false; // Keep shadows updating
                 this.renderer.outputColorSpace = THREE.SRGBColorSpace;
                 this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 this.renderer.toneMappingExposure = 1.0;
@@ -451,57 +451,52 @@ focusOnBlackboardCamera() {
             }
 
             setupLighting() {
-    // Increase ambient light for better overall illumination
-    const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Increased from 0.8
+    // 1. Single ambient light (reduced intensity)
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
     this.scene.add(ambientLight);
 
-    // Main directional light - increase intensity
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5); // Increased from 1.2
+    // 2. Main directional light with optimized shadows
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
     dirLight.position.set(10, 10, 5);
     dirLight.castShadow = true;
     
-    // Shadow settings remain the same
-    dirLight.shadow.mapSize.width = this.config.shadowMapSize;
-    dirLight.shadow.mapSize.height = this.config.shadowMapSize;
+    // Optimized shadow settings
+    dirLight.shadow.mapSize.width = 512;   // Reduced from 1024
+    dirLight.shadow.mapSize.height = 512;  // Reduced from 1024
     dirLight.shadow.camera.near = 0.1;
-    dirLight.shadow.camera.far = 50;
-    dirLight.shadow.camera.left = -20;
-    dirLight.shadow.camera.right = 20;
-    dirLight.shadow.camera.top = 20;
-    dirLight.shadow.camera.bottom = -20;
+    dirLight.shadow.camera.far = 25;       // Reduced shadow distance
+    dirLight.shadow.camera.left = -10;     // Smaller shadow area
+    dirLight.shadow.camera.right = 10;
+    dirLight.shadow.camera.top = 10;
+    dirLight.shadow.camera.bottom = -10;
     dirLight.shadow.bias = -0.0001;
+    
+    // Critical: Don't update shadows every frame
+    dirLight.shadow.autoUpdate = false;
     
     this.scene.add(dirLight);
 
-    // Increase fill light intensity
-    const fillLight = new THREE.DirectionalLight(0x87CEEB, 0.8); // Increased from 0.6
-    fillLight.position.set(-5, 3, -5);
-    this.scene.add(fillLight);
-
-    // Add additional fill light from opposite direction
-    const fillLight2 = new THREE.DirectionalLight(0xffffff, 0.6); // Increased from 0.4
-    fillLight2.position.set(5, 3, -5);
-    this.scene.add(fillLight2);
-
-    // Increase accent light
-    const accentLight = new THREE.PointLight(0xffd700, 1.0, 18); // Increased intensity and range
-    accentLight.position.set(-2, 4, 2);
-    this.scene.add(accentLight);
-
-    // Add hemisphere light for more natural lighting
-    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.4); // Increased from 0.3
+    // 3. Single hemisphere light for ambient fill
+    const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x362d1a, 0.8);
     this.scene.add(hemiLight);
 
-    // Add rim light for better object definition
-    const rimLight = new THREE.DirectionalLight(0xffffff, 0.3);
-    rimLight.position.set(-10, 5, -10);
-    this.scene.add(rimLight);
-
-    // Add warm accent light from another angle
-    const warmLight = new THREE.PointLight(0xffa500, 0.6, 12);
-    warmLight.position.set(3, 2, -3);
-    this.scene.add(warmLight);
+    // Store reference for manual shadow updates
+    this.mainLight = dirLight;
+    
+    // Update shadows only when camera stops moving
+    this.controls.addEventListener('end', () => {
+        this.mainLight.shadow.autoUpdate = true;
+        this.renderer.shadowMap.autoUpdate = false;
+        this.needsRender = true;
+        
+        // Turn off auto-update after one frame
+        setTimeout(() => {
+            this.mainLight.shadow.autoUpdate = false;
+            this.renderer.shadowMap.autoUpdate = false;
+        }, 16);
+    });
 }
+
 
             setupEventListeners() {
                 // Click interaction
@@ -1113,6 +1108,7 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
             }
 
             animate() {
+                
                 this.animationId = requestAnimationFrame(() => this.animate());
                 
                 const currentTime = Date.now();
@@ -1131,6 +1127,12 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
                     if (this.config.enablePerformanceMonitoring) {
                         this.updatePerformanceStats();
                     }
+
+                    if (currentTime - this.lastInteraction < 100) {
+    this.renderer.setPixelRatio(1); // Lower quality during movement
+} else {
+    this.renderer.setPixelRatio(this.config.maxPixelRatio); // Full quality when static
+}
                 }
 
                 
