@@ -1128,11 +1128,7 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
                         this.updatePerformanceStats();
                     }
 
-                    if (currentTime - this.lastInteraction < 100) {
-    this.renderer.setPixelRatio(1); // Lower quality during movement
-} else {
-    this.renderer.setPixelRatio(this.config.maxPixelRatio); // Full quality when static
-}
+                    
                 }
 
                 
