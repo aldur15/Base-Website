@@ -37,23 +37,27 @@ import * as THREE from 'three';
 
                 this.cameraTargets = {
     'nav-about': {
-        position: new THREE.Vector3(5, 3, 10),
+        //PROJECTS
+        position: new THREE.Vector3(-1, -4, 20),
         lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
     },
     'nav-projects': {
-        position: new THREE.Vector3(12, 16, 15), //position: new THREE.Vector3(12, 12, 15),
+        //CREDITS
+        position: new THREE.Vector3(5, 32, 10), //position: new THREE.Vector3(12, 12, 15),
         lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
     },
     'nav-research': {
-        position: new THREE.Vector3(20, -2, -19.01),
+        //RESEARCH
+        position: new THREE.Vector3(20, -5, -19.01),
         lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model - NOT the target position
     },
     'nav-contact': {
-        position: new THREE.Vector3(-16.5, 0.18, 9.01),
+        //ABOUT
+        position: new THREE.Vector3(-16.5, -2.18, 9.01),
         lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
     },
     blackboard: {
-        position: new THREE.Vector3(14.85, -1.14, 6.68),
+        position: new THREE.Vector3(14.85, -4.14, 6.68),
         lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
     }
 };
@@ -364,7 +368,7 @@ closePaperOverlay(overlay) {
                     0.1,
                     1000
                 );
-                this.camera.position.set(8, 5, 8);
+                this.camera.position.set(8, 0, 8);
                 // Keep automatic matrix updates for smooth camera movements
                 this.camera.matrixAutoUpdate = true;
             }
@@ -403,7 +407,7 @@ closePaperOverlay(overlay) {
     const center = box.getCenter(new THREE.Vector3());
 
     // Position camera near blackboard but still rotate around center
-    this.camera.position.set(center.x + 5, center.y, center.z + 4);
+    this.camera.position.set(center.x + 5, center.y -1, center.z + 4);
     console.log('Camera position:', this.camera.position);
 
 
@@ -460,16 +464,7 @@ focusOnBlackboardCamera() {
     dirLight.position.set(10, 10, 5);
     dirLight.castShadow = true;
     
-    // Optimized shadow settings
-    dirLight.shadow.mapSize.width = 512;   // Reduced from 1024
-    dirLight.shadow.mapSize.height = 512;  // Reduced from 1024
-    dirLight.shadow.camera.near = 0.1;
-    dirLight.shadow.camera.far = 25;       // Reduced shadow distance
-    dirLight.shadow.camera.left = -10;     // Smaller shadow area
-    dirLight.shadow.camera.right = 10;
-    dirLight.shadow.camera.top = 10;
-    dirLight.shadow.camera.bottom = -10;
-    dirLight.shadow.bias = -0.0001;
+    
     
     // Critical: Don't update shadows every frame
     dirLight.shadow.autoUpdate = false;
