@@ -679,13 +679,36 @@ handleModelLoad(gltf) {
                     }
 
 
-                    // Optimize geometry
             
                 });
                 
                 this.performance.triangles = this.countTriangles(model);
                 console.log(`Model optimized: ${meshCount} meshes, ${this.performance.triangles} triangles`);
+            
+            
             }
+
+            mergeGeometries(meshes) {
+    const materialGroups = new Map();
+    
+    // Group meshes by material
+    meshes.forEach(mesh => {
+        if (mesh.userData.static !== false && mesh.geometry && mesh.material) {
+            const materialKey = this.getMaterialKey(mesh.material);
+            if (!materialGroups.has(materialKey)) {
+                materialGroups.set(materialKey, []);
+            }
+            materialGroups.get(materialKey).push(mesh);
+        }
+    });
+    
+    // Merge geometries with same material
+    materialGroups.forEach((groupMeshes, materialKey) => {
+        if (groupMeshes.length > 1) {
+            this.mergeGeometryGroup(groupMeshes);
+        }
+    });
+}
 
             countTriangles(object) {
                 let count = 0;
@@ -1142,14 +1165,20 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
 }
 
             handleResize() {
-                const container = document.getElementById('threejs-container');
-                if (!container) return;
-                
-                this.camera.aspect = container.clientWidth / container.clientHeight;
-                this.camera.updateProjectionMatrix();
-                this.renderer.setSize(container.clientWidth, container.clientHeight);
-                this.needsRender = true;
-            }
+    const container = document.getElementById('threejs-container');
+    if (!container) return;
+    
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    
+    // Only resize if dimensions actually changed
+    if (this.renderer.domElement.width !== width || this.renderer.domElement.height !== height) {
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height);
+        this.needsRender = true;
+    }
+}
 
             animate() {
     this.animationId = requestAnimationFrame(() => this.animate());
