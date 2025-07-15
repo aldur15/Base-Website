@@ -629,32 +629,58 @@ handleModelLoad(gltf) {
 
             optimizeModel(model) {
                 let meshCount = 0;
+                const geometriesToMerge = [];
                 
                 model.traverse((child) => {
                     // Keep automatic matrix updates for animations
-                    child.matrixAutoUpdate = true;
+                    //child.matrixAutoUpdate = true;
                     
                     if (child.isMesh) {
                         meshCount++;
                         
-                        // Enable shadows for most objects
-                        child.castShadow = false;
-                        child.receiveShadow = false;
+                        // Disable shadows for better performance
+            child.castShadow = false;
+            child.receiveShadow = false;
+            
                         
-                        // Only basic material optimization
-                        if (child.material) {
-                            if (child.material.map) {
-                                child.material.map.generateMipmaps = false;
-                            }
-                        }
+                        // Reduce material complexity
+                if (child.material.map) {
+                    child.material.map.generateMipmaps = false;
+                    child.material.map.minFilter = THREE.LinearFilter;
+                    child.material.map.magFilter = THREE.LinearFilter;
+                }
                         
-                        // Compute bounding sphere for frustum culling
-                        if (child.geometry && !child.geometry.boundingSphere) {
-                            child.geometry.computeBoundingSphere();
-                        }
-                        
-                        child.frustumCulled = true;
+                         // Disable unnecessary material features
+                child.material.transparent = child.material.transparent || false;
+                child.material.alphaTest = child.material.alphaTest || 0;
+                
+                // Force material compilation
+                child.material.needsUpdate = true;
+
+
+
+
+                if (child.geometry) {
+                // Compute bounding sphere for frustum culling
+                if (!child.geometry.boundingSphere) {
+                    child.geometry.computeBoundingSphere();
+                }
+                
+                // Merge geometries where possible (for static objects)
+                if (child.userData.mergeable !== false) {
+                    geometriesToMerge.push(child);
+                }
+            }
+            // Enhanced frustum culling
+            child.frustumCulled = true;
+
+
+            
                     }
+
+
+                    // Optimize geometry
+            
                 });
                 
                 this.performance.triangles = this.countTriangles(model);
