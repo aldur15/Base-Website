@@ -1098,31 +1098,31 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
             }
 
             animate() {
-                
-                this.animationId = requestAnimationFrame(() => this.animate());
-                
-                const currentTime = Date.now();
-                const shouldRender = this.needsRender || 
-                                   (currentTime - this.lastInteraction < this.config.interactionTimeout);
-                
-                if (shouldRender) {
-                    this.controls.update();
-
-                    this.updateFanAnimations();
-
-                    this.renderer.render(this.scene, this.camera);
-                    this.needsRender = false;
-                    
-                    // Update performance counters
-                    if (this.config.enablePerformanceMonitoring) {
-                        this.updatePerformanceStats();
-                    }
-
-                    
-                }
-
-                
-            }
+    this.animationId = requestAnimationFrame(() => this.animate());
+    
+    const currentTime = performance.now();
+    const deltaTime = currentTime - (this.lastFrameTime || currentTime);
+    this.lastFrameTime = currentTime;
+    
+    // Only render if something changed or during interaction
+    const isInteracting = (currentTime - this.lastInteraction) < 100; // 100ms window
+    const needsUpdate = this.needsRender || isInteracting || this.controls.autoRotate;
+    
+    if (needsUpdate) {
+        // Update controls first
+        this.controls.update();
+        
+        // Update animations with delta time
+        this.updateFanAnimations(deltaTime);
+        
+        // Only render if camera moved or scene changed
+        if (this.needsRender || this.controls.hasChanged) {
+            this.renderer.render(this.scene, this.camera);
+            this.needsRender = false;
+            this.controls.hasChanged = false;
+        }
+    }
+}
 
 updateFanAnimations() {
     if (this.fanObjects.size === 0) return;
