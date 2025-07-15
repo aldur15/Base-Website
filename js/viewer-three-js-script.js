@@ -374,30 +374,35 @@ closePaperOverlay(overlay) {
             }
 
             setupRenderer(container) {
-                this.renderer = new THREE.WebGLRenderer({
-                    antialias: true, // Enable antialiasing for better quality
-                    powerPreference: "high-performance",
-                    stencil: false,
-                    depth: true,
-                    alpha: false
-                });
-                
-                this.renderer.setSize(container.clientWidth, container.clientHeight);
-                this.renderer.setPixelRatio(this.config.maxPixelRatio);
-                
-                // Better renderer settings
-                this.renderer.shadowMap.enabled = false;
-                //this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Better shadow quality
-                this.renderer.shadowMap.autoUpdate = false; // Keep shadows updating
-                this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                this.renderer.toneMappingExposure = 1.0;
-                
-                // Add to container
-                const placeholder = container.querySelector('.placeholder-3d');
-                if (placeholder) placeholder.style.display = 'none';
-                container.appendChild(this.renderer.domElement);
-            }
+    this.renderer = new THREE.WebGLRenderer({
+        antialias: window.devicePixelRatio <= 1, // Only on low-DPI displays
+        powerPreference: "high-performance",
+        stencil: false,
+        depth: true,
+        alpha: false,
+        preserveDrawingBuffer: false,
+        failIfMajorPerformanceCaveat: false
+    });
+    
+    this.renderer.setSize(container.clientWidth, container.clientHeight);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Performance settings
+    this.renderer.shadowMap.enabled = false; // Disable shadows for better performance
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.0;
+    
+    // Culling optimizations
+    this.renderer.sortObjects = true;
+    this.renderer.setViewport(0, 0, container.clientWidth, container.clientHeight);
+    
+    // Add to container
+    const placeholder = container.querySelector('.placeholder-3d');
+    if (placeholder) placeholder.style.display = 'none';
+    container.appendChild(this.renderer.domElement);
+}
+
 
             focusOnBlackboard() {
     const blackboard = this.model?.getObjectByName('Blackboard');
