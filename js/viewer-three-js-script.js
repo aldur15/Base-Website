@@ -430,29 +430,52 @@ focusOnBlackboardCamera() {
 
 
             setupControls() {
-                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-                this.controls.enableZoom = true;
-                this.controls.enablePan = true;
-                this.controls.maxDistance = 50;
-                this.controls.minDistance = 1;
-                this.controls.maxPolarAngle = Math.PI * 0.8;
-                
-                // Add event listeners
-                this.controls.addEventListener('change', () => {
-                    this.needsRender = true;
-                    this.lastInteraction = Date.now();
-                });
-                
-                this.controls.addEventListener('start', () => {
-                    this.lastInteraction = Date.now();
-                });
-                
-                this.controls.addEventListener('end', () => {
-                    this.lastInteraction = Date.now();
-                });
-            }
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    
+    // Smoother damping
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08; // Slightly higher for smoother feel
+    
+    // Optimized zoom
+    this.controls.enableZoom = true;
+    this.controls.zoomSpeed = 0.8;
+    this.controls.enablePan = true;
+    this.controls.panSpeed = 0.8;
+    
+    // Limits
+    this.controls.maxDistance = 50;
+    this.controls.minDistance = 1;
+    this.controls.maxPolarAngle = Math.PI * 0.8;
+    
+    // Performance optimizations
+    this.controls.autoRotate = false;
+    this.controls.autoRotateSpeed = 0.5;
+    
+    // Track changes for render optimization
+    this.controls.hasChanged = false;
+    
+    // Optimized event listeners
+    this.controls.addEventListener('change', () => {
+        this.needsRender = true;
+        this.lastInteraction = performance.now();
+        this.controls.hasChanged = true;
+    });
+    
+    this.controls.addEventListener('start', () => {
+        this.lastInteraction = performance.now();
+        this.isInteracting = true;
+    });
+    
+    this.controls.addEventListener('end', () => {
+        this.lastInteraction = performance.now();
+        this.isInteracting = false;
+        // Force one more render after interaction ends
+        setTimeout(() => {
+            this.needsRender = true;
+        }, 16); // Next frame
+    });
+}
+
 
             setupLighting() {
     // 1. Single ambient light (reduced intensity)
