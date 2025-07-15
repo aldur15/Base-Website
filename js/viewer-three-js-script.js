@@ -30,7 +30,7 @@ import * as THREE from 'three';
                 // Configuration - more balanced settings
                 this.config = {
                     maxPixelRatio: Math.min(window.devicePixelRatio, 2),
-                    shadowMapSize: 2048,
+                    shadowMapSize: 512,
                     enablePerformanceMonitoring: false,
                     interactionTimeout: 10000 // 10 seconds
                 };
@@ -387,7 +387,7 @@ closePaperOverlay(overlay) {
                 
                 // Better renderer settings
                 this.renderer.shadowMap.enabled = false;
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Better shadow quality
+                //this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Better shadow quality
                 this.renderer.shadowMap.autoUpdate = false; // Keep shadows updating
                 this.renderer.outputColorSpace = THREE.SRGBColorSpace;
                 this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -462,7 +462,7 @@ focusOnBlackboardCamera() {
     // 2. Main directional light with optimized shadows
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
     dirLight.position.set(10, 10, 5);
-    dirLight.castShadow = true;
+    dirLight.castShadow = false;
     
     
     
@@ -479,17 +479,7 @@ focusOnBlackboardCamera() {
     this.mainLight = dirLight;
     
     // Update shadows only when camera stops moving
-    this.controls.addEventListener('end', () => {
-        this.mainLight.shadow.autoUpdate = true;
-        this.renderer.shadowMap.autoUpdate = false;
-        this.needsRender = true;
-        
-        // Turn off auto-update after one frame
-        setTimeout(() => {
-            this.mainLight.shadow.autoUpdate = false;
-            this.renderer.shadowMap.autoUpdate = false;
-        }, 16);
-    });
+   
 }
 
 
@@ -573,7 +563,8 @@ focusOnBlackboardCamera() {
                 });
             }
 
-            handleModelLoad(gltf) {
+            // Replace your handleModelLoad method with this updated version:
+handleModelLoad(gltf) {
     this.hideLoadingMessage();
     this.isLoading = false;
     
@@ -592,16 +583,20 @@ focusOnBlackboardCamera() {
     
     // Setup auto-collision objects
     this.setupAutoCollisionObjects();
-
     this.setupFanAnimation();
 
-    
+    // Set initial camera position (can be anywhere, will animate to blackboard)
     this.fitCameraToModel();
-    this.focusOnBlackboard();
+    
+    // Animate to blackboard position after a short delay
+    setTimeout(() => {
+        this.focusOnBlackboardCamera();
+    }, 100); // Small delay to ensure everything is set up
+    
     this.updatePerformanceCounters();
     this.needsRender = true;
     
-    console.log('Model loaded successfully');
+    console.log('Model loaded successfully - zooming to blackboard');
 }
 
             optimizeModel(model) {
@@ -615,13 +610,13 @@ focusOnBlackboardCamera() {
                         meshCount++;
                         
                         // Enable shadows for most objects
-                        child.castShadow = true;
-                        child.receiveShadow = true;
+                        child.castShadow = false;
+                        child.receiveShadow = false;
                         
                         // Only basic material optimization
                         if (child.material) {
                             if (child.material.map) {
-                                child.material.map.generateMipmaps = true;
+                                child.material.map.generateMipmaps = false;
                             }
                         }
                         
