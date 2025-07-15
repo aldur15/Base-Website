@@ -1124,26 +1124,23 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
     }
 }
 
-updateFanAnimations() {
+updateFanAnimations(deltaTime) {
     if (this.fanObjects.size === 0) return;
     
-    const currentTime = performance.now();
+    // Convert to seconds and clamp to prevent large jumps
+    const dt = Math.min(deltaTime / 1000, 0.033); // Max 33ms (30fps minimum)
     
     this.fanObjects.forEach((fanData, fanName) => {
-        const { object, pivotGroup, settings, lastTime } = fanData;
+        const { object, pivotGroup, settings } = fanData;
         
         if (!settings.enabled) return;
         
-        // Calculate time delta
-        const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
-        
         // Calculate rotation amount
-        const rotationAmount = settings.speed * settings.direction * deltaTime;
+        const rotationAmount = settings.speed * settings.direction * dt;
         
-        // Apply rotation to the pivot group instead of the fan object directly
+        // Apply rotation to the pivot group
         const targetObject = pivotGroup || object;
         
-        // Apply rotation based on axis
         switch (settings.axis.toLowerCase()) {
             case 'x':
                 targetObject.rotation.x += rotationAmount;
@@ -1156,10 +1153,6 @@ updateFanAnimations() {
                 break;
         }
         
-        // Update the stored time
-        fanData.lastTime = currentTime;
-        
-        // Mark that we need to render
         this.needsRender = true;
     });
 }
