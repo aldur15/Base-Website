@@ -133,6 +133,7 @@ setupLampionGlow() {
     if (!this.model) return;
     console.log('Setting up lampion glow effects...');
     let lampionCount = 0;
+    var setOff = 0
     
     this.model.traverse((child) => {
         if (child.name && child.name.toLowerCase().includes('lampion-')) {
@@ -140,40 +141,39 @@ setupLampionGlow() {
             
             // Keep original material, just add bloom properties
             // Add point light inside the lampion - manual coordinates
-            const pointLight = new THREE.PointLight(0xa42d21, 5, 10); // Blue light, intensity 2, range 10
+            const pointLight = new THREE.PointLight(0xa42d21, 20, 10); // Blue light, intensity 2, range 10
             
             // Get world position of the lampion
-            const worldPos = new THREE.Vector3();
-            child.getWorldPosition(worldPos);
-            console.log('Found lampion Position:', worldPos);
+            
             
             // Set light position manually (adjust these coordinates as needed)
-            pointLight.position.set(10.5, -0.5, 7.2);
+            pointLight.position.set(10.5 , -0.5, 7.2 - setOff);
             pointLight.castShadow = false; // Disable shadows for performance
             
             // Add light to the scene
             this.scene.add(pointLight);
             
             // Create debug cube at light position
-            const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-            const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Green debug cube
-            const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
-            debugCube.position.copy(pointLight.position); // Same position as light
-            this.scene.add(debugCube);
+            //const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+            //const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Green debug cube
+            //const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
+            //debugCube.position.copy(pointLight.position); // Same position as light
+            //this.scene.add(debugCube);
             
             // Store references for cleanup if needed
             child.userData.pointLight = pointLight;
-            child.userData.debugCube = debugCube;
+            //child.userData.debugCube = debugCube;
             
             // Disable shadows for performance
             child.castShadow = false;
             child.receiveShadow = false;
             
             // Optional: Add userData for bloom threshold control
-            child.userData.bloom = true;
-            child.userData.bloomThreshold = 0.8;
+            //child.userData.bloom = true;
+            //child.userData.bloomThreshold = 0.8;
             
             lampionCount++;
+            setOff += 2.75;
         }
     });
     
