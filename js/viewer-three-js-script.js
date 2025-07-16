@@ -183,14 +183,17 @@ setupLampionGlow() {
 setupBlackBoardLight() {
     var setOff = 0
     for(var i=0;i<3;i++){
-        const spotLight = new THREE.SpotLight(0xfbb702, 200, 30,0.1,0,0);
-        spotLight.position.set(8.5, 4, 6.72 - setOff);
+        const spotLight = new THREE.SpotLight(0xffc200, 200, 8,0.18,0.1,0);
+        spotLight.position.set(8.2, 0.7, 6.72 - setOff);
         
         // Create debug cube first
         const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
         const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
-        debugCube.position.set(8.5, 3.7, 6.72 - setOff); // Position where you want light to point
+        debugCube.position.set(7.5, -9, 6.72 - setOff); // Position where you want light to point
+        
+
+
         
         // Hide the debug cube
         debugCube.visible = false;
@@ -201,6 +204,13 @@ setupBlackBoardLight() {
         spotLight.castShadow = false;
         this.scene.add(spotLight);
         this.scene.add(debugCube); // Still need to add to scene for targeting to work
+
+
+
+        const pointLight = new THREE.PointLight(0xffc200, 1.5, 3)
+        pointLight.position.set(8.2, 0.5, 6.72 - setOff);
+        pointLight.castShadow = false;
+        this.scene.add(pointLight);
         
         setOff += 0.9;
     }
