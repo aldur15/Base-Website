@@ -131,7 +131,7 @@ this.fanObjects = new Map(); // Store fan objects and their settings
 
 
 setupAmbientLight() {
-    const light = new THREE.AmbientLight( 0xffe286, 0.5 ); // soft white light
+    const light = new THREE.AmbientLight( 0xffe286, 0.3 ); // soft white light
     this.scene.add( light );
 }
 
