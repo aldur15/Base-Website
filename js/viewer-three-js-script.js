@@ -129,6 +129,56 @@ this.fanObjects = new Map(); // Store fan objects and their settings
 
             }
 
+setupLampionGlow() {
+    if (!this.model) return;
+    console.log('Setting up lampion glow effects...');
+    let lampionCount = 0;
+    
+    this.model.traverse((child) => {
+        if (child.name && child.name.toLowerCase().includes('lampion-')) {
+            console.log('Found lampion object:', child.name);
+            
+            // Keep original material, just add bloom properties
+            // Add point light inside the lampion - manual coordinates
+            const pointLight = new THREE.PointLight(0xa42d21, 5, 10); // Blue light, intensity 2, range 10
+            
+            // Get world position of the lampion
+            const worldPos = new THREE.Vector3();
+            child.getWorldPosition(worldPos);
+            console.log('Found lampion Position:', worldPos);
+            
+            // Set light position manually (adjust these coordinates as needed)
+            pointLight.position.set(10.5, -0.5, 7.2);
+            pointLight.castShadow = false; // Disable shadows for performance
+            
+            // Add light to the scene
+            this.scene.add(pointLight);
+            
+            // Create debug cube at light position
+            const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+            const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Green debug cube
+            const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
+            debugCube.position.copy(pointLight.position); // Same position as light
+            this.scene.add(debugCube);
+            
+            // Store references for cleanup if needed
+            child.userData.pointLight = pointLight;
+            child.userData.debugCube = debugCube;
+            
+            // Disable shadows for performance
+            child.castShadow = false;
+            child.receiveShadow = false;
+            
+            // Optional: Add userData for bloom threshold control
+            child.userData.bloom = true;
+            child.userData.bloomThreshold = 0.8;
+            
+            lampionCount++;
+        }
+    });
+    
+    console.log(`Applied glow effect to ${lampionCount} lampion objects`);
+}
             setupFanAnimation() {
     if (!this.model) return;
     
@@ -612,9 +662,34 @@ handleModelLoad(gltf) {
     // Setup auto-collision objects
     this.setupAutoCollisionObjects();
     this.setupFanAnimation();
+    this.setupLampionGlow();
 
     // Set initial camera position (can be anywhere, will animate to blackboard)
     this.fitCameraToModel();
+
+    //makes shure loaded modelshadows are turned off
+    gltf.scene.traverse((child) => {
+    if (child.isLight) {
+        child.castShadow = false;
+        if (child.shadow) {
+            child.shadow.autoUpdate = false;
+        }
+    }
+
+    let lightCount = 0;
+    gltf.scene.traverse((child) => {
+        if (child.isLight) {
+            lightCount++;
+            console.log('Found light:', child.name, child.type);
+        }
+    });
+    console.log(`Total lights imported: ${lightCount}`);
+    
+    // If you have more than 3-4 lights, consider removing some
+    if (lightCount > 4) {
+        console.warn('Too many lights! Consider optimizing in Blender');
+    }
+});
     
     // Animate to blackboard position after a short delay
     setTimeout(() => {
@@ -623,6 +698,8 @@ handleModelLoad(gltf) {
     
     this.updatePerformanceCounters();
     this.needsRender = true;
+
+
     
     console.log('Model loaded successfully - zooming to blackboard');
 }
@@ -1213,10 +1290,14 @@ updateFanAnimations(deltaTime) {
     // Convert to seconds and clamp to prevent large jumps
     const dt = Math.min(deltaTime / 1000, 0.033); // Max 33ms (30fps minimum)
     
+    let hasActiveAnimations = false;
+    
     this.fanObjects.forEach((fanData, fanName) => {
         const { object, pivotGroup, settings } = fanData;
         
         if (!settings.enabled) return;
+        
+        hasActiveAnimations = true;
         
         // Calculate rotation amount
         const rotationAmount = settings.speed * settings.direction * dt;
@@ -1235,9 +1316,12 @@ updateFanAnimations(deltaTime) {
                 targetObject.rotation.z += rotationAmount;
                 break;
         }
-        
-        this.needsRender = true;
     });
+    
+    // If we have active animations, ensure rendering continues
+    if (hasActiveAnimations) {
+        this.needsRender = true;
+    }
 }
 
             updatePerformanceStats() {
