@@ -129,6 +129,12 @@ this.fanObjects = new Map(); // Store fan objects and their settings
 
             }
 
+
+setupAmbientLight() {
+    const light = new THREE.AmbientLight( 0xffe286, 0.5 ); // soft white light
+    this.scene.add( light );
+}
+
 setupLampionGlow() {
     if (!this.model) return;
     console.log('Setting up lampion glow effects...');
@@ -207,10 +213,10 @@ setupBlackBoardLight() {
 
 
 
-        const pointLight = new THREE.PointLight(0xffc200, 1.5, 3)
-        pointLight.position.set(8.2, 0.5, 6.72 - setOff);
-        pointLight.castShadow = false;
-        this.scene.add(pointLight);
+        //const pointLight = new THREE.PointLight(0xffc200, 1.5, 3)
+        //pointLight.position.set(8.2, 0.5, 6.72 - setOff);
+        //pointLight.castShadow = false;
+        //this.scene.add(pointLight);
         
         setOff += 0.9;
     }
@@ -700,6 +706,7 @@ handleModelLoad(gltf) {
     // Setup auto-collision objects
     this.setupAutoCollisionObjects();
     this.setupFanAnimation();
+    this.setupAmbientLight();
     this.setupLampionGlow();
     this.setupBlackBoardLight();
 
