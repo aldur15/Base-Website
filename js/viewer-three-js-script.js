@@ -183,28 +183,28 @@ setupLampionGlow() {
 setupBlackBoardLight() {
     var setOff = 0
     for(var i=0;i<3;i++){
-        const pointLight = new THREE.SpotLight(0xa42d21, 20, 10);
-        pointLight.position.set(8.5, 0.6, 6.72 - setOff);
+        const spotLight = new THREE.SpotLight(0xfbb702, 200, 30,0.1,0,0);
+        spotLight.position.set(8.5, 4, 6.72 - setOff);
         
         // Create debug cube first
         const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
         const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
-        debugCube.position.set(8.5, 0, 6.72 - setOff); // Position where you want light to point
+        debugCube.position.set(8.5, 3.7, 6.72 - setOff); // Position where you want light to point
         
         // Hide the debug cube
         debugCube.visible = false;
         
         // Target the spotlight at the debug cube
-        pointLight.target = debugCube;
+        spotLight.target = debugCube;
         
-        pointLight.castShadow = false;
-        this.scene.add(pointLight);
+        spotLight.castShadow = false;
+        this.scene.add(spotLight);
         this.scene.add(debugCube); // Still need to add to scene for targeting to work
         
         setOff += 0.9;
     }
-    console.log(`Applied glow effect to lampion objects`);
+    console.log(`Creat spotLight`);
 }
 
             setupFanAnimation() {
