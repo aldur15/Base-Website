@@ -177,8 +177,36 @@ setupLampionGlow() {
         }
     });
     
-    console.log(`Applied glow effect to ${lampionCount} lampion objects`);
+    //console.log(`Applied glow effect to ${lampionCount} lampion objects`);
 }
+
+setupBlackBoardLight() {
+    var setOff = 0
+    for(var i=0;i<3;i++){
+        const pointLight = new THREE.SpotLight(0xa42d21, 20, 10);
+        pointLight.position.set(8.5, 0.6, 6.72 - setOff);
+        
+        // Create debug cube first
+        const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+        const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
+        debugCube.position.set(8.5, 0, 6.72 - setOff); // Position where you want light to point
+        
+        // Hide the debug cube
+        debugCube.visible = false;
+        
+        // Target the spotlight at the debug cube
+        pointLight.target = debugCube;
+        
+        pointLight.castShadow = false;
+        this.scene.add(pointLight);
+        this.scene.add(debugCube); // Still need to add to scene for targeting to work
+        
+        setOff += 0.9;
+    }
+    console.log(`Applied glow effect to lampion objects`);
+}
+
             setupFanAnimation() {
     if (!this.model) return;
     
@@ -663,6 +691,7 @@ handleModelLoad(gltf) {
     this.setupAutoCollisionObjects();
     this.setupFanAnimation();
     this.setupLampionGlow();
+    this.setupBlackBoardLight();
 
     // Set initial camera position (can be anywhere, will animate to blackboard)
     this.fitCameraToModel();
