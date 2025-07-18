@@ -129,6 +129,164 @@ this.fanObjects = new Map(); // Store fan objects and their settings
 
             }
 
+  setupLighting() {
+    // 1. Single ambient light (reduced intensity)
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    this.scene.add(ambientLight);
+
+    // 2. Main directional light with optimized shadows
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(10, 10, 5);
+    dirLight.castShadow = false;
+    
+    
+    
+    // Critical: Don't update shadows every frame
+    dirLight.shadow.autoUpdate = false;
+    
+    this.scene.add(dirLight);
+
+    // 3. Single hemisphere light for ambient fill
+    const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x362d1a, 0.8);
+    this.scene.add(hemiLight);
+
+    // Store reference for manual shadow updates
+    this.mainLight = dirLight;
+    
+    // Update shadows only when camera stops moving
+   
+}
+          
+
+
+           
+applyNeonBloomMaterial(neonObject) {
+    // Store original material for fallback
+    neonObject.userData.originalMaterial = neonObject.material;
+    
+    // Create emissive material for bloom effect
+    const bloomMaterial = neonObject.material.clone();
+    
+    // Set emissive properties for bloom
+    bloomMaterial.emissive = new THREE.Color(0x00ffff); // Cyan glow - adjust color as needed
+    bloomMaterial.emissiveIntensity = 1.5;
+    
+    // Make material glow
+    bloomMaterial.transparent = true;
+    bloomMaterial.opacity = 0.9;
+    
+    // Performance optimizations
+    bloomMaterial.needsUpdate = true;
+    bloomMaterial.side = THREE.DoubleSide;
+    
+    // Apply the material
+    neonObject.material = bloomMaterial;
+    
+    // Mark for bloom post-processing (if you add it later)
+    neonObject.userData.bloom = true;
+    neonObject.userData.bloomThreshold = 0.2;
+    
+    // Disable shadows for performance
+    neonObject.castShadow = false;
+    neonObject.receiveShadow = false;
+}
+
+addNeonPointLight(neonObject) {
+    // Get world position of the neon object
+    const worldPosition = new THREE.Vector3();
+    neonObject.getWorldPosition(worldPosition);
+    
+    // Create point light with neon color
+    const pointLight = new THREE.PointLight(0x00ffff, 2, 5); // Cyan light, intensity 2, range 5
+    pointLight.position.copy(worldPosition);
+    pointLight.castShadow = false; // Disable shadows for performance
+    
+    // Add slight randomness to light intensity for flickering effect
+    pointLight.userData.baseIntensity = 2;
+    pointLight.userData.flicker = true;
+    
+    // Add light to scene
+    this.scene.add(pointLight);
+    
+    // Store reference in neon object
+    neonObject.userData.pointLight = pointLight;
+    
+    // Add to animated objects for flickering
+    if (!this.animatedObjects) {
+        this.animatedObjects = new Map();
+    }
+    
+    this.animatedObjects.set(neonObject.name + '_light', {
+        object: pointLight,
+        type: 'neon_flicker',
+        settings: {
+            baseIntensity: 2,
+            flickerAmount: 0.3,
+            flickerSpeed: 0.02
+        }
+    });
+}
+
+updateNeonAnimations(deltaTime) {
+    if (!this.animatedObjects) return;
+    
+    const time = performance.now() * 0.001; // Convert to seconds
+    
+    this.animatedObjects.forEach((animData, key) => {
+        if (animData.type === 'neon_flicker') {
+            const { object, settings } = animData;
+            
+            // Create subtle flickering effect
+            const flicker = Math.sin(time * settings.flickerSpeed * 50) * 0.1 + 
+                           Math.sin(time * settings.flickerSpeed * 30) * 0.05;
+            
+            object.intensity = settings.baseIntensity + (flicker * settings.flickerAmount);
+            
+            // Occasional stronger flicker
+            if (Math.random() < 0.001) { // 0.1% chance per frame
+                object.intensity *= 0.5;
+            }
+        }
+    });
+}
+
+setNeonColor(neonName, color) {
+    const neonObject = this.neonObjects.get(neonName);
+    if (!neonObject) return;
+    
+    const newColor = new THREE.Color(color);
+    
+    // Update material color
+    neonObject.material.emissive = newColor;
+    
+    // Update point light color
+    if (neonObject.userData.pointLight) {
+        neonObject.userData.pointLight.color = newColor;
+    }
+    
+    this.needsRender = true;
+}
+
+
+// Clean up neon effects
+cleanupNeonEffects() {
+    if (!this.neonObjects) return;
+    
+    this.neonObjects.forEach((neonObject) => {
+        // Remove point light from scene
+        if (neonObject.userData.pointLight) {
+            this.scene.remove(neonObject.userData.pointLight);
+        }
+        
+        // Restore original material
+        if (neonObject.userData.originalMaterial) {
+            neonObject.material = neonObject.userData.originalMaterial;
+        }
+    });
+    
+    this.neonObjects.clear();
+}
+
 
 setupAmbientLight() {
     const light = new THREE.AmbientLight( 0xffe286, 0.3 ); // soft white light
@@ -576,34 +734,7 @@ focusOnBlackboardCamera() {
 }
 
 
-            setupLighting() {
-    // 1. Single ambient light (reduced intensity)
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-    this.scene.add(ambientLight);
-
-    // 2. Main directional light with optimized shadows
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(10, 10, 5);
-    dirLight.castShadow = false;
-    
-    
-    
-    // Critical: Don't update shadows every frame
-    dirLight.shadow.autoUpdate = false;
-    
-    this.scene.add(dirLight);
-
-    // 3. Single hemisphere light for ambient fill
-    const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x362d1a, 0.8);
-    this.scene.add(hemiLight);
-
-    // Store reference for manual shadow updates
-    this.mainLight = dirLight;
-    
-    // Update shadows only when camera stops moving
-   
-}
-
+            
 
             setupEventListeners() {
                 // Click interaction
@@ -685,7 +816,7 @@ focusOnBlackboardCamera() {
                 });
             }
 
-            // Replace your handleModelLoad method with this updated version:
+ 
 handleModelLoad(gltf) {
     this.hideLoadingMessage();
     this.isLoading = false;
@@ -709,6 +840,7 @@ handleModelLoad(gltf) {
     this.setupAmbientLight();
     this.setupLampionGlow();
     this.setupBlackBoardLight();
+    this.setupNeonBloom();
 
     // Set initial camera position (can be anywhere, will animate to blackboard)
     this.fitCameraToModel();
@@ -811,27 +943,40 @@ handleModelLoad(gltf) {
             
             }
 
-            mergeGeometries(meshes) {
-    const materialGroups = new Map();
+             //NEON LIGHTS
+            setupNeonBloom() {
+    if (!this.model) return;
     
-    // Group meshes by material
-    meshes.forEach(mesh => {
-        if (mesh.userData.static !== false && mesh.geometry && mesh.material) {
-            const materialKey = this.getMaterialKey(mesh.material);
-            if (!materialGroups.has(materialKey)) {
-                materialGroups.set(materialKey, []);
-            }
-            materialGroups.get(materialKey).push(mesh);
+    console.log('Setting up neon bloom effects...');
+    let neonCount = 0;
+    
+    // Store neon objects for easy access
+    if (!this.neonObjects) {
+        this.neonObjects = new Map();
+    }
+    
+    this.model.traverse((child) => {
+        if (child.isMesh && child.name && child.name.toLowerCase().startsWith('neon-')) {
+            console.log('Found neon object:', child.name);
+            
+            // Apply bloom material properties
+            this.applyNeonBloomMaterial(child);
+            
+            // Add optional point light for enhanced glow
+            this.addNeonPointLight(child);
+            
+            // Store reference
+            this.neonObjects.set(child.name, child);
+            
+            neonCount++;
         }
     });
     
-    // Merge geometries with same material
-    materialGroups.forEach((groupMeshes, materialKey) => {
-        if (groupMeshes.length > 1) {
-            this.mergeGeometryGroup(groupMeshes);
-        }
-    });
+    console.log(`Applied bloom effect to ${neonCount} neon objects`);
 }
+
+
+ 
 
             countTriangles(object) {
                 let count = 0;
@@ -1320,6 +1465,7 @@ focusCameraTo({ position, lookAt, duration = 2.0 }) {
         
         // Update animations with delta time
         this.updateFanAnimations(deltaTime);
+        //this.updateNeonAnimations(deltaTime);
         
         // Only render if camera moved or scene changed
         if (this.needsRender || this.controls.hasChanged) {
@@ -1471,6 +1617,7 @@ updateFanAnimations(deltaTime) {
             }
 
             dispose() {
+                this.cleanupNeonEffects();
                 // Cleanup resources
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
@@ -1491,71 +1638,17 @@ updateFanAnimations(deltaTime) {
                 
                 if (this.renderer) {
                     this.renderer.dispose();
+                    
                 }
             }
 
 
-// Control functions for fans
-toggleFan(fanName) {
-    const fanData = this.fanObjects.get(fanName);
-    if (fanData) {
-        fanData.settings.enabled = !fanData.settings.enabled;
-        console.log(`Fan ${fanName} ${fanData.settings.enabled ? 'started' : 'stopped'}`);
-    }
-}
 
-setFanSpeed(fanName, speed) {
-    const fanData = this.fanObjects.get(fanName);
-    if (fanData) {
-        fanData.settings.speed = speed;
-        console.log(`Fan ${fanName} speed set to ${speed}`);
-    }
-}
 
-setFanDirection(fanName, direction) {
-    const fanData = this.fanObjects.get(fanName);
-    if (fanData) {
-        fanData.settings.direction = direction;
-        console.log(`Fan ${fanName} direction set to ${direction > 0 ? 'clockwise' : 'counterclockwise'}`);
-    }
-}
 
-// Stop all fans
-stopAllFans() {
-    this.fanObjects.forEach((fanData, fanName) => {
-        fanData.settings.enabled = false;
-    });
-}
 
-// Start all fans
-startAllFans() {
-    this.fanObjects.forEach((fanData, fanName) => {
-        fanData.settings.enabled = true;
-    });
-}
 
-// Add specific fan by name (if you know the exact name)
-addFanByName(fanName, settings = {}) {
-    const fanObject = this.model?.getObjectByName(fanName);
-    if (fanObject) {
-        this.addFanAnimation(fanObject, settings);
-    } else {
-        console.warn(`Fan object '${fanName}' not found in model`);
-    }
-}
 
-addFanAnimationWithGeometryPivot(fanObject, settings = {}) {
-    // Calculate the fan's bounding box to determine a good pivot point
-    const box = new THREE.Box3().setFromObject(fanObject);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    
-    // For a typical fan, the pivot should be at the center of the base
-    // Adjust this based on your fan's geometry
-    const pivotOffset = new THREE.Vector3(0, -size.y * 0.4, 0); // Pivot at lower part of fan
-    
-    this.addFanAnimationWithCustomPivot(fanObject, pivotOffset, settings);
-}
         }
 
         // Initialize viewer
