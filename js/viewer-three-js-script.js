@@ -1,211 +1,329 @@
 import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-        class OptimizedViewer {
-            constructor() {
-                this.scene = null;
-                this.camera = null;
-                this.renderer = null;
-                this.controls = null;
-                this.model = null;
-                this.raycaster = new THREE.Raycaster();
-                this.mouse = new THREE.Vector2();
-                
-                // Performance tracking
-                this.performance = {
-                    frameCount: 0,
-                    lastFpsTime: 0,
-                    fps: 0,
-                    triangles: 0,
-                    renderCalls: 0
-                };
-                
-                // Render optimization
-                this.needsRender = true;
-                this.isLoading = false;
-                this.animationId = null;
-                this.lastInteraction = Date.now();
+class OptimizedViewer {
+    constructor() {
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.controls = null;
+        this.model = null;
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        
+        // Render optimization
+        this.needsRender = true;
+        this.isLoading = false;
+        this.animationId = null;
+        this.lastInteraction = Date.now();
+        this.lastFrameTime = 0;
+        this.isInteracting = false;
 
-                // Add lightmap properties
-    this.lightmapTexture = null;
+        // Add lightmap properties
+        this.lightmapTexture = null;
+    this.graffitiLightmapTexture = null; // New property for graffiti wall
     this.isLoadingLightmap = false;
-                
-                // Configuration - more balanced settings
-                this.config = {
-                    maxPixelRatio: Math.min(window.devicePixelRatio, 2),
-                    shadowMapSize: 512,
-                    enablePerformanceMonitoring: false,
-                    interactionTimeout: 10000 // 10 seconds
-                };
+    this.graffitiWall = null; // Store separate graffiti wall object
+    this.isLoadingGraffitiWall = false;
+        
+        // Configuration
+        this.config = {
+            maxPixelRatio: Math.min(window.devicePixelRatio, 2),
+            shadowMapSize: 512,
+            interactionTimeout: 10000 // 10 seconds
+        };
 
-                this.cameraTargets = {
-    'nav-about': {
-        //PROJECTS
-        position: new THREE.Vector3(-1, -4, 20),
-        lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
-    },
-    'nav-projects': {
-        //CREDITS
-        position: new THREE.Vector3(5, 32, 10), //position: new THREE.Vector3(12, 12, 15),
-        lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
-    },
-    'nav-research': {
-        //RESEARCH
-        position: new THREE.Vector3(20, -5, -19.01),
-        lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model - NOT the target position
-    },
-    'nav-contact': {
-        //ABOUT
-        position: new THREE.Vector3(-16.5, -2.18, 9.01),
-        lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
-    },
-    blackboard: {
-        position: new THREE.Vector3(14.85, -4.14, 6.68),
-        lookAt: new THREE.Vector3(0, 1.5, 0) // Center of model
-    }
-};
-
-this.paperData = {
-    'paper_1': {
-        title: 'Research Paper 1',
-        content: `
-            <h2>Abstract</h2>
-            <p>This is the abstract of the first research paper...</p>
-            <h2>Introduction</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
-            <h2>Methodology</h2>
-            <p>Our research methodology involved...</p>
-        `
-    },
-    'paper_2': {
-        title: 'Research Paper 2',
-        content: `
-            <h2>Abstract</h2>
-            <p>This is the abstract of the second research paper...</p>
-            <h2>Introduction</h2>
-            <p>Different research topic with various findings...</p>
-        `
-    }
-    // Add more papers as needed
-};
-
-this.fanObjects = new Map(); // Store fan objects and their settings
-    this.animatedObjects = new Map(); // Store all animated objects
-                
-                this.init();
+        this.cameraTargets = {
+            'nav-about': {
+                position: new THREE.Vector3(-1, -4, 20),
+                lookAt: new THREE.Vector3(0, 1.5, 0)
+            },
+            'nav-projects': {
+                position: new THREE.Vector3(5, 32, 10),
+                lookAt: new THREE.Vector3(0, 1.5, 0)
+            },
+            'nav-research': {
+                position: new THREE.Vector3(20, -5, -19.01),
+                lookAt: new THREE.Vector3(0, 1.5, 0)
+            },
+            'nav-contact': {
+                position: new THREE.Vector3(-13.5, -4.18, 6.01),
+                lookAt: new THREE.Vector3(0, 1.5, 0)
+            },
+            blackboard: {
+                position: new THREE.Vector3(14.85, -4.14, 6.68),
+                lookAt: new THREE.Vector3(0, 1.5, 0)
             }
+        };
 
-            async init() {
-    const container = document.getElementById('threejs-container');
-    if (!container) {
-        console.error('Three.js container not found');
-        return;
+        this.paperData = {
+            'paper_1': {
+    title: 'The Influence of Persona and Conversational Task on Social Interactions with a LLM-Controlled Embodied Conversational Agent',
+    content: `
+        <h2>Abstract</h2>
+        <p>
+            Large Language Models (LLMs) can be embodied as virtual humans in Virtual Reality (VR), 
+            enabling naturalistic face-to-face interactions. This study investigated how an agent’s 
+            persona (extraverted vs. introverted) and conversational tasks (small talk, knowledge 
+            test, convincing) affect social evaluation, emotional experience, realism, and behavioral 
+            engagement. Forty-six participants interacted with an LLM-controlled virtual agent in VR. 
+            Results showed that the extraverted agent was rated as more likable, realistic, and 
+            engaging, and elicited a more pleasant experience compared to the introverted agent. 
+            While persona influenced evaluations and engagement, conversational tasks modulated 
+            arousal, realism, and social presence. Findings demonstrate that personality prompts in 
+            LLM-controlled agents strongly shape user experience and behavior in immersive social 
+            interactions.
+        </p>
+
+        <h2>Introduction</h2>
+        <p>
+            Advances in LLMs have transformed conversational AI, allowing dynamic and context-sensitive 
+            interactions. When combined with embodied conversational agents (ECAs) in VR, they enable 
+            multimodal, face-to-face encounters. Social interactions are influenced by both the 
+            personality of agents and the conversational context. Drawing on the CASA framework, users 
+            are expected to evaluate and respond to virtual agents similarly to humans. Previous 
+            research has shown that personality traits such as extraversion impact perceived social 
+            presence and likability in chat-based systems. This study aimed to examine how persona and 
+            conversational task jointly influence evaluation, emotional experience, and interactive 
+            behavior in LLM-driven VR interactions.
+        </p>
+
+        <h2>Methodology</h2>
+        <p>
+            Forty-six participants (mean age 21.2 years) engaged in three VR-based conversational tasks 
+            with a male virtual agent: small talk, a knowledge test, and a convincing task. The agent’s 
+            persona was manipulated via LLM prompts to be either extraverted or introverted. 
+            Conversations were conducted in VR using Unreal Engine with real-time speech-to-text and 
+            text-to-speech pipelines. Dependent measures included self-reported ratings of sympathy, 
+            valence, arousal, closeness, realism, and social presence, as well as behavioral metrics 
+            such as number of words, turns, and requests for help during the knowledge test. Data were 
+            analyzed using mixed ANOVAs.
+        </p>
+
+        <h2>Results</h2>
+        <p>
+            The extraverted persona was consistently rated as more sympathetic and pleasant, and 
+            participants engaged in longer and more interactive conversations. Arousal was primarily 
+            driven by task, with knowledge test and convincing tasks rated as more arousing than small 
+            talk. Realism ratings were influenced by persona in the convincing task, where extraverted 
+            agents appeared more realistic. Social presence was strongest in small talk. In the 
+            knowledge test, participants were more confident in their answers when assisted by the 
+            agent, though persona did not affect willingness to seek help. Overall, persona shaped 
+            social evaluation and engagement, while task modulated arousal and realism.
+        </p>
+
+        <h2>Discussion</h2>
+        <p>
+            Findings demonstrate that persona cues in LLM-controlled ECAs significantly affect user 
+            experience in immersive VR interactions. Extraverted agents elicited more positive 
+            evaluations and behavioral engagement, mirroring real-world social dynamics. Task demands 
+            influenced arousal, realism, and confidence, with knowledge-based tasks rated as especially 
+            engaging. These results support the CASA framework by showing that users apply social 
+            evaluation processes to LLM-driven agents, treating them similarly to human partners. 
+            Implications include applications in education, training, and healthcare, where tailoring 
+            agent personality and conversational style may enhance engagement and outcomes. Future 
+            research should investigate long-term interactions, incorporate multimodal nonverbal cues, 
+            and assess individual differences in user responses.
+        </p>
+    `
+}
+,
+            'paper_2': {
+    title: 'Affective Interactions with AI-Controlled Conversational Agents in Virtual Reality',
+    content: `
+        <h2>Abstract</h2>
+        <p>
+            The exchange of affective information lies at the core of social interactions. 
+            Embodied conversational agents (ECAs) in Virtual Reality (VR) enable naturalistic 
+            verbal exchanges with AI-controlled partners. We evaluated a paradigm where ECAs 
+            conveyed affective information in conversations about emotional life events. 
+            Data from 46 human–AI interactions showed that agents successfully generated 
+            context-specific affective content (happy, angry, sad). Target emotions appeared 
+            most strongly at the beginning of conversations but decreased over turns. Findings 
+            indicate that AI-controlled ECAs are a promising tool for simulating naturalistic, 
+            affective dialogue.
+        </p>
+
+        <h2>Introduction</h2>
+        <p>
+            Social interaction relies on verbal and nonverbal cues to infer intentions and 
+            emotional states. While earlier research focused mainly on nonverbal expressions, 
+            verbal affective information remains less explored in controlled experimental 
+            settings. Large Language Models (LLMs) can provide adaptive and empathetic 
+            conversational responses. Combining LLMs with ECAs in VR creates opportunities 
+            for interactive, multimodal exchanges. The present study tested whether ECAs 
+            could generate convincing affective content across different emotional contexts, 
+            and how such content evolves over the course of an interaction.
+        </p>
+
+        <h2>Methods</h2>
+        <p>
+            Forty-eight participants engaged in four conversational tasks (small talk, happy, 
+            sad, angry) with a male VR-based ECA. Speech input was transcribed with Whisper, 
+            processed by a German LLM, and analyzed using a fine-tuned RoBERTa sentiment 
+            model. Emotional categories (anger, fear, sadness, joy, neutral) were logged and 
+            in some conditions mapped to facial expressions of the agent. Conversations lasted 
+            about 6 minutes each, and emotional distributions were analyzed across and within 
+            topics.
+        </p>
+
+        <h2>Results</h2>
+        <p>
+            Distinct emotional profiles emerged across topics: joy was most frequent in the 
+            happy condition, anger in the anger condition, and sadness in the sad condition. 
+            Fear frequently co-occurred, especially in anger and sad contexts. Across 
+            conversations, target emotions were strongest at the start but declined over turns, 
+            with joy and fear increasing as substitutes in some conditions. These results show 
+            that AI-controlled ECAs can produce context-appropriate affective information, 
+            though not always perfectly aligned with the target emotion.
+        </p>
+
+        <h2>Discussion</h2>
+        <p>
+            This study demonstrates that AI-driven ECAs can generate and sustain affective 
+            information in interactive VR dialogues. Distinct emotion patterns were detected 
+            across conversational topics, and temporal analyses showed a decline of target 
+            emotions over time. These findings highlight the potential of ECAs for research on 
+            social and affective dynamics, as well as applications in training, education, and 
+            therapy. Future work should refine semantic control of LLMs and explore how 
+            emotional content influences user experience and social evaluations of virtual 
+            agents.
+        </p>
+    `
+},
+            'paper_3':{}
+
+        };
+
+        this.collisionObjects = new Map();
+        
+        this.init();
     }
 
-    try {
-        this.setupScene();
-        this.setupCamera(container);
-        this.setupRenderer(container);
-        this.setupControls();
-        // Remove setupLighting() call - will be handled by lightmap
-        this.setupEventListeners();
-        this.hideControlsInfo();
-        
-        // Start render loop and load model
-        this.animate();
-        
-        // Load lightmap first, then model
-        await this.loadLightmap();
-        this.loadModel();
-        
-    } catch (error) {
-        console.error('Error initializing Three.js:', error);
-        this.showErrorMessage('Failed to initialize 3D viewer');
-    }
+    async init() {
+        const container = document.getElementById('threejs-container');
+        if (!container) {
+            console.error('Three.js container not found');
+            return;
+        }
 
-    document.getElementById('back-to-blackboard')?.addEventListener('click', () => {
-        if (viewer) {
-            viewer.focusOnBlackboardCamera();
+        try {
+            this.setupScene();
+            this.setupCamera(container);
+            this.setupRenderer(container);
+            this.setupControls();
+            this.setupEventListeners();
+            
+            // Start render loop and load model
+            this.animate();
+            
+            // Load lightmap first, then model
+            await this.loadLightmap();
+            this.loadModel();
+            
+        } catch (error) {
+            console.error('Error initializing Three.js:', error);
+            this.showErrorMessage('Failed to initialize 3D viewer');
+        }
+
+        document.getElementById('back-to-blackboard')?.addEventListener('click', () => {
+            if (viewer) {
+                viewer.focusOnBlackboardCamera();
+            }
+        });
+    }
+// Helper method to find objects by partial name
+findObjectByPartialName(parent, partialName) {
+    let foundObject = null;
+    parent.traverse((child) => {
+        if (child.name && child.name.toLowerCase().includes(partialName.toLowerCase()) && !foundObject) {
+            foundObject = child;
         }
     });
+    return foundObject;
+}
 
-
-
-
-            }
-async loadLightmap() {
-    if (this.isLoadingLightmap || this.lightmapTexture) return;
+    // Load main lightmap only
+async loadMainLightmap() {
+    if (this.lightmapTexture) return;
     
-    this.isLoadingLightmap = true;
-    console.log('Loading lightmap...');
-    
+    console.log('Loading main lightmap...');
     const loader = new RGBELoader();
     
     try {
         const texture = await new Promise((resolve, reject) => {
-            loader.load(
-                'assets/lightmap.hdr',
-                resolve,
-                (progress) => {
-                    console.log('Lightmap loading progress:', (progress.loaded / progress.total * 100) + '%');
-                },
-                reject
-            );
+            loader.load('assets/lightmap.hdr', resolve, undefined, reject);
         });
         
-        // Configure texture
         texture.mapping = THREE.EquirectangularReflectionMapping;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
         texture.flipY = false;
+        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
         
         this.lightmapTexture = texture;
-        console.log('Lightmap loaded successfully');
-        
-        // Apply to existing model if already loaded
-        if (this.model) {
-            this.applyLightmapToModel();
-        }
+        console.log('Main lightmap loaded successfully');
         
     } catch (error) {
-        console.error('Failed to load lightmap:', error);
-        console.warn('Falling back to regular lighting');
-    } finally {
-        this.isLoadingLightmap = false;
+        console.error('Failed to load main lightmap:', error);
     }
 }
 
-// NEW: Apply lightmap to model
-applyLightmapToModel() {
-    if (!this.lightmapTexture || !this.model) return;
+// Load graffiti lightmap only
+async loadGraffitiLightmap() {
+    if (this.graffitiLightmapTexture) return;
     
-    console.log('Applying lightmap to model...');
+    console.log('Loading graffiti lightmap...');
+    const loader = new RGBELoader();
+    
+    try {
+        const texture = await new Promise((resolve, reject) => {
+            loader.load('assets/graffiti_lightmap.hdr', resolve, undefined, reject);
+        });
+        
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.flipY = false;
+        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        
+        this.graffitiLightmapTexture = texture;
+        console.log('Graffiti lightmap loaded successfully');
+        
+    } catch (error) {
+        console.error('Failed to load graffiti lightmap:', error);
+    }
+}
+
+// Apply main lightmap to main model only
+applyMainLightmap() {
+    if (!this.model || !this.lightmapTexture) return;
+    
+    console.log('Applying main lightmap to main model...');
     let materialCount = 0;
     
     this.model.traverse((child) => {
-        if (child.isMesh && child.material) {
-            // Handle both single materials and material arrays
+        if (child.isMesh && child.material && child.geometry) {
             const materials = Array.isArray(child.material) ? child.material : [child.material];
             
             materials.forEach((material) => {
-                if (material.isMeshStandardMaterial || material.isMeshLambertMaterial || material.isMeshPhongMaterial) {
-                    // Set lightmap
-                    material.lightMap = this.lightmapTexture;
-                    material.lightMapIntensity = 1.0; // Adjust as needed
+                if (material.isMeshStandardMaterial || 
+                    material.isMeshLambertMaterial || 
+                    material.isMeshPhongMaterial ||
+                    material.isMeshBasicMaterial) {
                     
-                    // Ensure the material has proper UV coordinates for lightmapping
-                    // Most models use UV2 for lightmaps, but check your model
-                    if (child.geometry.attributes.uv2) {
-                        // UV2 exists, lightmap will use it automatically
-                        console.log(`Applied lightmap to ${child.name} using UV2`);
-                    } else if (child.geometry.attributes.uv) {
-                        // Fallback to UV1 if UV2 doesn't exist
+                    if (!child.geometry.attributes.uv2 && child.geometry.attributes.uv) {
                         child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
-                        console.log(`Applied lightmap to ${child.name} using UV1 as fallback`);
                     }
                     
+                    material.lightMap = this.lightmapTexture;
+                    material.lightMapIntensity = 1.0;
                     material.needsUpdate = true;
                     materialCount++;
                 }
@@ -213,571 +331,470 @@ applyLightmapToModel() {
         }
     });
     
-    console.log(`Lightmap applied to ${materialCount} materials`);
+    console.log(`Main lightmap applied to ${materialCount} materials`);
     this.needsRender = true;
 }
 
-setupAmbientLight() {
-    const light = new THREE.AmbientLight( 0xffe286, 0.5 ); // soft white light
-    this.scene.add( light );
-}
-
-setupLampionGlow() {
-    if (!this.model) return;
-    console.log('Setting up lampion glow effects...');
-    let lampionCount = 0;
-    var setOff = 0
+// Apply graffiti lightmap to graffiti wall only
+applyGraffitiLightmap() {
+    if (!this.graffitiWall || !this.graffitiLightmapTexture) return;
     
-    this.model.traverse((child) => {
-        if (child.name && child.name.toLowerCase().includes('lampion-')) {
-            console.log('Found lampion object:', child.name);
+    console.log('Applying graffiti lightmap to graffiti wall...');
+    let materialCount = 0;
+    
+    this.graffitiWall.traverse((child) => {
+        if (child.isMesh && child.material && child.geometry) {
+            const materials = Array.isArray(child.material) ? child.material : [child.material];
             
-            // Keep original material, just add bloom properties
-            // Add point light inside the lampion - manual coordinates
-            const pointLight = new THREE.PointLight(0xa42d21, 20, 10); // Blue light, intensity 2, range 10
-            
-            // Get world position of the lampion
-            
-            
-            // Set light position manually (adjust these coordinates as needed)
-            pointLight.position.set(10.5 , -0.5, 7.2 - setOff);
-            pointLight.castShadow = false; // Disable shadows for performance
-            
-            // Add light to the scene
-            this.scene.add(pointLight);
-            
-            // Create debug cube at light position
-            //const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-            //const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Green debug cube
-            //const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
-            //debugCube.position.copy(pointLight.position); // Same position as light
-            //this.scene.add(debugCube);
-            
-            // Store references for cleanup if needed
-            child.userData.pointLight = pointLight;
-            //child.userData.debugCube = debugCube;
-            
-            // Disable shadows for performance
-            child.castShadow = false;
-            child.receiveShadow = false;
-            
-            // Optional: Add userData for bloom threshold control
-            //child.userData.bloom = true;
-            //child.userData.bloomThreshold = 0.8;
-            
-            lampionCount++;
-            setOff += 2.75;
+            materials.forEach((material) => {
+                if (material.isMeshStandardMaterial || 
+                    material.isMeshLambertMaterial || 
+                    material.isMeshPhongMaterial ||
+                    material.isMeshBasicMaterial) {
+                    
+                    if (!child.geometry.attributes.uv2 && child.geometry.attributes.uv) {
+                        child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
+                    }
+                    
+                    material.lightMap = this.graffitiLightmapTexture;
+                    material.lightMapIntensity = 1.0;
+                    material.needsUpdate = true;
+                    materialCount++;
+                }
+            });
         }
     });
     
-    //console.log(`Applied glow effect to ${lampionCount} lampion objects`);
+    console.log(`Graffiti lightmap applied to ${materialCount} materials`);
+    this.needsRender = true;
 }
 
-setupBlackBoardLight() {
-    var setOff = 0
-    for(var i=0;i<3;i++){
-        const spotLight = new THREE.SpotLight(0xffc200, 200, 8,0.18,0.1,0);
-        spotLight.position.set(8.2, 0.7, 6.72 - setOff);
-        
-        // Create debug cube first
-        const debugGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-        const debugMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const debugCube = new THREE.Mesh(debugGeometry, debugMaterial);
-        debugCube.position.set(7.5, -9, 6.72 - setOff); // Position where you want light to point
-        
 
-
-        
-        // Hide the debug cube
-        debugCube.visible = false;
-        
-        // Target the spotlight at the debug cube
-        spotLight.target = debugCube;
-        
-        spotLight.castShadow = false;
-        this.scene.add(spotLight);
-        this.scene.add(debugCube); // Still need to add to scene for targeting to work
-
-
-
-        //const pointLight = new THREE.PointLight(0xffc200, 1.5, 3)
-        //pointLight.position.set(8.2, 0.5, 6.72 - setOff);
-        //pointLight.castShadow = false;
-        //this.scene.add(pointLight);
-        
-        setOff += 0.9;
-    }
-    console.log(`Creat spotLight`);
-}
-
-            setupFanAnimation() {
-    if (!this.model) return;
+    async loadLightmap() {
+    if (this.isLoadingLightmap || (this.lightmapTexture && this.graffitiLightmapTexture)) return;
     
-    // Find fan objects in the model
-    this.model.traverse((child) => {
-        if (child.name && child.name.toLowerCase().includes('fan')) {
-            console.log('Found fan object:', child.name);
-            this.addFanAnimation(child);
+    this.isLoadingLightmap = true;
+    console.log('Loading lightmaps...');
+    
+    const loader = new RGBELoader();
+    
+    try {
+        // Load main coffeeshop lightmap
+        const mainTexture = await new Promise((resolve, reject) => {
+            loader.load('assets/lightmap.hdr', resolve, undefined, reject);
+        });
+        
+        mainTexture.mapping = THREE.EquirectangularReflectionMapping;
+        mainTexture.wrapS = THREE.ClampToEdgeWrapping;
+        mainTexture.wrapT = THREE.ClampToEdgeWrapping;
+        mainTexture.flipY = false;
+        mainTexture.generateMipmaps = false;
+        mainTexture.minFilter = THREE.LinearFilter;
+        mainTexture.magFilter = THREE.LinearFilter;
+        
+        this.lightmapTexture = mainTexture;
+        console.log('Main lightmap loaded successfully');
+        
+        // Load graffiti wall lightmap
+        const graffitiTexture = await new Promise((resolve, reject) => {
+            loader.load('assets/graffiti_lightmap.hdr', resolve, undefined, reject);
+        });
+        
+        graffitiTexture.mapping = THREE.EquirectangularReflectionMapping;
+        graffitiTexture.wrapS = THREE.ClampToEdgeWrapping;
+        graffitiTexture.wrapT = THREE.ClampToEdgeWrapping;
+        graffitiTexture.flipY = false;
+        graffitiTexture.generateMipmaps = false;
+        graffitiTexture.minFilter = THREE.LinearFilter;
+        graffitiTexture.magFilter = THREE.LinearFilter;
+        
+        this.graffitiLightmapTexture = graffitiTexture;
+        console.log('Graffiti lightmap loaded successfully');
+        
+        if (this.model) {
+            this.applyLightmapsToModel();
         }
-    });
-}
-
-// Add a fan to the animation system
-addFanAnimation(fanObject, settings = {}) {
-    const defaultSettings = {
-        axis: 'x',           // Rotation axis
-        speed: 2,            // Rotation speed
-        direction: 1,        // 1 for clockwise, -1 for counterclockwise
-        enabled: true
-    };
-    
-    const fanSettings = { ...defaultSettings, ...settings };
-    
-    // Create a pivot group if the fan doesn't already have one
-    if (!fanObject.userData.pivotGroup) {
-        // Store the original parent
-        const originalParent = fanObject.parent;
         
-        // Create pivot group at the fan's current position
-        const pivotGroup = new THREE.Group();
-        pivotGroup.name = fanObject.name + '_pivot';
-        
-        // Position the pivot group at the fan's world position
-        const worldPosition = new THREE.Vector3();
-        fanObject.getWorldPosition(worldPosition);
-        
-        // Convert world position to local position relative to the original parent
-        const localPosition = new THREE.Vector3();
-        originalParent.worldToLocal(worldPosition.clone());
-        pivotGroup.position.copy(fanObject.position);
-        
-        // Add pivot group to the original parent
-        originalParent.add(pivotGroup);
-        
-        // Remove fan from original parent and add to pivot group
-        originalParent.remove(fanObject);
-        
-        // Reset fan's position to be relative to pivot
-        // If you want the fan to rotate around its base, you might need to adjust this
-        fanObject.position.set(0, 0, 0);
-        
-        // Add fan to pivot group
-        pivotGroup.add(fanObject);
-        
-        // Store reference to pivot group
-        fanObject.userData.pivotGroup = pivotGroup;
-        
-        console.log(`Created pivot group for fan ${fanObject.name}`);
-    }
-    
-    // Store the fan and its settings
-    this.fanObjects.set(fanObject.name, {
-        object: fanObject,
-        pivotGroup: fanObject.userData.pivotGroup,
-        settings: fanSettings,
-        lastTime: performance.now()
-    });
-    
-    console.log(`Fan ${fanObject.name} added to animation system with pivot`);
-}
-
-
-
-            showBackButton() {
-    const btn = document.getElementById('back-to-blackboard');
-    if (btn) {
-        btn.style.display = 'block';
+    } catch (error) {
+        console.error('Failed to load lightmaps:', error);
+        this.setupFallbackLighting();
+    } finally {
+        this.isLoadingLightmap = false;
     }
 }
-
-
-setupAutoCollisionObjects() {
+    applyLightmapsToModel() {
     if (!this.model) return;
     
-    console.log('Setting up auto-collision objects...');
-    
-    // Define naming patterns for collision objects
-    const collisionPatterns = [
-        'collision-',     // collision-letterA, collision-sign1, etc.
-        'click-',         // click-menu, click-board, etc.
-        'button-',        // button-letter, button-sign, etc.
-        'nav-',           // Your existing nav objects
-        'interact-',      // interact-welcome, interact-menu, etc.
-        'trigger-'        // trigger-door, trigger-light, etc.
-    ];
+    console.log('Applying lightmaps to model...');
+    let mainMaterialCount = 0;
+    let graffitiMaterialCount = 0;
     
     this.model.traverse((child) => {
-        if (child.isMesh && child.name) {
-            const name = child.name.toLowerCase();
+        if (child.isMesh && child.material && child.geometry) {
+            const materials = Array.isArray(child.material) ? child.material : [child.material];
             
-            // Check if this object should be a collision object
-            const isCollisionObject = collisionPatterns.some(pattern => 
-                name.startsWith(pattern.toLowerCase())
+            // Check if this is the graffiti wall object - be more specific with naming
+            const isGraffitiWall = child.name && (
+                child.name.toLowerCase().includes('graffiti') ||
+                child.name.toLowerCase() === 'graffiti-wall' ||
+                child.name.toLowerCase() === 'graffitiwall' ||
+                child.name.toLowerCase().includes('graffiti_wall')
             );
             
-            if (isCollisionObject) {
-                console.log('Found collision object:', child.name);
-                
-                // Make it invisible but keep it clickable
-                this.makeInvisibleCollision(child);
-                
-                // Store reference for easy access
-                if (!this.collisionObjects) {
-                    this.collisionObjects = new Map();
-                }
-                this.collisionObjects.set(child.name, child);
-            }
-        }
-    });
-    
-    console.log(`Set up ${this.collisionObjects?.size || 0} collision objects`);
-}
-
-makeInvisibleCollision(object) {
-    // Store original material for debugging purposes
-    object.userData.originalMaterial = object.material;
-    
-    // Create invisible material
-    const invisibleMaterial = new THREE.MeshBasicMaterial({
-        transparent: true,
-        opacity: 0,
-        alphaTest: 0.01, // Helps with raycasting
-        side: THREE.DoubleSide // Detect clicks from both sides
-    });
-    
-    // Apply invisible material
-    object.material = invisibleMaterial;
-    
-    // Mark as collision object
-    object.userData.isCollision = true;
-    object.userData.clickable = true;
-    
-    // Ensure it's still raycastable
-    object.raycast = THREE.Mesh.prototype.raycast;
-    
-    // Optional: Add wireframe for debugging (hidden by default)
-    if (object.userData.showWireframe) {
-        const wireframeGeometry = object.geometry.clone();
-        const wireframeMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.3
-        });
-        const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
-        wireframe.position.copy(object.position);
-        wireframe.rotation.copy(object.rotation);
-        wireframe.scale.copy(object.scale);
-        wireframe.visible = false; // Hidden by default
-        object.add(wireframe);
-        object.userData.debugWireframe = wireframe;
-    }
-}
-
-createPaperOverlay(paperName) {
-    const paperInfo = this.paperData[paperName];
-    if (!paperInfo) return;
-
-    // Create overlay container
-    const overlay = document.createElement('div');
-    overlay.className = 'paper-overlay';
-    overlay.innerHTML = `
-        <div class="paper-modal">
-            <div class="paper-header">
-                <h1>${paperInfo.title}</h1>
-                <button class="close-paper" aria-label="Close paper">×</button>
-            </div>
-            <div class="paper-content">
-                ${paperInfo.content}
-            </div>
-        </div>
-    `;
-
-    // Add to document
-    document.body.appendChild(overlay);
-
-    // Add event listeners
-    const closeBtn = overlay.querySelector('.close-paper');
-    closeBtn.addEventListener('click', () => {
-        this.closePaperOverlay(overlay);
-    });
-
-    // Close on overlay click (not modal)
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            this.closePaperOverlay(overlay);
-        }
-    });
-
-    // Close on escape key
-    const escapeHandler = (e) => {
-        if (e.key === 'Escape') {
-            this.closePaperOverlay(overlay);
-            document.removeEventListener('keydown', escapeHandler);
-        }
-    };
-    document.addEventListener('keydown', escapeHandler);
-
-    // Animate in
-    requestAnimationFrame(() => {
-        overlay.classList.add('show');
-    });
-}
-
-closePaperOverlay(overlay) {
-    overlay.classList.remove('show');
-    setTimeout(() => {
-        if (overlay.parentNode) {
-            overlay.parentNode.removeChild(overlay);
-        }
-    }, 300);
-}
-
-
-            setupScene() {
-                this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0x1a1a1a);
-                
-                // Keep automatic matrix updates for animations
-                this.scene.matrixAutoUpdate = true;
-            }
-
-            setupCamera(container) {
-                this.camera = new THREE.PerspectiveCamera(
-                    45,
-                    container.clientWidth / container.clientHeight,
-                    0.1,
-                    1000
-                );
-                this.camera.position.set(8, 0, 8);
-                // Keep automatic matrix updates for smooth camera movements
-                this.camera.matrixAutoUpdate = true;
-            }
-
-            setupRenderer(container) {
-    this.renderer = new THREE.WebGLRenderer({
-        antialias: window.devicePixelRatio <= 1, // Only on low-DPI displays
-        powerPreference: "high-performance",
-        stencil: false,
-        depth: true,
-        alpha: false,
-        preserveDrawingBuffer: false,
-        failIfMajorPerformanceCaveat: false
-    });
-    
-    this.renderer.setSize(container.clientWidth, container.clientHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
-    // Performance settings
-    this.renderer.shadowMap.enabled = false; // Disable shadows for better performance
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
-    
-    // Culling optimizations
-    this.renderer.sortObjects = true;
-    this.renderer.setViewport(0, 0, container.clientWidth, container.clientHeight);
-    
-    // Add to container
-    const placeholder = container.querySelector('.placeholder-3d');
-    if (placeholder) placeholder.style.display = 'none';
-    container.appendChild(this.renderer.domElement);
-}
-
-
-            focusOnBlackboard() {
-    const blackboard = this.model?.getObjectByName('Blackboard');
-    if (!blackboard) return;
-
-    const box = new THREE.Box3().setFromObject(blackboard);
-    const center = box.getCenter(new THREE.Vector3());
-
-    // Position camera near blackboard but still rotate around center
-    this.camera.position.set(center.x + 5, center.y -1, center.z + 4);
-    console.log('Camera position:', this.camera.position);
-
-
-    this.camera.lookAt(center); // look at blackboard
-    this.controls.target.set(0, 0, 0); // keep rotation centered on whole model
-    this.controls.update();
-}
-
-focusOnBlackboardCamera() {
-    if (!this.cameraTargets?.blackboard) return;
-
-    this.focusCameraTo({
-        ...this.cameraTargets.blackboard,
-        duration: 2.5
-    });
-
-    // Optionally close the backdoor
-    this.closeBackdoor?.();
-}
-
-
-            setupControls() {
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    
-    // Smoother damping
-    this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.08; // Slightly higher for smoother feel
-    
-    // Optimized zoom
-    this.controls.enableZoom = true;
-    this.controls.zoomSpeed = 0.8;
-    this.controls.enablePan = true;
-    this.controls.panSpeed = 0.8;
-    
-    // Limits
-    this.controls.maxDistance = 50;
-    this.controls.minDistance = 1;
-    this.controls.maxPolarAngle = Math.PI * 0.8;
-    
-    // Performance optimizations
-    this.controls.autoRotate = false;
-    this.controls.autoRotateSpeed = 0.5;
-    
-    // Track changes for render optimization
-    this.controls.hasChanged = false;
-    
-    // Optimized event listeners
-    this.controls.addEventListener('change', () => {
-        this.needsRender = true;
-        this.lastInteraction = performance.now();
-        this.controls.hasChanged = true;
-    });
-    
-    this.controls.addEventListener('start', () => {
-        this.lastInteraction = performance.now();
-        this.isInteracting = true;
-    });
-    
-    this.controls.addEventListener('end', () => {
-        this.lastInteraction = performance.now();
-        this.isInteracting = false;
-        // Force one more render after interaction ends
-        setTimeout(() => {
-            this.needsRender = true;
-        }, 16); // Next frame
-    });
-}
-
-
-            setupLighting() {
-    // 1. Single ambient light (reduced intensity)
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-    this.scene.add(ambientLight);
-
-    // 2. Main directional light with optimized shadows
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(10, 10, 5);
-    dirLight.castShadow = false;
-    
-    
-    
-    // Critical: Don't update shadows every frame
-    dirLight.shadow.autoUpdate = false;
-    
-    this.scene.add(dirLight);
-
-    // 3. Single hemisphere light for ambient fill
-    const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x362d1a, 0.8);
-    this.scene.add(hemiLight);
-
-    // Store reference for manual shadow updates
-    this.mainLight = dirLight;
-    
-    // Update shadows only when camera stops moving
-   
-}
-
-
-            setupEventListeners() {
-                // Click interaction
-                this.renderer.domElement.addEventListener('click', (event) => {
-                    this.handleClick(event);
-                });
-
-                // Resize handler
-                let resizeTimeout;
-                window.addEventListener('resize', () => {
-                    clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(() => {
-                        this.handleResize();
-                    }, 100);
-                });
-
-                document.addEventListener('keydown', (event) => {
-        if (event.key === 'b' && event.ctrlKey) {
-            this.toggleCollisionVisibility();
-        }
-        if (event.key === 'p' && event.ctrlKey) {
-            this.togglePerformanceMonitoring();
-        }
-    });
-
-                // Visibility change handler
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden) {
-                        this.pauseRendering();
+            console.log(`Processing object: ${child.name}, isGraffitiWall: ${isGraffitiWall}`);
+            
+            materials.forEach((material) => {
+                if (material.isMeshStandardMaterial || 
+                    material.isMeshLambertMaterial || 
+                    material.isMeshPhongMaterial ||
+                    material.isMeshBasicMaterial) {
+                    
+                    // Ensure UV2 coordinates exist for lightmapping
+                    if (!child.geometry.attributes.uv2) {
+                        if (child.geometry.attributes.uv) {
+                            child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
+                        } else {
+                            console.warn(`No UV coordinates found for object: ${child.name}`);
+                            return;
+                        }
+                    }
+                    
+                    // Apply appropriate lightmap based on object type
+                    if (isGraffitiWall && this.graffitiLightmapTexture) {
+                        material.lightMap = this.graffitiLightmapTexture;
+                        material.lightMapIntensity = 1.0;
+                        material.needsUpdate = true;
+                        graffitiMaterialCount++;
+                        console.log(`✓ Applied graffiti lightmap to: ${child.name}`);
+                    } else if (!isGraffitiWall && this.lightmapTexture) {
+                        material.lightMap = this.lightmapTexture;
+                        material.lightMapIntensity = 1.0;
+                        material.needsUpdate = true;
+                        mainMaterialCount++;
+                        console.log(`✓ Applied main lightmap to: ${child.name}`);
                     } else {
-                        this.resumeRendering();
-                    }
-                });
-
-                // Performance monitoring toggle
-                document.addEventListener('keydown', (event) => {
-                    if (event.key === 'p' && event.ctrlKey) {
-                        this.togglePerformanceMonitoring();
-                    }
-                });
-            }
-
-            async loadModel() {
-                if (this.isLoading) return;
-                this.isLoading = true;
-                
-                this.showLoadingMessage();
-                
-                const loader = new GLTFLoader();
-                const modelPaths = ['assets/coffeeshop.glb', 'assets/coffeeshop.glb'];
-                
-                for (const path of modelPaths) {
-                    try {
-                        const gltf = await this.loadGLTF(loader, path);
-                        this.handleModelLoad(gltf);
-                        return;
-                    } catch (error) {
-                        console.warn(`Failed to load ${path}:`, error);
+                        console.warn(`No appropriate lightmap found for: ${child.name}, isGraffitiWall: ${isGraffitiWall}`);
                     }
                 }
+            });
+        }
+    });
+    
+    console.log(`Main lightmap applied to ${mainMaterialCount} materials`);
+    console.log(`Graffiti lightmap applied to ${graffitiMaterialCount} materials`);
+    
+    if (mainMaterialCount === 0 && graffitiMaterialCount === 0) {
+        console.warn('No materials received lightmaps - check object names and material types');
+    }
+    
+    this.needsRender = true;
+}
+
+    setupFallbackLighting() {
+        console.log('Setting up fallback lighting');
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+        this.scene.add(ambientLight);
+    }
+
+    setupLampionGlow() {
+        if (!this.model) return;
+        console.log('Setting up lampion glow effects...');
+        
+        let setOff = 0;
+        this.model.traverse((child) => {
+            if (child.name && child.name.toLowerCase().includes('lampion-')) {
+                const pointLight = new THREE.PointLight(0xa42d21, 20, 10);
+                pointLight.position.set(10.5, -0.5, 7.2 - setOff);
+                pointLight.castShadow = false;
+                this.scene.add(pointLight);
                 
-                // If both models failed
-                this.hideLoadingMessage();
-                this.isLoading = false;
-                this.showErrorMessage('Model files not found. Please check that cafeteria.glb or coffeeshop.glb exists in the assets folder.');
+                child.userData.pointLight = pointLight;
+                child.castShadow = false;
+                child.receiveShadow = false;
+                
+                setOff += 2.75;
             }
+        });
+    }
 
-            loadGLTF(loader, url) {
-                return new Promise((resolve, reject) => {
-                    loader.load(
-                        url,
-                        resolve,
-                        (progress) => {
-                            const percentComplete = (progress.loaded / progress.total * 100);
-                            this.updateLoadingProgress(percentComplete);
-                        },
-                        reject
-                    );
-                });
+    setupBlackBoardLight() {
+        let setOff = 0;
+        for(let i = 0; i < 3; i++) {
+            const spotLight = new THREE.SpotLight(0xffc200, 200, 8, 0.18, 0.1, 0);
+            spotLight.position.set(8.2, 0.7, 6.72 - setOff);
+            
+            const debugCube = new THREE.Mesh(
+                new THREE.BoxGeometry(0.2, 0.2, 0.2),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            );
+            debugCube.position.set(7.5, -9, 6.72 - setOff);
+            debugCube.visible = false;
+            
+            spotLight.target = debugCube;
+            spotLight.castShadow = false;
+            
+            this.scene.add(spotLight);
+            this.scene.add(debugCube);
+            
+            setOff += 0.9;
+        }
+    }
+
+    setupAutoCollisionObjects() {
+        if (!this.model) return;
+        
+        console.log('Setting up auto-collision objects...');
+        
+        const collisionPatterns = [
+            'collision-', 'click-', 'button-', 'nav-', 'interact-', 'trigger-'
+        ];
+        
+        this.model.traverse((child) => {
+            if (child.isMesh && child.name) {
+                const name = child.name.toLowerCase();
+                const isCollisionObject = collisionPatterns.some(pattern => 
+                    name.startsWith(pattern.toLowerCase())
+                );
+                
+                if (isCollisionObject) {
+                    this.makeInvisibleCollision(child);
+                    this.collisionObjects.set(child.name, child);
+                }
             }
+        });
+        
+        console.log(`Set up ${this.collisionObjects.size} collision objects`);
+    }
 
-            // Replace your handleModelLoad method with this updated version:
-async handleModelLoad(gltf) {
+    makeInvisibleCollision(object) {
+        object.userData.originalMaterial = object.material;
+        
+        const invisibleMaterial = new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0,
+            alphaTest: 0.01,
+            side: THREE.DoubleSide
+        });
+        
+        object.material = invisibleMaterial;
+        object.userData.isCollision = true;
+        object.userData.clickable = true;
+        object.raycast = THREE.Mesh.prototype.raycast;
+    }
+
+    createPaperOverlay(paperName) {
+        const paperInfo = this.paperData[paperName];
+        if (!paperInfo) return;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'paper-overlay';
+        overlay.innerHTML = `
+            <div class="paper-modal">
+                <div class="paper-header">
+                    <h1>${paperInfo.title}</h1>
+                    <button class="close-paper" aria-label="Close paper">×</button>
+                </div>
+                <div class="paper-content">
+                    ${paperInfo.content}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const closeBtn = overlay.querySelector('.close-paper');
+        closeBtn.addEventListener('click', () => {
+            this.closePaperOverlay(overlay);
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                this.closePaperOverlay(overlay);
+            }
+        });
+
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closePaperOverlay(overlay);
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+
+        requestAnimationFrame(() => {
+            overlay.classList.add('show');
+        });
+    }
+
+    closePaperOverlay(overlay) {
+        overlay.classList.remove('show');
+        setTimeout(() => {
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 300);
+    }
+
+    setupScene() {
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x1a1a1a);
+        this.scene.matrixAutoUpdate = true;
+    }
+
+    setupCamera(container) {
+        this.camera = new THREE.PerspectiveCamera(
+            45,
+            container.clientWidth / container.clientHeight,
+            0.1,
+            1000
+        );
+        this.camera.position.set(8, 0, 8);
+        this.camera.matrixAutoUpdate = true;
+    }
+
+    setupRenderer(container) {
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: window.devicePixelRatio <= 1,
+            powerPreference: "high-performance",
+            stencil: false,
+            depth: true,
+            alpha: false,
+            preserveDrawingBuffer: false,
+            failIfMajorPerformanceCaveat: false
+        });
+        
+        this.renderer.setSize(container.clientWidth, container.clientHeight);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        
+        this.renderer.shadowMap.enabled = false;
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.0;
+        this.renderer.sortObjects = true;
+        this.renderer.setViewport(0, 0, container.clientWidth, container.clientHeight);
+        
+        const placeholder = container.querySelector('.placeholder-3d');
+        if (placeholder) placeholder.style.display = 'none';
+        container.appendChild(this.renderer.domElement);
+    }
+
+    focusOnBlackboardCamera() {
+        if (!this.cameraTargets?.blackboard) return;
+
+        this.focusCameraTo({
+            ...this.cameraTargets.blackboard,
+            duration: 2.5
+        });
+
+        this.closeBackdoor?.();
+    }
+
+    setupControls() {
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.08;
+        this.controls.enableZoom = true;
+        this.controls.zoomSpeed = 0.8;
+        this.controls.enablePan = true;
+        this.controls.panSpeed = 0.8;
+        this.controls.maxDistance = 50;
+        this.controls.minDistance = 1;
+        this.controls.maxPolarAngle = Math.PI * 0.8;
+        this.controls.autoRotate = false;
+        this.controls.autoRotateSpeed = 0.5;
+        this.controls.hasChanged = false;
+        
+        this.controls.addEventListener('change', () => {
+            this.needsRender = true;
+            this.lastInteraction = performance.now();
+            this.controls.hasChanged = true;
+        });
+        
+        this.controls.addEventListener('start', () => {
+            this.lastInteraction = performance.now();
+            this.isInteracting = true;
+        });
+        
+        this.controls.addEventListener('end', () => {
+            this.lastInteraction = performance.now();
+            this.isInteracting = false;
+            setTimeout(() => {
+                this.needsRender = true;
+            }, 16);
+        });
+    }
+
+    setupEventListeners() {
+        this.renderer.domElement.addEventListener('click', (event) => {
+            this.handleClick(event);
+        });
+
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.handleResize();
+            }, 100);
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.pauseRendering();
+            } else {
+                this.resumeRendering();
+            }
+        });
+    }
+
+   async loadModel() {
+    if (this.isLoading) return;
+    this.isLoading = true;
+    
+    this.showLoadingMessage();
+    
+    const loader = new GLTFLoader();
+    
+    try {
+        // Load main coffeeshop model
+        const mainGltf = await this.loadGLTF(loader, 'assets/coffeeshop.glb');
+        await this.handleMainModelLoad(mainGltf);
+        
+        // Load graffiti wall separately
+        await this.loadGraffitiWall(loader);
+
+
+        setTimeout(() => {
+            this.focusOnBlackboardCamera();
+        }, 500); 
+        
+    } catch (error) {
+        console.error('Failed to load models:', error);
+        this.showErrorMessage('Failed to load 3D models. Please check that the model files exist.');
+    }
+    
     this.hideLoadingMessage();
     this.isLoading = false;
-    
+}
+
+    loadGLTF(loader, url) {
+        return new Promise((resolve, reject) => {
+            loader.load(url, resolve, undefined, reject);
+        });
+    }
+
+    async handleMainModelLoad(gltf) {
     this.model = gltf.scene;
+
+    // Remove graffiti wall from main model if it exists
+    const graffitiWallInMain = this.model.getObjectByName('graffiti-wall') || 
+                              this.model.getObjectByName('graffitiwall') ||
+                              this.findObjectByPartialName(this.model, 'graffiti');
+    
+    if (graffitiWallInMain) {
+        console.log('Removing graffiti wall from main model');
+        graffitiWallInMain.parent.remove(graffitiWallInMain);
+    }
 
     const box = new THREE.Box3().setFromObject(this.model);
     const center = box.getCenter(new THREE.Vector3());
@@ -790,783 +807,381 @@ async handleModelLoad(gltf) {
     this.optimizeModel(this.model);
     this.scene.add(this.model);
     
-    // Setup auto-collision objects and animations
     this.setupAutoCollisionObjects();
-    this.setupFanAnimation();
     
-    // Load and apply lightmap instead of setting up lights
-    await this.loadLightmap();
+    // Apply main lightmap to main model
+    await this.loadMainLightmap();
     if (this.lightmapTexture) {
-        this.applyLightmapToModel();
-    } else {
-        // Fallback to minimal lighting if lightmap fails
-        this.setupMinimalLighting();
+        this.applyMainLightmap();
     }
 
-    // Set initial camera position
+    this.setupLampionGlow();
+    this.setupBlackBoardLight();
     this.fitCameraToModel();
 
-    // Disable shadows on imported lights
-    gltf.scene.traverse((child) => {
-        if (child.isLight) {
-            child.castShadow = false;
-            if (child.shadow) {
-                child.shadow.autoUpdate = false;
-            }
-        }
-    });
-    
-    // Animate to blackboard position after a short delay
-    setTimeout(() => {
-        this.focusOnBlackboardCamera();
-    }, 100);
-    
-    this.updatePerformanceCounters();
-    this.needsRender = true;
-    
-    console.log('Model loaded successfully with lightmap - zooming to blackboard');
-}
-setupMinimalLighting() {
-    console.log('Setting up minimal fallback lighting');
-    
-    // Very basic ambient light only
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
-    this.scene.add(ambientLight);
-    
-    // Store reference
-    this.fallbackLight = ambientLight;
+    console.log('Main model loaded successfully');
 }
 
-            optimizeModel(model) {
-                let meshCount = 0;
-                const geometriesToMerge = [];
+
+async loadGraffitiWall(loader) {
+    if (this.isLoadingGraffitiWall) return;
+    this.isLoadingGraffitiWall = true;
+    
+    try {
+        // You can either:
+        // 1. Load from a separate GLB file: 'assets/graffiti-wall.glb'
+        // 2. Load from the same file and extract just the graffiti wall
+        const graffitiGltf = await this.loadGLTF(loader, 'assets/graffiti-wall.glb');
+        
+        this.graffitiWall = graffitiGltf.scene;
+        
+        // Position the graffiti wall exactly where it should be
+        // Adjust these coordinates based on your model
+        this.graffitiWall.position.set(0, 0, 0); // Set to exact position
+        this.graffitiWall.rotation.set(0, 0, 0); // Set to exact rotation
+        this.graffitiWall.scale.set(1, 1, 1);    // Set to exact scale
+        
+        this.optimizeModel(this.graffitiWall);
+        this.scene.add(this.graffitiWall);
+        
+        // Apply graffiti lightmap only to graffiti wall
+        await this.loadGraffitiLightmap();
+        if (this.graffitiLightmapTexture) {
+            this.applyGraffitiLightmap();
+        }
+        
+        console.log('Graffiti wall loaded and positioned successfully');
+        
+    } catch (error) {
+        console.warn('Failed to load separate graffiti wall, trying to extract from main model:', error);
+        // Fallback: try to extract from main model if separate file doesn't exist
+        await this.extractGraffitiFromMain(loader);
+    }
+    
+    this.isLoadingGraffitiWall = false;
+}
+
+    optimizeModel(model) {
+        let meshCount = 0;
+        
+        model.traverse((child) => {
+            if (child.isMesh) {
+                meshCount++;
                 
-                model.traverse((child) => {
-                    // Keep automatic matrix updates for animations
-                    //child.matrixAutoUpdate = true;
-                    
-                    if (child.isMesh) {
-                        meshCount++;
-                        
-                        // Disable shadows for better performance
-            child.castShadow = false;
-            child.receiveShadow = false;
-            
-                        
-                        // Reduce material complexity
+                child.castShadow = false;
+                child.receiveShadow = false;
+                
                 if (child.material.map) {
                     child.material.map.generateMipmaps = false;
                     child.material.map.minFilter = THREE.LinearFilter;
                     child.material.map.magFilter = THREE.LinearFilter;
                 }
-                        
-                         // Disable unnecessary material features
+                
                 child.material.transparent = child.material.transparent || false;
                 child.material.alphaTest = child.material.alphaTest || 0;
-                
-                // Force material compilation
                 child.material.needsUpdate = true;
 
-
-
-
                 if (child.geometry) {
-                // Compute bounding sphere for frustum culling
-                if (!child.geometry.boundingSphere) {
-                    child.geometry.computeBoundingSphere();
-                }
-                
-                // Merge geometries where possible (for static objects)
-                if (child.userData.mergeable !== false) {
-                    geometriesToMerge.push(child);
-                }
-            }
-            // Enhanced frustum culling
-            child.frustumCulled = true;
-
-
-            
+                    if (!child.geometry.boundingSphere) {
+                        child.geometry.computeBoundingSphere();
                     }
-
-
-            
-                });
-                
-                this.performance.triangles = this.countTriangles(model);
-                console.log(`Model optimized: ${meshCount} meshes, ${this.performance.triangles} triangles`);
-            
-            
-            }
-
-            mergeGeometries(meshes) {
-    const materialGroups = new Map();
-    
-    // Group meshes by material
-    meshes.forEach(mesh => {
-        if (mesh.userData.static !== false && mesh.geometry && mesh.material) {
-            const materialKey = this.getMaterialKey(mesh.material);
-            if (!materialGroups.has(materialKey)) {
-                materialGroups.set(materialKey, []);
-            }
-            materialGroups.get(materialKey).push(mesh);
-        }
-    });
-    
-    // Merge geometries with same material
-    materialGroups.forEach((groupMeshes, materialKey) => {
-        if (groupMeshes.length > 1) {
-            this.mergeGeometryGroup(groupMeshes);
-        }
-    });
-}
-
-            countTriangles(object) {
-                let count = 0;
-                object.traverse((child) => {
-                    if (child.isMesh && child.geometry) {
-                        const positions = child.geometry.attributes.position;
-                        if (positions) {
-                            count += positions.count / 3;
-                        }
-                    }
-                });
-                return Math.floor(count);
-            }
-
-            fitCameraToModel() {
-const box = new THREE.Box3().setFromObject(this.model);
-                const size = box.getSize(new THREE.Vector3());
-const center = box.getCenter(new THREE.Vector3());
-this.model.position.sub(center);
-
-                const maxDim = Math.max(size.x, size.y, size.z);
-                const fov = this.camera.fov * (Math.PI / 180);
-                const distance = maxDim / (2 * Math.tan(fov / 2)) * 1.2;
-                
-                //this.camera.position.set(
-                //    center.x + distance * 0.5,
-                //    center.y + distance * 0.3,
-                //    center.z + distance * 0.5
-                //);
-                
-                // Keep rotating around model center (0, 0, 0) or building center
-const buildingCenter = new THREE.Vector3(0, 0, 0);
-this.controls.target.copy(buildingCenter);
-
-                this.controls.update();
-            }
-
-            focusOnBlackboard() {
-                const blackboard = this.model?.getObjectByName('Blackboard');
-                if (blackboard) {
-                    const box = new THREE.Box3().setFromObject(blackboard);
-                    const center = box.getCenter(new THREE.Vector3());
-                    
-                    this.camera.position.set(center.x + 5, center.y, center.z + 4);
-                    // Keep rotating around model center (0, 0, 0) or building center
-const buildingCenter = new THREE.Vector3(0, 0, 0);
-this.controls.target.copy(buildingCenter);
-
-                    this.controls.update();
                 }
+                
+                child.frustumCulled = true;
             }
-
-           handleClick(event) {
-    if (!this.model) return;
-
-    const bounds = this.renderer.domElement.getBoundingClientRect();
-    this.mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
-    this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
-
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    
-    // Get all objects for raycasting (including collision objects)
-    const allObjects = [];
-    this.model.traverse((child) => {
-        if (child.isMesh) {
-            allObjects.push(child);
-        }
-    });
-    
-    const intersects = this.raycaster.intersectObjects(allObjects, false);
-
-    if (intersects.length > 0) {
-        const clickedObject = intersects[0].object;
-        const name = clickedObject.name;
+        });
         
-        console.log('Clicked object:', name, clickedObject.userData);
-
-        // Handle different types of clicks based on name patterns
-        if (this.handleClickByName(name, clickedObject)) {
-            return;
-        }
-        
-        // Fallback for unnamed objects
-        console.log('Unhandled click on:', name);
+        console.log(`Model optimized: ${meshCount} meshes`);
     }
-}
 
-handleClickByName(name, clickedObject) {
-    if (!name) return false;
-    
-    const lowerName = name.toLowerCase();
-    
-    // Handle collision objects
-    if (lowerName.startsWith('collision-')) {
-        return this.handleCollisionClick(name, clickedObject);
-    }
-    
-    // Handle click objects
-    if (lowerName.startsWith('click-')) {
-        return this.handleClickObjectClick(name, clickedObject);
-    }
-    
-    // Handle button objects
-    if (lowerName.startsWith('button-')) {
-        return this.handleButtonClick(name, clickedObject);
-    }
-    
-    // Handle interact objects
-    if (lowerName.startsWith('interact-')) {
-        return this.handleInteractClick(name, clickedObject);
-    }
-    
-    // Handle trigger objects
-    if (lowerName.startsWith('trigger-')) {
-        return this.handleTriggerClick(name, clickedObject);
-    }
-    
-    // Handle existing nav objects
-    if (lowerName.startsWith('nav-')) {
-        if (lowerName.startsWith('nav-blackboard')) {
-            this.focusOnBlackboardCamera();
-        } else {
-            this.handleNavigation(name);
-        }
-        return true;
-    }
-    
-    // Handle existing paper objects
-    if (lowerName.startsWith('paper_')) {
-        console.log('Paper clicked:', name);
-        this.createPaperOverlay(name);
-        return true;
-    }
-    
-    return false;
-}
+    fitCameraToModel() {
+        const box = new THREE.Box3().setFromObject(this.model);
+        const center = box.getCenter(new THREE.Vector3());
+        this.model.position.sub(center);
 
-
-handleCollisionClick(name, clickedObject) {
-    console.log('Collision object clicked:', name);
-    
-    // Extract the actual object name (remove 'collision-' prefix)
-    const objectName = name.substring(10); // Remove 'collision-'
-    
-    // Handle based on object type
-    if (objectName.includes('letter')) {
-        this.handleLetterCollision(objectName, clickedObject);
-    } else if (objectName.includes('sign')) {
-        this.handleSignCollision(objectName, clickedObject);
-    } else if (objectName.includes('menu')) {
-        this.handleMenuCollision(objectName, clickedObject);
-    } else if (objectName.includes('door')) {
-        this.handleDoorCollision(objectName, clickedObject);
-    } else {
-        this.handleGenericCollision(objectName, clickedObject);
-    }
-    
-    return true;
-}
-
-handleClickObjectClick(name, clickedObject) {
-    console.log('Click object clicked:', name);
-    const objectName = name.substring(6); // Remove 'click-'
-    
-    // Add click animation
-    this.animateClick(clickedObject);
-    
-    // Handle specific click actions
-    if (objectName.includes('menu')) {
-        this.showMenuOverlay();
-    } else if (objectName.includes('info')) {
-        this.showInfoOverlay(objectName);
-    }
-    
-    return true;
-}
-
-handleButtonClick(name, clickedObject) {
-    console.log('Button clicked:', name);
-    const buttonName = name.substring(7); // Remove 'button-'
-    
-    // Add button press animation
-    this.animateButtonPress(clickedObject);
-    
-    // Handle button actions
-    this.executeButtonAction(buttonName);
-    
-    return true;
-}
-
-handleInteractClick(name, clickedObject) {
-    console.log('Interact object clicked:', name);
-    const interactName = name.substring(9); // Remove 'interact-'
-    
-    // Add interaction feedback
-    this.showInteractionFeedback(clickedObject);
-    
-    return true;
-}
-
-handleTriggerClick(name, clickedObject) {
-    console.log('Trigger activated:', name);
-    const triggerName = name.substring(8); // Remove 'trigger-'
-    
-    // Handle trigger actions
-    this.executeTriggerAction(triggerName, clickedObject);
-    
-    return true;
-}
-
-// Animation methods
-animateClick(object) {
-    gsap.to(object.scale, {
-        duration: 0.15,
-        x: 0.9,
-        y: 0.9,
-        z: 0.9,
-        yoyo: true,
-        repeat: 1,
-        ease: "power2.out",
-        onUpdate: () => {
-            this.needsRender = true;
-        }
-    });
-}
-
-animateButtonPress(object) {
-    gsap.to(object.position, {
-        duration: 0.1,
-        y: object.position.y - 0.1,
-        yoyo: true,
-        repeat: 1,
-        ease: "power2.out",
-        onUpdate: () => {
-            this.needsRender = true;
-        }
-    });
-}
-
-showInteractionFeedback(object) {
-    // Create temporary glow effect
-    const glowMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
-        transparent: true,
-        opacity: 0.5
-    });
-    
-    const originalMaterial = object.material;
-    object.material = glowMaterial;
-    
-    setTimeout(() => {
-        object.material = originalMaterial;
-        this.needsRender = true;
-    }, 300);
-}
-
-// Specific collision handlers
-handleLetterCollision(letterName, clickedObject) {
-    console.log('Letter collision:', letterName);
-    this.showMessage(`You clicked on: ${letterName}`);
-    this.animateClick(clickedObject);
-}
-
-handleSignCollision(signName, clickedObject) {
-    console.log('Sign collision:', signName);
-    this.showMessage(`Sign: ${signName}`);
-    this.animateClick(clickedObject);
-}
-
-handleMenuCollision(menuName, clickedObject) {
-    console.log('Menu collision:', menuName);
-    this.showMenuOverlay();
-}
-
-handleDoorCollision(doorName, clickedObject) {
-    console.log('Door collision:', doorName);
-    this.handleDoorInteraction(doorName);
-}
-
-handleGenericCollision(objectName, clickedObject) {
-    console.log('Generic collision:', objectName);
-    this.showMessage(`Clicked: ${objectName}`);
-    this.animateClick(clickedObject);
-}
-
-// Action executors
-executeButtonAction(buttonName) {
-    switch (buttonName) {
-        case 'lights':
-            this.toggleLights();
-            break;
-        case 'music':
-            this.toggleMusic();
-            break;
-        case 'info':
-            this.showInfoOverlay();
-            break;
-        default:
-            this.showMessage(`Button activated: ${buttonName}`);
-    }
-}
-
-executeTriggerAction(triggerName, triggerObject) {
-    switch (triggerName) {
-        case 'door':
-            this.openDoor(triggerObject);
-            break;
-        case 'light':
-            this.toggleAreaLight(triggerObject);
-            break;
-        default:
-            this.showMessage(`Trigger activated: ${triggerName}`);
-    }
-}
-
-// Debug methods
-toggleCollisionVisibility() {
-    if (!this.collisionObjects) return;
-    
-    this.collisionObjects.forEach((object, name) => {
-        if (object.userData.isCollision) {
-            const isVisible = object.material.opacity > 0;
-            object.material.opacity = isVisible ? 0 : 0.3;
-            object.material.wireframe = !isVisible;
-            
-            // Toggle debug wireframe if it exists
-            if (object.userData.debugWireframe) {
-                object.userData.debugWireframe.visible = !isVisible;
-            }
-        }
-    });
-    
-    this.needsRender = true;
-}
-
-// Message helper
-showMessage(text) {
-    const message = document.createElement('div');
-    message.className = 'collision-message';
-    message.textContent = text;
-    message.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 1rem;
-        border-radius: 5px;
-        z-index: 1000;
-        animation: fadeInOut 2s ease-in-out;
-    `;
-    
-    document.body.appendChild(message);
-    
-    setTimeout(() => {
-        message.remove();
-    }, 2000);
-}
-
-handleNavigation(name) {
-    const target = this.cameraTargets[name];
-    if (target) {
-        this.focusCameraTo(target);
-        this.showBackButton();
-
-        if (name === 'nav-contact') {
-            setTimeout(() => {
-                this.openBackdoor();
-            }, 1500);
-        }
-    }
-}
-
-
-
-
-focusCameraTo({ position, lookAt, duration = 2.0 }) {
-    const startPos = this.camera.position.clone();
-    const startLookAt = this.controls.target.clone();
-    
-    // Use provided lookAt or default to model center
-    const targetLookAt = lookAt || new THREE.Vector3(0, 1.5, 0);
-    
-    const startTime = performance.now();
-    const totalTime = duration * 1000;
-
-    const animate = (now) => {
-        const elapsed = now - startTime;
-        const t = Math.min(elapsed / totalTime, 1);
-        const easedT = gsap.parseEase("power2.inOut")(t);
-
-        // Interpolate camera position
-        const newPos = startPos.clone().lerp(position, easedT);
-        this.camera.position.copy(newPos);
-        
-        // Interpolate lookAt target
-        const newLookAt = startLookAt.clone().lerp(targetLookAt, easedT);
-        this.camera.lookAt(newLookAt);
-        
-        // Update controls target
-        this.controls.target.copy(newLookAt);
+        const buildingCenter = new THREE.Vector3(0, 0, 0);
+        this.controls.target.copy(buildingCenter);
         this.controls.update();
+    }
 
-        this.needsRender = true;
+    handleClick(event) {
+        if (!this.model) return;
 
-        if (t < 1) {
-            requestAnimationFrame(animate);
-        }
-    };
+        const bounds = this.renderer.domElement.getBoundingClientRect();
+        this.mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+        this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
 
-    requestAnimationFrame(animate);
-}
-
-
-
-
-
-
-
-
-
-            openBackdoor() {
-                const door = this.model?.getObjectByName('Backdoor');
-                if (!door) return;
-                
-                // Reset door position
-                door.rotation.y = 0;
-                door.updateMatrixWorld();
-                
-                gsap.to(door.rotation, {
-                    duration: 1.2,
-                    y: -Math.PI / 2,
-                    ease: "power2.out",
-                    onUpdate: () => {
-                        door.updateMatrixWorld();
-                        this.needsRender = true;
-                    }
-                });
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        
+        const allObjects = [];
+        this.model.traverse((child) => {
+            if (child.isMesh) {
+                allObjects.push(child);
             }
+        });
+        
+        const intersects = this.raycaster.intersectObjects(allObjects, false);
 
-            closeBackdoor() {
-    const door = this.model?.getObjectByName('Backdoor');
-    if (!door) return;
-    
-    gsap.to(door.rotation, {
-        duration: 4.2,
-        y: 0, // Close the door back to original position
-        ease: "power2.out",
-        onUpdate: () => {
+        if (intersects.length > 0) {
+            const clickedObject = intersects[0].object;
+            const name = clickedObject.name;
+            
+            console.log('Clicked object:', name);
+            this.handleClickByName(name, clickedObject);
+        }
+    }
+
+    handleClickByName(name, clickedObject) {
+        if (!name) return false;
+        
+        const lowerName = name.toLowerCase();
+        
+        // Handle nav objects
+        if (lowerName.startsWith('nav-')) {
+            if (lowerName.startsWith('nav-blackboard')) {
+                this.focusOnBlackboardCamera();
+            } else {
+                this.handleNavigation(name);
+            }
+            return true;
+        }
+        
+        // Handle paper objects
+        if (lowerName.startsWith('paper_')) {
+            console.log('Paper clicked:', name);
+            this.createPaperOverlay(name);
+            return true;
+        }
+        
+        // Handle other collision objects
+        if (lowerName.startsWith('collision-') || 
+            lowerName.startsWith('click-') || 
+            lowerName.startsWith('button-') || 
+            lowerName.startsWith('interact-') || 
+            lowerName.startsWith('trigger-')) {
+            console.log('Interactive object clicked:', name);
+            return true;
+        }
+        
+        return false;
+    }
+
+    handleNavigation(name) {
+        const target = this.cameraTargets[name];
+        if (target) {
+            this.focusCameraTo(target);
+            this.showBackButton();
+
+            if (name === 'nav-contact') {
+                setTimeout(() => {
+                    this.openBackdoor();
+                }, 1500);
+            }
+        }
+    }
+
+    focusCameraTo({ position, lookAt, duration = 2.0 }) {
+        const startPos = this.camera.position.clone();
+        const startLookAt = this.controls.target.clone();
+        const targetLookAt = lookAt || new THREE.Vector3(0, 1.5, 0);
+        
+        const startTime = performance.now();
+        const totalTime = duration * 1000;
+
+        const animate = (now) => {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / totalTime, 1);
+            const easedT = this.easeInOut(t);
+
+            const newPos = startPos.clone().lerp(position, easedT);
+            this.camera.position.copy(newPos);
+            
+            const newLookAt = startLookAt.clone().lerp(targetLookAt, easedT);
+            this.camera.lookAt(newLookAt);
+            this.controls.target.copy(newLookAt);
+            this.controls.update();
+
+            this.needsRender = true;
+
+            if (t < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+    easeInOut(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    showBackButton() {
+        const btn = document.getElementById('back-to-blackboard');
+        if (btn) {
+            btn.style.display = 'block';
+        }
+    }
+
+    openBackdoor() {
+        const door = this.model?.getObjectByName('Backdoor');
+        if (!door) return;
+        
+        door.rotation.y = 0;
+        door.updateMatrixWorld();
+        
+        const startTime = performance.now();
+        const duration = 1200;
+        const targetRotation = -Math.PI / 2;
+
+        const animate = (now) => {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / duration, 1);
+            const easedT = this.easeInOut(t);
+
+            door.rotation.y = targetRotation * easedT;
             door.updateMatrixWorld();
             this.needsRender = true;
-        }
-    });
-}
 
-            handleResize() {
-    const container = document.getElementById('threejs-container');
-    if (!container) return;
-    
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    
-    // Only resize if dimensions actually changed
-    if (this.renderer.domElement.width !== width || this.renderer.domElement.height !== height) {
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(width, height);
-        this.needsRender = true;
+            if (t < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
     }
-}
 
-            animate() {
-    this.animationId = requestAnimationFrame(() => this.animate());
-    
-    const currentTime = performance.now();
-    const deltaTime = currentTime - (this.lastFrameTime || currentTime);
-    this.lastFrameTime = currentTime;
-    
-    // Only render if something changed or during interaction
-    const isInteracting = (currentTime - this.lastInteraction) < 100; // 100ms window
-    const needsUpdate = this.needsRender || isInteracting || this.controls.autoRotate;
-    
-    if (needsUpdate) {
-        // Update controls first
-        this.controls.update();
+    closeBackdoor() {
+        const door = this.model?.getObjectByName('Backdoor');
+        if (!door) return;
         
-        // Update animations with delta time
-        this.updateFanAnimations(deltaTime);
+        const startTime = performance.now();
+        const duration = 4200;
+        const startRotation = door.rotation.y;
+
+        const animate = (now) => {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / duration, 1);
+            const easedT = this.easeInOut(t);
+
+            door.rotation.y = startRotation * (1 - easedT);
+            door.updateMatrixWorld();
+            this.needsRender = true;
+
+            if (t < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+    handleResize() {
+        const container = document.getElementById('threejs-container');
+        if (!container) return;
         
-        // Only render if camera moved or scene changed
-        if (this.needsRender || this.controls.hasChanged) {
-            this.renderer.render(this.scene, this.camera);
-            this.needsRender = false;
-            this.controls.hasChanged = false;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        
+        if (this.renderer.domElement.width !== width || this.renderer.domElement.height !== height) {
+            this.camera.aspect = width / height;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(width, height);
+            this.needsRender = true;
         }
     }
-}
 
-updateFanAnimations(deltaTime) {
-    if (this.fanObjects.size === 0) return;
-    
-    // Convert to seconds and clamp to prevent large jumps
-    const dt = Math.min(deltaTime / 1000, 0.033); // Max 33ms (30fps minimum)
-    
-    let hasActiveAnimations = false;
-    
-    this.fanObjects.forEach((fanData, fanName) => {
-        const { object, pivotGroup, settings } = fanData;
+    animate() {
+        this.animationId = requestAnimationFrame(() => this.animate());
         
-        if (!settings.enabled) return;
+        const currentTime = performance.now();
+        const isInteracting = (currentTime - this.lastInteraction) < 100;
+        const needsUpdate = this.needsRender || isInteracting || this.controls.autoRotate;
         
-        hasActiveAnimations = true;
-        
-        // Calculate rotation amount
-        const rotationAmount = settings.speed * settings.direction * dt;
-        
-        // Apply rotation to the pivot group
-        const targetObject = pivotGroup || object;
-        
-        switch (settings.axis.toLowerCase()) {
-            case 'x':
-                targetObject.rotation.x += rotationAmount;
-                break;
-            case 'y':
-                targetObject.rotation.y += rotationAmount;
-                break;
-            case 'z':
-                targetObject.rotation.z += rotationAmount;
-                break;
+        if (needsUpdate) {
+            this.controls.update();
+            
+            if (this.needsRender || this.controls.hasChanged) {
+                this.renderer.render(this.scene, this.camera);
+                this.needsRender = false;
+                this.controls.hasChanged = false;
+            }
         }
-    });
-    
-    // If we have active animations, ensure rendering continues
-    if (hasActiveAnimations) {
-        this.needsRender = true;
     }
-}
 
-            updatePerformanceStats() {
-                this.performance.frameCount++;
-                const now = performance.now();
-                
-                if (now - this.performance.lastFpsTime >= 1000) {
-                    this.performance.fps = this.performance.frameCount;
-                    this.performance.frameCount = 0;
-                    this.performance.lastFpsTime = now;
-                    this.performance.renderCalls = this.renderer.info.render.calls;
-                    
-                    this.updatePerformanceDisplay();
-                    this.renderer.info.reset();
-                }
-            }
+    pauseRendering() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
 
-            updatePerformanceDisplay() {
-                const fpsElement = document.getElementById('fps-counter');
-                const triangleElement = document.getElementById('triangle-count');
-                const renderCallsElement = document.getElementById('render-calls');
-                
-                if (fpsElement) fpsElement.textContent = this.performance.fps;
-                if (triangleElement) triangleElement.textContent = this.performance.triangles;
-                if (renderCallsElement) renderCallsElement.textContent = this.performance.renderCalls;
-            }
+    resumeRendering() {
+        if (!this.animationId) {
+            this.needsRender = true;
+            this.animate();
+        }
+    }
 
-            updatePerformanceCounters() {
-                this.performance.triangles = this.countTriangles(this.model);
-                this.updatePerformanceDisplay();
-            }
+    showLoadingMessage() {
+        const container = document.getElementById('threejs-container');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'loading-message';
+        loadingDiv.id = 'loading-message';
+        loadingDiv.innerHTML = `
+            <div class="loading-spinner"></div>
+            <p>Loading 3D Model...</p>
+        `;
+        container.appendChild(loadingDiv);
+    }
 
-            togglePerformanceMonitoring() {
-                this.config.enablePerformanceMonitoring = !this.config.enablePerformanceMonitoring;
-                const perfInfo = document.getElementById('performance-info');
-                if (perfInfo) {
-                    perfInfo.style.display = this.config.enablePerformanceMonitoring ? 'block' : 'none';
-                }
-            }
+    hideLoadingMessage() {
+        const loadingMessage = document.getElementById('loading-message');
+        if (loadingMessage) {
+            loadingMessage.remove();
+        }
+    }
 
-            pauseRendering() {
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                    this.animationId = null;
-                }
-            }
+    showErrorMessage(message) {
+        const container = document.getElementById('threejs-container');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `
+            <h3>Unable to Load 3D Model</h3>
+            <p>${message}</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">Please check that the model file exists in the assets folder.</p>
+        `;
+        container.appendChild(errorDiv);
+    }
 
-            resumeRendering() {
-                if (!this.animationId) {
-                    this.needsRender = true;
-                    this.animate();
-                }
-            }
-
-            hideControlsInfo() {
-                setTimeout(() => {
-                    const controlsInfo = document.getElementById('controls-info');
-                    if (controlsInfo) {
-                        controlsInfo.classList.add('fade-out');
-                    }
-                }, 5000);
-            }
-
-            showLoadingMessage() {
-                const container = document.getElementById('threejs-container');
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'loading-message';
-                loadingDiv.id = 'loading-message';
-                loadingDiv.innerHTML = `
-                    <div class="loading-spinner"></div>
-                    <p>Loading 3D Model...</p>
-                    <p id="loading-progress">0%</p>
-                `;
-                container.appendChild(loadingDiv);
-            }
-
-            updateLoadingProgress(percent) {
-                const progressElement = document.getElementById('loading-progress');
-                if (progressElement) {
-                    progressElement.textContent = `${Math.round(percent)}%`;
-                }
-            }
-
-            hideLoadingMessage() {
-                const loadingMessage = document.getElementById('loading-message');
-                if (loadingMessage) {
-                    loadingMessage.remove();
-                }
-            }
-
-            showErrorMessage(message) {
-                const container = document.getElementById('threejs-container');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.innerHTML = `
-                    <h3>Unable to Load 3D Model</h3>
-                    <p>${message}</p>
-                    <p style="margin-top: 1rem; font-size: 0.9rem;">Please check that the model file exists in the assets folder.</p>
-                `;
-                container.appendChild(errorDiv);
-            }
-
-            dispose() {
-    // Cleanup resources
+    dispose() {
     if (this.animationId) {
         cancelAnimationFrame(this.animationId);
     }
     
-    // Clean up lightmap
     if (this.lightmapTexture) {
         this.lightmapTexture.dispose();
         this.lightmapTexture = null;
+    }
+    
+    if (this.graffitiLightmapTexture) {
+        this.graffitiLightmapTexture.dispose();
+        this.graffitiLightmapTexture = null;
+    }
+    
+    // Dispose graffiti wall
+    if (this.graffitiWall) {
+        this.graffitiWall.traverse((child) => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(mat => mat.dispose());
+                } else {
+                    child.material.dispose();
+                }
+            }
+        });
+        this.scene.remove(this.graffitiWall);
+        this.graffitiWall = null;
     }
     
     if (this.model) {
@@ -1586,100 +1201,28 @@ updateFanAnimations(deltaTime) {
         this.renderer.dispose();
     }
 }
+}
 
+// Initialize viewer
+let viewer;
 
-
-
-// Control functions for fans
-toggleFan(fanName) {
-    const fanData = this.fanObjects.get(fanName);
-    if (fanData) {
-        fanData.settings.enabled = !fanData.settings.enabled;
-        console.log(`Fan ${fanName} ${fanData.settings.enabled ? 'started' : 'stopped'}`);
+function initViewer() {
+    if (viewer) {
+        viewer.dispose();
     }
+    viewer = new OptimizedViewer();
 }
 
-setFanSpeed(fanName, speed) {
-    const fanData = this.fanObjects.get(fanName);
-    if (fanData) {
-        fanData.settings.speed = speed;
-        console.log(`Fan ${fanName} speed set to ${speed}`);
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initViewer);
+} else {
+    initViewer();
+}
+
+// Cleanup on page unload  
+window.addEventListener('beforeunload', () => {
+    if (viewer) {
+        viewer.dispose();
     }
-}
-
-setFanDirection(fanName, direction) {
-    const fanData = this.fanObjects.get(fanName);
-    if (fanData) {
-        fanData.settings.direction = direction;
-        console.log(`Fan ${fanName} direction set to ${direction > 0 ? 'clockwise' : 'counterclockwise'}`);
-    }
-}
-
-// Stop all fans
-stopAllFans() {
-    this.fanObjects.forEach((fanData, fanName) => {
-        fanData.settings.enabled = false;
-    });
-}
-
-// Start all fans
-startAllFans() {
-    this.fanObjects.forEach((fanData, fanName) => {
-        fanData.settings.enabled = true;
-    });
-}
-
-// Add specific fan by name (if you know the exact name)
-addFanByName(fanName, settings = {}) {
-    const fanObject = this.model?.getObjectByName(fanName);
-    if (fanObject) {
-        this.addFanAnimation(fanObject, settings);
-    } else {
-        console.warn(`Fan object '${fanName}' not found in model`);
-    }
-}
-
-addFanAnimationWithGeometryPivot(fanObject, settings = {}) {
-    // Calculate the fan's bounding box to determine a good pivot point
-    const box = new THREE.Box3().setFromObject(fanObject);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    
-    // For a typical fan, the pivot should be at the center of the base
-    // Adjust this based on your fan's geometry
-    const pivotOffset = new THREE.Vector3(0, -size.y * 0.4, 0); // Pivot at lower part of fan
-    
-    this.addFanAnimationWithCustomPivot(fanObject, pivotOffset, settings);
-}
-        }
-
-        // Initialize viewer
-        let viewer;
-        
-        function initViewer() {
-            if (viewer) {
-                viewer.dispose();
-            }
-            viewer = new OptimizedViewer();
-        }
-
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initViewer);
-        } else {
-            initViewer();
-        }
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', () => {
-            if (viewer) {
-                viewer.dispose();
-            }
-        });
-
-
-
-        
-
-
-        
+});
