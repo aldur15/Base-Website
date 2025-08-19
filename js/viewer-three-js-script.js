@@ -27,6 +27,9 @@ class OptimizedViewer {
     this.isLoadingLightmap = false;
     this.graffitiWall = null; // Store separate graffiti wall object
     this.isLoadingGraffitiWall = false;
+
+    // Add fan animation system
+    this.fanObjects = new Map();
         
         // Configuration
         this.config = {
@@ -490,6 +493,113 @@ applyGraffitiLightmap() {
     this.needsRender = true;
 }
 
+
+setupFanAnimations() {
+    if (!this.model) return;
+    
+    console.log('Setting up fan animations...');
+    let fanCount = 0;
+    
+    // Clear existing fans first
+    this.fanObjects.clear();
+    
+    // Find fan objects in the model
+    this.model.traverse((child) => {
+        const name = child.name ? child.name.toLowerCase() : '';
+        
+        // More flexible fan detection
+        const isFan = name.includes('fan') && 
+                     !name.includes('_pivot') && 
+                     !name.includes('pivot') &&
+                     child.isMesh;
+        
+        if (isFan) {
+            console.log(`Found potential fan object: "${child.name}"`);
+            console.log(`  - Type: ${child.type}`);
+            console.log(`  - Position:`, child.position);
+            console.log(`  - Parent:`, child.parent?.name || 'Scene');
+            
+            // Add the fan with custom settings based on name
+            let settings = { axis: 'x', speed: 3, direction: 1 }; // Default settings
+            
+            // Customize settings based on fan name patterns
+            if (name.includes('ceiling')) {
+                settings = { axis: 'y', speed: 4, direction: 1 };
+            } else if (name.includes('wall') || name.includes('side')) {
+                settings = { axis: 'z', speed: 5, direction: -1 };
+            }
+            
+            this.addFanAnimation(child, settings);
+            fanCount++;
+        }
+    });
+    
+    console.log(`Set up ${fanCount} fans for animation`);
+    
+    // Log all found fans
+    this.fanObjects.forEach((fanData, fanName) => {
+        console.log(`Fan "${fanName}" configured:`, fanData.settings);
+    });
+}
+
+// Add a fan to the animation system
+addFanAnimation(fanObject, settings = {}) {
+    const defaultSettings = {
+        axis: 'y',           // Default to Y-axis for ceiling fans
+        speed: 3,            // Moderate speed
+        direction: 1,        // Clockwise
+        enabled: true
+    };
+    
+    const fanSettings = { ...defaultSettings, ...settings };
+    
+    console.log(`Adding fan animation for: ${fanObject.name}`);
+    console.log(`  Settings:`, fanSettings);
+    
+    // Create pivot group
+    if (!fanObject.userData.pivotGroup) {
+        const originalParent = fanObject.parent;
+        const pivotGroup = new THREE.Group();
+        pivotGroup.name = fanObject.name + '_pivot';
+        
+        // Store original position
+        const originalPosition = fanObject.position.clone();
+        const originalRotation = fanObject.rotation.clone();
+        
+        // Position pivot group at fan's current position
+        pivotGroup.position.copy(originalPosition);
+        pivotGroup.rotation.copy(originalRotation);
+        
+        // Add pivot to original parent
+        originalParent.add(pivotGroup);
+        
+        // Remove fan from original parent
+        originalParent.remove(fanObject);
+        
+        // Reset fan's transform and add to pivot
+        fanObject.position.set(0, 0, 0);
+        fanObject.rotation.set(0, 0, 0);
+        pivotGroup.add(fanObject);
+        
+        fanObject.userData.pivotGroup = pivotGroup;
+        
+        console.log(`  ✓ Created pivot group for ${fanObject.name}`);
+    }
+    
+    // Store the fan data
+    this.fanObjects.set(fanObject.name, {
+        object: fanObject,
+        pivotGroup: fanObject.userData.pivotGroup,
+        settings: fanSettings,
+        lastTime: performance.now()
+    });
+    
+    console.log(`  ✓ Fan ${fanObject.name} added to animation system`);
+}
+
+
+
+
     setupFallbackLighting() {
         console.log('Setting up fallback lighting');
         const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
@@ -767,7 +877,7 @@ applyGraffitiLightmap() {
         setTimeout(() => {
             this.focusOnBlackboardCamera();
         }, 500); 
-        
+
     } catch (error) {
         console.error('Failed to load models:', error);
         this.showErrorMessage('Failed to load 3D models. Please check that the model files exist.');
@@ -808,6 +918,9 @@ applyGraffitiLightmap() {
     this.scene.add(this.model);
     
     this.setupAutoCollisionObjects();
+
+    //load fan animation
+    this.setupFanAnimations();
     
     // Apply main lightmap to main model
     await this.loadMainLightmap();
@@ -1090,12 +1203,68 @@ async loadGraffitiWall(loader) {
         }
     }
 
-    animate() {
-        this.animationId = requestAnimationFrame(() => this.animate());
+
+    // Update fan animations 
+updateFanAnimations(currentTime) {
+    if (this.fanObjects.size === 0) return;
+    
+    let hasActiveFans = false;
+    
+    this.fanObjects.forEach((fanData, fanName) => {
+        if (!fanData.settings.enabled) return;
         
+        const deltaTime = (currentTime - fanData.lastTime) / 1000;
+        
+        // Skip if deltaTime is too large (first frame or pause)
+        if (deltaTime > 0.1) {
+            fanData.lastTime = currentTime;
+            return;
+        }
+        
+        const rotationAmount = fanData.settings.speed * fanData.settings.direction * deltaTime;
+        
+        // Debug logging (remove after testing)
+        if (Math.random() < 0.01) { // Only log occasionally
+            console.log(`Fan ${fanName}: deltaTime=${deltaTime.toFixed(4)}, rotation=${rotationAmount.toFixed(4)}`);
+        }
+        
+        // Apply rotation to the pivot group
+        const pivotGroup = fanData.pivotGroup;
+        if (pivotGroup) {
+            switch (fanData.settings.axis.toLowerCase()) {
+                case 'x':
+                    pivotGroup.rotation.x += rotationAmount;
+                    break;
+                case 'y':
+                    pivotGroup.rotation.y += rotationAmount;
+                    break;
+                case 'z':
+                    pivotGroup.rotation.z += rotationAmount;
+                    break;
+            }
+            hasActiveFans = true;
+        } else {
+            console.warn(`No pivot group found for fan: ${fanName}`);
+        }
+        
+        fanData.lastTime = currentTime;
+    });
+    
+    if (hasActiveFans) {
+        this.needsRender = true;
+    }
+}
+
+    animate() {
+    this.animationId = requestAnimationFrame(() => this.animate());
+
         const currentTime = performance.now();
+        const deltaTime = currentTime - (this.lastFrameTime || currentTime);
         const isInteracting = (currentTime - this.lastInteraction) < 100;
         const needsUpdate = this.needsRender || isInteracting || this.controls.autoRotate;
+
+        this.updateFanAnimations(currentTime);
+
         
         if (needsUpdate) {
             this.controls.update();
@@ -1106,6 +1275,8 @@ async loadGraffitiWall(loader) {
                 this.controls.hasChanged = false;
             }
         }
+
+        this.lastFrameTime = currentTime;
     }
 
     pauseRendering() {
