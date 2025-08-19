@@ -23,13 +23,24 @@ class OptimizedViewer {
 
         // Add lightmap properties
         this.lightmapTexture = null;
-    this.graffitiLightmapTexture = null; // New property for graffiti wall
-    this.isLoadingLightmap = false;
-    this.graffitiWall = null; // Store separate graffiti wall object
-    this.isLoadingGraffitiWall = false;
+        this.graffitiLightmapTexture = null;
+        this.isLoadingLightmap = false;
+        this.graffitiWall = null;
+        this.isLoadingGraffitiWall = false;
 
-    // Add fan animation system
-    this.fanObjects = new Map();
+        // Add fan animation system
+        this.fanObjects = new Map();
+
+        // Background light system
+        this.backgroundLight = {
+            mesh: null,
+            material: null,
+            enabled: true,
+            intensity: 0.15,
+            color: new THREE.Color(0x4a90e2), // Subtle blue
+            speed: 0.8,
+            scale: 1.2
+        };
         
         // Configuration
         this.config = {
@@ -63,141 +74,139 @@ class OptimizedViewer {
 
         this.paperData = {
             'paper_1': {
-    title: 'The Influence of Persona and Conversational Task on Social Interactions with a LLM-Controlled Embodied Conversational Agent',
-    content: `
-        <h2>Abstract</h2>
-        <p>
-            Large Language Models (LLMs) can be embodied as virtual humans in Virtual Reality (VR), 
-            enabling naturalistic face-to-face interactions. This study investigated how an agent’s 
-            persona (extraverted vs. introverted) and conversational tasks (small talk, knowledge 
-            test, convincing) affect social evaluation, emotional experience, realism, and behavioral 
-            engagement. Forty-six participants interacted with an LLM-controlled virtual agent in VR. 
-            Results showed that the extraverted agent was rated as more likable, realistic, and 
-            engaging, and elicited a more pleasant experience compared to the introverted agent. 
-            While persona influenced evaluations and engagement, conversational tasks modulated 
-            arousal, realism, and social presence. Findings demonstrate that personality prompts in 
-            LLM-controlled agents strongly shape user experience and behavior in immersive social 
-            interactions.
-        </p>
+                title: 'The Influence of Persona and Conversational Task on Social Interactions with a LLM-Controlled Embodied Conversational Agent',
+                content: `
+                    <h2>Abstract</h2>
+                    <p>
+                        Large Language Models (LLMs) can be embodied as virtual humans in Virtual Reality (VR), 
+                        enabling naturalistic face-to-face interactions. This study investigated how an agent's 
+                        persona (extraverted vs. introverted) and conversational tasks (small talk, knowledge 
+                        test, convincing) affect social evaluation, emotional experience, realism, and behavioral 
+                        engagement. Forty-six participants interacted with an LLM-controlled virtual agent in VR. 
+                        Results showed that the extraverted agent was rated as more likable, realistic, and 
+                        engaging, and elicited a more pleasant experience compared to the introverted agent. 
+                        While persona influenced evaluations and engagement, conversational tasks modulated 
+                        arousal, realism, and social presence. Findings demonstrate that personality prompts in 
+                        LLM-controlled agents strongly shape user experience and behavior in immersive social 
+                        interactions.
+                    </p>
 
-        <h2>Introduction</h2>
-        <p>
-            Advances in LLMs have transformed conversational AI, allowing dynamic and context-sensitive 
-            interactions. When combined with embodied conversational agents (ECAs) in VR, they enable 
-            multimodal, face-to-face encounters. Social interactions are influenced by both the 
-            personality of agents and the conversational context. Drawing on the CASA framework, users 
-            are expected to evaluate and respond to virtual agents similarly to humans. Previous 
-            research has shown that personality traits such as extraversion impact perceived social 
-            presence and likability in chat-based systems. This study aimed to examine how persona and 
-            conversational task jointly influence evaluation, emotional experience, and interactive 
-            behavior in LLM-driven VR interactions.
-        </p>
+                    <h2>Introduction</h2>
+                    <p>
+                        Advances in LLMs have transformed conversational AI, allowing dynamic and context-sensitive 
+                        interactions. When combined with embodied conversational agents (ECAs) in VR, they enable 
+                        multimodal, face-to-face encounters. Social interactions are influenced by both the 
+                        personality of agents and the conversational context. Drawing on the CASA framework, users 
+                        are expected to evaluate and respond to virtual agents similarly to humans. Previous 
+                        research has shown that personality traits such as extraversion impact perceived social 
+                        presence and likability in chat-based systems. This study aimed to examine how persona and 
+                        conversational task jointly influence evaluation, emotional experience, and interactive 
+                        behavior in LLM-driven VR interactions.
+                    </p>
 
-        <h2>Methodology</h2>
-        <p>
-            Forty-six participants (mean age 21.2 years) engaged in three VR-based conversational tasks 
-            with a male virtual agent: small talk, a knowledge test, and a convincing task. The agent’s 
-            persona was manipulated via LLM prompts to be either extraverted or introverted. 
-            Conversations were conducted in VR using Unreal Engine with real-time speech-to-text and 
-            text-to-speech pipelines. Dependent measures included self-reported ratings of sympathy, 
-            valence, arousal, closeness, realism, and social presence, as well as behavioral metrics 
-            such as number of words, turns, and requests for help during the knowledge test. Data were 
-            analyzed using mixed ANOVAs.
-        </p>
+                    <h2>Methodology</h2>
+                    <p>
+                        Forty-six participants (mean age 21.2 years) engaged in three VR-based conversational tasks 
+                        with a male virtual agent: small talk, a knowledge test, and a convincing task. The agent's 
+                        persona was manipulated via LLM prompts to be either extraverted or introverted. 
+                        Conversations were conducted in VR using Unreal Engine with real-time speech-to-text and 
+                        text-to-speech pipelines. Dependent measures included self-reported ratings of sympathy, 
+                        valence, arousal, closeness, realism, and social presence, as well as behavioral metrics 
+                        such as number of words, turns, and requests for help during the knowledge test. Data were 
+                        analyzed using mixed ANOVAs.
+                    </p>
 
-        <h2>Results</h2>
-        <p>
-            The extraverted persona was consistently rated as more sympathetic and pleasant, and 
-            participants engaged in longer and more interactive conversations. Arousal was primarily 
-            driven by task, with knowledge test and convincing tasks rated as more arousing than small 
-            talk. Realism ratings were influenced by persona in the convincing task, where extraverted 
-            agents appeared more realistic. Social presence was strongest in small talk. In the 
-            knowledge test, participants were more confident in their answers when assisted by the 
-            agent, though persona did not affect willingness to seek help. Overall, persona shaped 
-            social evaluation and engagement, while task modulated arousal and realism.
-        </p>
+                    <h2>Results</h2>
+                    <p>
+                        The extraverted persona was consistently rated as more sympathetic and pleasant, and 
+                        participants engaged in longer and more interactive conversations. Arousal was primarily 
+                        driven by task, with knowledge test and convincing tasks rated as more arousing than small 
+                        talk. Realism ratings were influenced by persona in the convincing task, where extraverted 
+                        agents appeared more realistic. Social presence was strongest in small talk. In the 
+                        knowledge test, participants were more confident in their answers when assisted by the 
+                        agent, though persona did not affect willingness to seek help. Overall, persona shaped 
+                        social evaluation and engagement, while task modulated arousal and realism.
+                    </p>
 
-        <h2>Discussion</h2>
-        <p>
-            Findings demonstrate that persona cues in LLM-controlled ECAs significantly affect user 
-            experience in immersive VR interactions. Extraverted agents elicited more positive 
-            evaluations and behavioral engagement, mirroring real-world social dynamics. Task demands 
-            influenced arousal, realism, and confidence, with knowledge-based tasks rated as especially 
-            engaging. These results support the CASA framework by showing that users apply social 
-            evaluation processes to LLM-driven agents, treating them similarly to human partners. 
-            Implications include applications in education, training, and healthcare, where tailoring 
-            agent personality and conversational style may enhance engagement and outcomes. Future 
-            research should investigate long-term interactions, incorporate multimodal nonverbal cues, 
-            and assess individual differences in user responses.
-        </p>
-    `
-}
-,
+                    <h2>Discussion</h2>
+                    <p>
+                        Findings demonstrate that persona cues in LLM-controlled ECAs significantly affect user 
+                        experience in immersive VR interactions. Extraverted agents elicited more positive 
+                        evaluations and behavioral engagement, mirroring real-world social dynamics. Task demands 
+                        influenced arousal, realism, and confidence, with knowledge-based tasks rated as especially 
+                        engaging. These results support the CASA framework by showing that users apply social 
+                        evaluation processes to LLM-driven agents, treating them similarly to human partners. 
+                        Implications include applications in education, training, and healthcare, where tailoring 
+                        agent personality and conversational style may enhance engagement and outcomes. Future 
+                        research should investigate long-term interactions, incorporate multimodal nonverbal cues, 
+                        and assess individual differences in user responses.
+                    </p>
+                `
+            },
             'paper_2': {
-    title: 'Affective Interactions with AI-Controlled Conversational Agents in Virtual Reality',
-    content: `
-        <h2>Abstract</h2>
-        <p>
-            The exchange of affective information lies at the core of social interactions. 
-            Embodied conversational agents (ECAs) in Virtual Reality (VR) enable naturalistic 
-            verbal exchanges with AI-controlled partners. We evaluated a paradigm where ECAs 
-            conveyed affective information in conversations about emotional life events. 
-            Data from 46 human–AI interactions showed that agents successfully generated 
-            context-specific affective content (happy, angry, sad). Target emotions appeared 
-            most strongly at the beginning of conversations but decreased over turns. Findings 
-            indicate that AI-controlled ECAs are a promising tool for simulating naturalistic, 
-            affective dialogue.
-        </p>
+                title: 'Affective Interactions with AI-Controlled Conversational Agents in Virtual Reality',
+                content: `
+                    <h2>Abstract</h2>
+                    <p>
+                        The exchange of affective information lies at the core of social interactions. 
+                        Embodied conversational agents (ECAs) in Virtual Reality (VR) enable naturalistic 
+                        verbal exchanges with AI-controlled partners. We evaluated a paradigm where ECAs 
+                        conveyed affective information in conversations about emotional life events. 
+                        Data from 46 human–AI interactions showed that agents successfully generated 
+                        context-specific affective content (happy, angry, sad). Target emotions appeared 
+                        most strongly at the beginning of conversations but decreased over turns. Findings 
+                        indicate that AI-controlled ECAs are a promising tool for simulating naturalistic, 
+                        affective dialogue.
+                    </p>
 
-        <h2>Introduction</h2>
-        <p>
-            Social interaction relies on verbal and nonverbal cues to infer intentions and 
-            emotional states. While earlier research focused mainly on nonverbal expressions, 
-            verbal affective information remains less explored in controlled experimental 
-            settings. Large Language Models (LLMs) can provide adaptive and empathetic 
-            conversational responses. Combining LLMs with ECAs in VR creates opportunities 
-            for interactive, multimodal exchanges. The present study tested whether ECAs 
-            could generate convincing affective content across different emotional contexts, 
-            and how such content evolves over the course of an interaction.
-        </p>
+                    <h2>Introduction</h2>
+                    <p>
+                        Social interaction relies on verbal and nonverbal cues to infer intentions and 
+                        emotional states. While earlier research focused mainly on nonverbal expressions, 
+                        verbal affective information remains less explored in controlled experimental 
+                        settings. Large Language Models (LLMs) can provide adaptive and empathetic 
+                        conversational responses. Combining LLMs with ECAs in VR creates opportunities 
+                        for interactive, multimodal exchanges. The present study tested whether ECAs 
+                        could generate convincing affective content across different emotional contexts, 
+                        and how such content evolves over the course of an interaction.
+                    </p>
 
-        <h2>Methods</h2>
-        <p>
-            Forty-eight participants engaged in four conversational tasks (small talk, happy, 
-            sad, angry) with a male VR-based ECA. Speech input was transcribed with Whisper, 
-            processed by a German LLM, and analyzed using a fine-tuned RoBERTa sentiment 
-            model. Emotional categories (anger, fear, sadness, joy, neutral) were logged and 
-            in some conditions mapped to facial expressions of the agent. Conversations lasted 
-            about 6 minutes each, and emotional distributions were analyzed across and within 
-            topics.
-        </p>
+                    <h2>Methods</h2>
+                    <p>
+                        Forty-eight participants engaged in four conversational tasks (small talk, happy, 
+                        sad, angry) with a male VR-based ECA. Speech input was transcribed with Whisper, 
+                        processed by a German LLM, and analyzed using a fine-tuned RoBERTa sentiment 
+                        model. Emotional categories (anger, fear, sadness, joy, neutral) were logged and 
+                        in some conditions mapped to facial expressions of the agent. Conversations lasted 
+                        about 6 minutes each, and emotional distributions were analyzed across and within 
+                        topics.
+                    </p>
 
-        <h2>Results</h2>
-        <p>
-            Distinct emotional profiles emerged across topics: joy was most frequent in the 
-            happy condition, anger in the anger condition, and sadness in the sad condition. 
-            Fear frequently co-occurred, especially in anger and sad contexts. Across 
-            conversations, target emotions were strongest at the start but declined over turns, 
-            with joy and fear increasing as substitutes in some conditions. These results show 
-            that AI-controlled ECAs can produce context-appropriate affective information, 
-            though not always perfectly aligned with the target emotion.
-        </p>
+                    <h2>Results</h2>
+                    <p>
+                        Distinct emotional profiles emerged across topics: joy was most frequent in the 
+                        happy condition, anger in the anger condition, and sadness in the sad condition. 
+                        Fear frequently co-occurred, especially in anger and sad contexts. Across 
+                        conversations, target emotions were strongest at the start but declined over turns, 
+                        with joy and fear increasing as substitutes in some conditions. These results show 
+                        that AI-controlled ECAs can produce context-appropriate affective information, 
+                        though not always perfectly aligned with the target emotion.
+                    </p>
 
-        <h2>Discussion</h2>
-        <p>
-            This study demonstrates that AI-driven ECAs can generate and sustain affective 
-            information in interactive VR dialogues. Distinct emotion patterns were detected 
-            across conversational topics, and temporal analyses showed a decline of target 
-            emotions over time. These findings highlight the potential of ECAs for research on 
-            social and affective dynamics, as well as applications in training, education, and 
-            therapy. Future work should refine semantic control of LLMs and explore how 
-            emotional content influences user experience and social evaluations of virtual 
-            agents.
-        </p>
-    `
-},
-            'paper_3':{}
-
+                    <h2>Discussion</h2>
+                    <p>
+                        This study demonstrates that AI-driven ECAs can generate and sustain affective 
+                        information in interactive VR dialogues. Distinct emotion patterns were detected 
+                        across conversational topics, and temporal analyses showed a decline of target 
+                        emotions over time. These findings highlight the potential of ECAs for research on 
+                        social and affective dynamics, as well as applications in training, education, and 
+                        therapy. Future work should refine semantic control of LLMs and explore how 
+                        emotional content influences user experience and social evaluations of virtual 
+                        agents.
+                    </p>
+                `
+            },
+            'paper_3': {}
         };
 
         this.collisionObjects = new Map();
@@ -219,6 +228,9 @@ class OptimizedViewer {
             this.setupControls();
             this.setupEventListeners();
             
+            // Setup background light
+            this.setupBackgroundLight();
+            
             // Start render loop and load model
             this.animate();
             
@@ -237,368 +249,461 @@ class OptimizedViewer {
             }
         });
     }
-// Helper method to find objects by partial name
-findObjectByPartialName(parent, partialName) {
-    let foundObject = null;
-    parent.traverse((child) => {
-        if (child.name && child.name.toLowerCase().includes(partialName.toLowerCase()) && !foundObject) {
-            foundObject = child;
-        }
-    });
-    return foundObject;
-}
+
+    // NEW: Setup background light effect
+    setupBackgroundLight() {
+        if (!this.backgroundLight.enabled) return;
+        
+        console.log('Setting up background light effect...');
+        
+        // Create a large sphere geometry for the background light
+        const geometry = new THREE.SphereGeometry(80, 32, 16);
+        
+        // Create shader material for animated background light
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                intensity: { value: this.backgroundLight.intensity },
+                color: { value: this.backgroundLight.color },
+                scale: { value: this.backgroundLight.scale }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                varying vec3 vPosition;
+                
+                void main() {
+                    vUv = uv;
+                    vPosition = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float time;
+                uniform float intensity;
+                uniform vec3 color;
+                uniform float scale;
+                
+                varying vec2 vUv;
+                varying vec3 vPosition;
+                
+                // Simple noise function
+                float noise(vec3 pos) {
+                    return fract(sin(dot(pos, vec3(12.9898, 78.233, 54.53))) * 43758.5453);
+                }
+                
+                void main() {
+                    // Create flowing pattern based on position and time
+                    vec3 pos = vPosition * scale;
+                    float n1 = noise(pos + time * 0.1);
+                    float n2 = noise(pos * 2.0 + time * 0.15);
+                    float n3 = noise(pos * 0.5 + time * 0.05);
+                    
+                    // Combine noise for organic movement
+                    float pattern = (n1 + n2 * 0.5 + n3 * 0.3) / 1.8;
+                    
+                    // Create radial falloff
+                    float dist = length(vUv - 0.5);
+                    float radial = 1.0 - smoothstep(0.3, 0.8, dist);
+                    
+                    // Animate intensity
+                    float animatedIntensity = intensity * (0.8 + 0.4 * sin(time * 0.3));
+                    
+                    // Final color
+                    float alpha = pattern * radial * animatedIntensity;
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `,
+            transparent: true,
+            side: THREE.BackSide, // Render from inside
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            depthTest: false
+        });
+        
+        this.backgroundLight.mesh = new THREE.Mesh(geometry, material);
+        this.backgroundLight.material = material;
+        
+        // Position behind everything
+        this.backgroundLight.mesh.position.set(0, 0, 0);
+        this.backgroundLight.mesh.renderOrder = -1000;
+        
+        this.scene.add(this.backgroundLight.mesh);
+        
+        console.log('Background light effect created');
+    }
+
+    // NEW: Update background light animation
+    updateBackgroundLight(time) {
+        if (!this.backgroundLight.mesh || !this.backgroundLight.enabled) return;
+        
+        // Update shader uniforms
+        this.backgroundLight.material.uniforms.time.value = time * 0.001 * this.backgroundLight.speed;
+        
+        // Subtle rotation for more organic feel
+        this.backgroundLight.mesh.rotation.y = time * 0.00005;
+        this.backgroundLight.mesh.rotation.x = Math.sin(time * 0.00003) * 0.1;
+        
+        this.needsRender = true;
+    }
+
+    // Helper method to find objects by partial name
+    findObjectByPartialName(parent, partialName) {
+        let foundObject = null;
+        parent.traverse((child) => {
+            if (child.name && child.name.toLowerCase().includes(partialName.toLowerCase()) && !foundObject) {
+                foundObject = child;
+            }
+        });
+        return foundObject;
+    }
 
     // Load main lightmap only
-async loadMainLightmap() {
-    if (this.lightmapTexture) return;
-    
-    console.log('Loading main lightmap...');
-    const loader = new RGBELoader();
-    
-    try {
-        const texture = await new Promise((resolve, reject) => {
-            loader.load('assets/lightmap.hdr', resolve, undefined, reject);
-        });
+    async loadMainLightmap() {
+        if (this.lightmapTexture) return;
         
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
-        texture.flipY = false;
-        texture.generateMipmaps = false;
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
+        console.log('Loading main lightmap...');
+        const loader = new RGBELoader();
         
-        this.lightmapTexture = texture;
-        console.log('Main lightmap loaded successfully');
-        
-    } catch (error) {
-        console.error('Failed to load main lightmap:', error);
-    }
-}
-
-// Load graffiti lightmap only
-async loadGraffitiLightmap() {
-    if (this.graffitiLightmapTexture) return;
-    
-    console.log('Loading graffiti lightmap...');
-    const loader = new RGBELoader();
-    
-    try {
-        const texture = await new Promise((resolve, reject) => {
-            loader.load('assets/graffiti_lightmap.hdr', resolve, undefined, reject);
-        });
-        
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
-        texture.flipY = false;
-        texture.generateMipmaps = false;
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        
-        this.graffitiLightmapTexture = texture;
-        console.log('Graffiti lightmap loaded successfully');
-        
-    } catch (error) {
-        console.error('Failed to load graffiti lightmap:', error);
-    }
-}
-
-// Apply main lightmap to main model only
-applyMainLightmap() {
-    if (!this.model || !this.lightmapTexture) return;
-    
-    console.log('Applying main lightmap to main model...');
-    let materialCount = 0;
-    
-    this.model.traverse((child) => {
-        if (child.isMesh && child.material && child.geometry) {
-            const materials = Array.isArray(child.material) ? child.material : [child.material];
-            
-            materials.forEach((material) => {
-                if (material.isMeshStandardMaterial || 
-                    material.isMeshLambertMaterial || 
-                    material.isMeshPhongMaterial ||
-                    material.isMeshBasicMaterial) {
-                    
-                    if (!child.geometry.attributes.uv2 && child.geometry.attributes.uv) {
-                        child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
-                    }
-                    
-                    material.lightMap = this.lightmapTexture;
-                    material.lightMapIntensity = 1.0;
-                    material.needsUpdate = true;
-                    materialCount++;
-                }
+        try {
+            const texture = await new Promise((resolve, reject) => {
+                loader.load('assets/lightmap.hdr', resolve, undefined, reject);
             });
-        }
-    });
-    
-    console.log(`Main lightmap applied to ${materialCount} materials`);
-    this.needsRender = true;
-}
-
-// Apply graffiti lightmap to graffiti wall only
-applyGraffitiLightmap() {
-    if (!this.graffitiWall || !this.graffitiLightmapTexture) return;
-    
-    console.log('Applying graffiti lightmap to graffiti wall...');
-    let materialCount = 0;
-    
-    this.graffitiWall.traverse((child) => {
-        if (child.isMesh && child.material && child.geometry) {
-            const materials = Array.isArray(child.material) ? child.material : [child.material];
             
-            materials.forEach((material) => {
-                if (material.isMeshStandardMaterial || 
-                    material.isMeshLambertMaterial || 
-                    material.isMeshPhongMaterial ||
-                    material.isMeshBasicMaterial) {
-                    
-                    if (!child.geometry.attributes.uv2 && child.geometry.attributes.uv) {
-                        child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
-                    }
-                    
-                    material.lightMap = this.graffitiLightmapTexture;
-                    material.lightMapIntensity = 1.0;
-                    material.needsUpdate = true;
-                    materialCount++;
-                }
-            });
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            texture.flipY = false;
+            texture.generateMipmaps = false;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+            
+            this.lightmapTexture = texture;
+            console.log('Main lightmap loaded successfully');
+            
+        } catch (error) {
+            console.error('Failed to load main lightmap:', error);
         }
-    });
-    
-    console.log(`Graffiti lightmap applied to ${materialCount} materials`);
-    this.needsRender = true;
-}
-
-
-    async loadLightmap() {
-    if (this.isLoadingLightmap || (this.lightmapTexture && this.graffitiLightmapTexture)) return;
-    
-    this.isLoadingLightmap = true;
-    console.log('Loading lightmaps...');
-    
-    const loader = new RGBELoader();
-    
-    try {
-        // Load main coffeeshop lightmap
-        const mainTexture = await new Promise((resolve, reject) => {
-            loader.load('assets/lightmap.hdr', resolve, undefined, reject);
-        });
-        
-        mainTexture.mapping = THREE.EquirectangularReflectionMapping;
-        mainTexture.wrapS = THREE.ClampToEdgeWrapping;
-        mainTexture.wrapT = THREE.ClampToEdgeWrapping;
-        mainTexture.flipY = false;
-        mainTexture.generateMipmaps = false;
-        mainTexture.minFilter = THREE.LinearFilter;
-        mainTexture.magFilter = THREE.LinearFilter;
-        
-        this.lightmapTexture = mainTexture;
-        console.log('Main lightmap loaded successfully');
-        
-        // Load graffiti wall lightmap
-        const graffitiTexture = await new Promise((resolve, reject) => {
-            loader.load('assets/graffiti_lightmap.hdr', resolve, undefined, reject);
-        });
-        
-        graffitiTexture.mapping = THREE.EquirectangularReflectionMapping;
-        graffitiTexture.wrapS = THREE.ClampToEdgeWrapping;
-        graffitiTexture.wrapT = THREE.ClampToEdgeWrapping;
-        graffitiTexture.flipY = false;
-        graffitiTexture.generateMipmaps = false;
-        graffitiTexture.minFilter = THREE.LinearFilter;
-        graffitiTexture.magFilter = THREE.LinearFilter;
-        
-        this.graffitiLightmapTexture = graffitiTexture;
-        console.log('Graffiti lightmap loaded successfully');
-        
-        if (this.model) {
-            this.applyLightmapsToModel();
-        }
-        
-    } catch (error) {
-        console.error('Failed to load lightmaps:', error);
-        this.setupFallbackLighting();
-    } finally {
-        this.isLoadingLightmap = false;
     }
-}
-    applyLightmapsToModel() {
-    if (!this.model) return;
-    
-    console.log('Applying lightmaps to model...');
-    let mainMaterialCount = 0;
-    let graffitiMaterialCount = 0;
-    
-    this.model.traverse((child) => {
-        if (child.isMesh && child.material && child.geometry) {
-            const materials = Array.isArray(child.material) ? child.material : [child.material];
+
+    // Load graffiti lightmap only
+    async loadGraffitiLightmap() {
+        if (this.graffitiLightmapTexture) return;
+        
+        console.log('Loading graffiti lightmap...');
+        const loader = new RGBELoader();
+        
+        try {
+            const texture = await new Promise((resolve, reject) => {
+                loader.load('assets/graffiti_lightmap.hdr', resolve, undefined, reject);
+            });
             
-            // Check if this is the graffiti wall object - be more specific with naming
-            const isGraffitiWall = child.name && (
-                child.name.toLowerCase().includes('graffiti') ||
-                child.name.toLowerCase() === 'graffiti-wall' ||
-                child.name.toLowerCase() === 'graffitiwall' ||
-                child.name.toLowerCase().includes('graffiti_wall')
-            );
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            texture.flipY = false;
+            texture.generateMipmaps = false;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
             
-            console.log(`Processing object: ${child.name}, isGraffitiWall: ${isGraffitiWall}`);
+            this.graffitiLightmapTexture = texture;
+            console.log('Graffiti lightmap loaded successfully');
             
-            materials.forEach((material) => {
-                if (material.isMeshStandardMaterial || 
-                    material.isMeshLambertMaterial || 
-                    material.isMeshPhongMaterial ||
-                    material.isMeshBasicMaterial) {
-                    
-                    // Ensure UV2 coordinates exist for lightmapping
-                    if (!child.geometry.attributes.uv2) {
-                        if (child.geometry.attributes.uv) {
+        } catch (error) {
+            console.error('Failed to load graffiti lightmap:', error);
+        }
+    }
+
+    // Apply main lightmap to main model only
+    applyMainLightmap() {
+        if (!this.model || !this.lightmapTexture) return;
+        
+        console.log('Applying main lightmap to main model...');
+        let materialCount = 0;
+        
+        this.model.traverse((child) => {
+            if (child.isMesh && child.material && child.geometry) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                
+                materials.forEach((material) => {
+                    if (material.isMeshStandardMaterial || 
+                        material.isMeshLambertMaterial || 
+                        material.isMeshPhongMaterial ||
+                        material.isMeshBasicMaterial) {
+                        
+                        if (!child.geometry.attributes.uv2 && child.geometry.attributes.uv) {
                             child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
-                        } else {
-                            console.warn(`No UV coordinates found for object: ${child.name}`);
-                            return;
                         }
-                    }
-                    
-                    // Apply appropriate lightmap based on object type
-                    if (isGraffitiWall && this.graffitiLightmapTexture) {
-                        material.lightMap = this.graffitiLightmapTexture;
-                        material.lightMapIntensity = 1.0;
-                        material.needsUpdate = true;
-                        graffitiMaterialCount++;
-                        console.log(`✓ Applied graffiti lightmap to: ${child.name}`);
-                    } else if (!isGraffitiWall && this.lightmapTexture) {
+                        
                         material.lightMap = this.lightmapTexture;
                         material.lightMapIntensity = 1.0;
                         material.needsUpdate = true;
-                        mainMaterialCount++;
-                        console.log(`✓ Applied main lightmap to: ${child.name}`);
-                    } else {
-                        console.warn(`No appropriate lightmap found for: ${child.name}, isGraffitiWall: ${isGraffitiWall}`);
+                        materialCount++;
                     }
-                }
-            });
-        }
-    });
-    
-    console.log(`Main lightmap applied to ${mainMaterialCount} materials`);
-    console.log(`Graffiti lightmap applied to ${graffitiMaterialCount} materials`);
-    
-    if (mainMaterialCount === 0 && graffitiMaterialCount === 0) {
-        console.warn('No materials received lightmaps - check object names and material types');
+                });
+            }
+        });
+        
+        console.log(`Main lightmap applied to ${materialCount} materials`);
+        this.needsRender = true;
     }
-    
-    this.needsRender = true;
-}
 
+    // Apply graffiti lightmap to graffiti wall only
+    applyGraffitiLightmap() {
+        if (!this.graffitiWall || !this.graffitiLightmapTexture) return;
+        
+        console.log('Applying graffiti lightmap to graffiti wall...');
+        let materialCount = 0;
+        
+        this.graffitiWall.traverse((child) => {
+            if (child.isMesh && child.material && child.geometry) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                
+                materials.forEach((material) => {
+                    if (material.isMeshStandardMaterial || 
+                        material.isMeshLambertMaterial || 
+                        material.isMeshPhongMaterial ||
+                        material.isMeshBasicMaterial) {
+                        
+                        if (!child.geometry.attributes.uv2 && child.geometry.attributes.uv) {
+                            child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
+                        }
+                        
+                        material.lightMap = this.graffitiLightmapTexture;
+                        material.lightMapIntensity = 1.0;
+                        material.needsUpdate = true;
+                        materialCount++;
+                    }
+                });
+            }
+        });
+        
+        console.log(`Graffiti lightmap applied to ${materialCount} materials`);
+        this.needsRender = true;
+    }
 
-setupFanAnimations() {
-    if (!this.model) return;
-    
-    console.log('Setting up fan animations...');
-    let fanCount = 0;
-    
-    // Clear existing fans first
-    this.fanObjects.clear();
-    
-    // Find fan objects in the model
-    this.model.traverse((child) => {
-        const name = child.name ? child.name.toLowerCase() : '';
+    async loadLightmap() {
+        if (this.isLoadingLightmap || (this.lightmapTexture && this.graffitiLightmapTexture)) return;
         
-        // More flexible fan detection
-        const isFan = name.includes('fan') && 
-                     !name.includes('_pivot') && 
-                     !name.includes('pivot') &&
-                     child.isMesh;
+        this.isLoadingLightmap = true;
+        console.log('Loading lightmaps...');
         
-        if (isFan) {
-            console.log(`Found potential fan object: "${child.name}"`);
-            console.log(`  - Type: ${child.type}`);
-            console.log(`  - Position:`, child.position);
-            console.log(`  - Parent:`, child.parent?.name || 'Scene');
+        const loader = new RGBELoader();
+        
+        try {
+            // Load main coffeeshop lightmap
+            const mainTexture = await new Promise((resolve, reject) => {
+                loader.load('assets/lightmap.hdr', resolve, undefined, reject);
+            });
             
-            // Add the fan with custom settings based on name
-            let settings = { axis: 'x', speed: 3, direction: 1 }; // Default settings
+            mainTexture.mapping = THREE.EquirectangularReflectionMapping;
+            mainTexture.wrapS = THREE.ClampToEdgeWrapping;
+            mainTexture.wrapT = THREE.ClampToEdgeWrapping;
+            mainTexture.flipY = false;
+            mainTexture.generateMipmaps = false;
+            mainTexture.minFilter = THREE.LinearFilter;
+            mainTexture.magFilter = THREE.LinearFilter;
             
-            // Customize settings based on fan name patterns
-            if (name.includes('ceiling')) {
-                settings = { axis: 'y', speed: 4, direction: 1 };
-            } else if (name.includes('wall') || name.includes('side')) {
-                settings = { axis: 'z', speed: 5, direction: -1 };
+            this.lightmapTexture = mainTexture;
+            console.log('Main lightmap loaded successfully');
+            
+            // Load graffiti wall lightmap
+            const graffitiTexture = await new Promise((resolve, reject) => {
+                loader.load('assets/graffiti_lightmap.hdr', resolve, undefined, reject);
+            });
+            
+            graffitiTexture.mapping = THREE.EquirectangularReflectionMapping;
+            graffitiTexture.wrapS = THREE.ClampToEdgeWrapping;
+            graffitiTexture.wrapT = THREE.ClampToEdgeWrapping;
+            graffitiTexture.flipY = false;
+            graffitiTexture.generateMipmaps = false;
+            graffitiTexture.minFilter = THREE.LinearFilter;
+            graffitiTexture.magFilter = THREE.LinearFilter;
+            
+            this.graffitiLightmapTexture = graffitiTexture;
+            console.log('Graffiti lightmap loaded successfully');
+            
+            if (this.model) {
+                this.applyLightmapsToModel();
             }
             
-            this.addFanAnimation(child, settings);
-            fanCount++;
+        } catch (error) {
+            console.error('Failed to load lightmaps:', error);
+            this.setupFallbackLighting();
+        } finally {
+            this.isLoadingLightmap = false;
         }
-    });
-    
-    console.log(`Set up ${fanCount} fans for animation`);
-    
-    // Log all found fans
-    this.fanObjects.forEach((fanData, fanName) => {
-        console.log(`Fan "${fanName}" configured:`, fanData.settings);
-    });
-}
-
-// Add a fan to the animation system
-addFanAnimation(fanObject, settings = {}) {
-    const defaultSettings = {
-        axis: 'y',           // Default to Y-axis for ceiling fans
-        speed: 3,            // Moderate speed
-        direction: 1,        // Clockwise
-        enabled: true
-    };
-    
-    const fanSettings = { ...defaultSettings, ...settings };
-    
-    console.log(`Adding fan animation for: ${fanObject.name}`);
-    console.log(`  Settings:`, fanSettings);
-    
-    // Create pivot group
-    if (!fanObject.userData.pivotGroup) {
-        const originalParent = fanObject.parent;
-        const pivotGroup = new THREE.Group();
-        pivotGroup.name = fanObject.name + '_pivot';
-        
-        // Store original position
-        const originalPosition = fanObject.position.clone();
-        const originalRotation = fanObject.rotation.clone();
-        
-        // Position pivot group at fan's current position
-        pivotGroup.position.copy(originalPosition);
-        pivotGroup.rotation.copy(originalRotation);
-        
-        // Add pivot to original parent
-        originalParent.add(pivotGroup);
-        
-        // Remove fan from original parent
-        originalParent.remove(fanObject);
-        
-        // Reset fan's transform and add to pivot
-        fanObject.position.set(0, 0, 0);
-        fanObject.rotation.set(0, 0, 0);
-        pivotGroup.add(fanObject);
-        
-        fanObject.userData.pivotGroup = pivotGroup;
-        
-        console.log(`  ✓ Created pivot group for ${fanObject.name}`);
     }
-    
-    // Store the fan data
-    this.fanObjects.set(fanObject.name, {
-        object: fanObject,
-        pivotGroup: fanObject.userData.pivotGroup,
-        settings: fanSettings,
-        lastTime: performance.now()
-    });
-    
-    console.log(`  ✓ Fan ${fanObject.name} added to animation system`);
-}
 
+    applyLightmapsToModel() {
+        if (!this.model) return;
+        
+        console.log('Applying lightmaps to model...');
+        let mainMaterialCount = 0;
+        let graffitiMaterialCount = 0;
+        
+        this.model.traverse((child) => {
+            if (child.isMesh && child.material && child.geometry) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                
+                // Check if this is the graffiti wall object - be more specific with naming
+                const isGraffitiWall = child.name && (
+                    child.name.toLowerCase().includes('graffiti') ||
+                    child.name.toLowerCase() === 'graffiti-wall' ||
+                    child.name.toLowerCase() === 'graffitiwall' ||
+                    child.name.toLowerCase().includes('graffiti_wall')
+                );
+                
+                console.log(`Processing object: ${child.name}, isGraffitiWall: ${isGraffitiWall}`);
+                
+                materials.forEach((material) => {
+                    if (material.isMeshStandardMaterial || 
+                        material.isMeshLambertMaterial || 
+                        material.isMeshPhongMaterial ||
+                        material.isMeshBasicMaterial) {
+                        
+                        // Ensure UV2 coordinates exist for lightmapping
+                        if (!child.geometry.attributes.uv2) {
+                            if (child.geometry.attributes.uv) {
+                                child.geometry.setAttribute('uv2', child.geometry.attributes.uv);
+                            } else {
+                                console.warn(`No UV coordinates found for object: ${child.name}`);
+                                return;
+                            }
+                        }
+                        
+                        // Apply appropriate lightmap based on object type
+                        if (isGraffitiWall && this.graffitiLightmapTexture) {
+                            material.lightMap = this.graffitiLightmapTexture;
+                            material.lightMapIntensity = 1.0;
+                            material.needsUpdate = true;
+                            graffitiMaterialCount++;
+                            console.log(`✓ Applied graffiti lightmap to: ${child.name}`);
+                        } else if (!isGraffitiWall && this.lightmapTexture) {
+                            material.lightMap = this.lightmapTexture;
+                            material.lightMapIntensity = 1.0;
+                            material.needsUpdate = true;
+                            mainMaterialCount++;
+                            console.log(`✓ Applied main lightmap to: ${child.name}`);
+                        } else {
+                            console.warn(`No appropriate lightmap found for: ${child.name}, isGraffitiWall: ${isGraffitiWall}`);
+                        }
+                    }
+                });
+            }
+        });
+        
+        console.log(`Main lightmap applied to ${mainMaterialCount} materials`);
+        console.log(`Graffiti lightmap applied to ${graffitiMaterialCount} materials`);
+        
+        if (mainMaterialCount === 0 && graffitiMaterialCount === 0) {
+            console.warn('No materials received lightmaps - check object names and material types');
+        }
+        
+        this.needsRender = true;
+    }
 
+    setupFanAnimations() {
+        if (!this.model) return;
+        
+        console.log('Setting up fan animations...');
+        let fanCount = 0;
+        
+        // Clear existing fans first
+        this.fanObjects.clear();
+        
+        // Find fan objects in the model
+        this.model.traverse((child) => {
+            const name = child.name ? child.name.toLowerCase() : '';
+            
+            // More flexible fan detection
+            const isFan = name.includes('fan') && 
+                         !name.includes('_pivot') && 
+                         !name.includes('pivot') &&
+                         child.isMesh;
+            
+            if (isFan) {
+                console.log(`Found potential fan object: "${child.name}"`);
+                console.log(`  - Type: ${child.type}`);
+                console.log(`  - Position:`, child.position);
+                console.log(`  - Parent:`, child.parent?.name || 'Scene');
+                
+                // Add the fan with custom settings based on name
+                let settings = { axis: 'x', speed: 3, direction: 1 }; // Default settings
+                
+                // Customize settings based on fan name patterns
+                if (name.includes('ceiling')) {
+                    settings = { axis: 'y', speed: 4, direction: 1 };
+                } else if (name.includes('wall') || name.includes('side')) {
+                    settings = { axis: 'z', speed: 5, direction: -1 };
+                }
+                
+                this.addFanAnimation(child, settings);
+                fanCount++;
+            }
+        });
+        
+        console.log(`Set up ${fanCount} fans for animation`);
+        
+        // Log all found fans
+        this.fanObjects.forEach((fanData, fanName) => {
+            console.log(`Fan "${fanName}" configured:`, fanData.settings);
+        });
+    }
 
+    // Add a fan to the animation system
+    addFanAnimation(fanObject, settings = {}) {
+        const defaultSettings = {
+            axis: 'y',           // Default to Y-axis for ceiling fans
+            speed: 3,            // Moderate speed
+            direction: 1,        // Clockwise
+            enabled: true
+        };
+        
+        const fanSettings = { ...defaultSettings, ...settings };
+        
+        console.log(`Adding fan animation for: ${fanObject.name}`);
+        console.log(`  Settings:`, fanSettings);
+        
+        // Create pivot group
+        if (!fanObject.userData.pivotGroup) {
+            const originalParent = fanObject.parent;
+            const pivotGroup = new THREE.Group();
+            pivotGroup.name = fanObject.name + '_pivot';
+            
+            // Store original position
+            const originalPosition = fanObject.position.clone();
+            const originalRotation = fanObject.rotation.clone();
+            
+            // Position pivot group at fan's current position
+            pivotGroup.position.copy(originalPosition);
+            pivotGroup.rotation.copy(originalRotation);
+            
+            // Add pivot to original parent
+            originalParent.add(pivotGroup);
+            
+            // Remove fan from original parent
+            originalParent.remove(fanObject);
+            
+            // Reset fan's transform and add to pivot
+            fanObject.position.set(0, 0, 0);
+            fanObject.rotation.set(0, 0, 0);
+            pivotGroup.add(fanObject);
+            
+            fanObject.userData.pivotGroup = pivotGroup;
+            
+            console.log(`  ✓ Created pivot group for ${fanObject.name}`);
+        }
+        
+        // Store the fan data
+        this.fanObjects.set(fanObject.name, {
+            object: fanObject,
+            pivotGroup: fanObject.userData.pivotGroup,
+            settings: fanSettings,
+            lastTime: performance.now()
+        });
+        
+        console.log(`  ✓ Fan ${fanObject.name} added to animation system`);
+    }
 
     setupFallbackLighting() {
         console.log('Setting up fallback lighting');
@@ -858,34 +963,33 @@ addFanAnimation(fanObject, settings = {}) {
     }
 
    async loadModel() {
-    if (this.isLoading) return;
-    this.isLoading = true;
-    
-    this.showLoadingMessage();
-    
-    const loader = new GLTFLoader();
-    
-    try {
-        // Load main coffeeshop model
-        const mainGltf = await this.loadGLTF(loader, 'assets/coffeeshop.glb');
-        await this.handleMainModelLoad(mainGltf);
+        if (this.isLoading) return;
+        this.isLoading = true;
         
-        // Load graffiti wall separately
-        await this.loadGraffitiWall(loader);
+        this.showLoadingMessage();
+        
+        const loader = new GLTFLoader();
+        
+        try {
+            // Load main coffeeshop model
+            const mainGltf = await this.loadGLTF(loader, 'assets/coffeeshop.glb');
+            await this.handleMainModelLoad(mainGltf);
+            
+            // Load graffiti wall separately
+            await this.loadGraffitiWall(loader);
 
+            setTimeout(() => {
+                this.focusOnBlackboardCamera();
+            }, 500); 
 
-        setTimeout(() => {
-            this.focusOnBlackboardCamera();
-        }, 500); 
-
-    } catch (error) {
-        console.error('Failed to load models:', error);
-        this.showErrorMessage('Failed to load 3D models. Please check that the model files exist.');
+        } catch (error) {
+            console.error('Failed to load models:', error);
+            this.showErrorMessage('Failed to load 3D models. Please check that the model files exist.');
+        }
+        
+        this.hideLoadingMessage();
+        this.isLoading = false;
     }
-    
-    this.hideLoadingMessage();
-    this.isLoading = false;
-}
 
     loadGLTF(loader, url) {
         return new Promise((resolve, reject) => {
@@ -894,85 +998,84 @@ addFanAnimation(fanObject, settings = {}) {
     }
 
     async handleMainModelLoad(gltf) {
-    this.model = gltf.scene;
+        this.model = gltf.scene;
 
-    // Remove graffiti wall from main model if it exists
-    const graffitiWallInMain = this.model.getObjectByName('graffiti-wall') || 
-                              this.model.getObjectByName('graffitiwall') ||
-                              this.findObjectByPartialName(this.model, 'graffiti');
-    
-    if (graffitiWallInMain) {
-        console.log('Removing graffiti wall from main model');
-        graffitiWallInMain.parent.remove(graffitiWallInMain);
+        // Remove graffiti wall from main model if it exists
+        const graffitiWallInMain = this.model.getObjectByName('graffiti-wall') || 
+                                  this.model.getObjectByName('graffitiwall') ||
+                                  this.findObjectByPartialName(this.model, 'graffiti');
+        
+        if (graffitiWallInMain) {
+            console.log('Removing graffiti wall from main model');
+            graffitiWallInMain.parent.remove(graffitiWallInMain);
+        }
+
+        const box = new THREE.Box3().setFromObject(this.model);
+        const center = box.getCenter(new THREE.Vector3());
+        this.model.position.sub(center);
+
+        const buildingCenter = new THREE.Vector3(0, 0, 0);
+        this.controls.target.copy(buildingCenter);
+        this.controls.update();
+
+        this.optimizeModel(this.model);
+        this.scene.add(this.model);
+        
+        this.setupAutoCollisionObjects();
+
+        //load fan animation
+        this.setupFanAnimations();
+        
+        // Apply main lightmap to main model
+        await this.loadMainLightmap();
+        if (this.lightmapTexture) {
+            this.applyMainLightmap();
+        }
+
+        this.setupLampionGlow();
+        this.setupBlackBoardLight();
+        this.fitCameraToModel();
+
+        console.log('Main model loaded successfully');
     }
 
-    const box = new THREE.Box3().setFromObject(this.model);
-    const center = box.getCenter(new THREE.Vector3());
-    this.model.position.sub(center);
-
-    const buildingCenter = new THREE.Vector3(0, 0, 0);
-    this.controls.target.copy(buildingCenter);
-    this.controls.update();
-
-    this.optimizeModel(this.model);
-    this.scene.add(this.model);
-    
-    this.setupAutoCollisionObjects();
-
-    //load fan animation
-    this.setupFanAnimations();
-    
-    // Apply main lightmap to main model
-    await this.loadMainLightmap();
-    if (this.lightmapTexture) {
-        this.applyMainLightmap();
-    }
-
-    this.setupLampionGlow();
-    this.setupBlackBoardLight();
-    this.fitCameraToModel();
-
-    console.log('Main model loaded successfully');
-}
-
-
-async loadGraffitiWall(loader) {
-    if (this.isLoadingGraffitiWall) return;
-    this.isLoadingGraffitiWall = true;
-    
-    try {
-        // You can either:
-        // 1. Load from a separate GLB file: 'assets/graffiti-wall.glb'
-        // 2. Load from the same file and extract just the graffiti wall
-        const graffitiGltf = await this.loadGLTF(loader, 'assets/graffiti-wall.glb');
+    async loadGraffitiWall(loader) {
+        if (this.isLoadingGraffitiWall) return;
+        this.isLoadingGraffitiWall = true;
         
-        this.graffitiWall = graffitiGltf.scene;
-        
-        // Position the graffiti wall exactly where it should be
-        // Adjust these coordinates based on your model
-        this.graffitiWall.position.set(0, 0, 0); // Set to exact position
-        this.graffitiWall.rotation.set(0, 0, 0); // Set to exact rotation
-        this.graffitiWall.scale.set(1, 1, 1);    // Set to exact scale
-        
-        this.optimizeModel(this.graffitiWall);
-        this.scene.add(this.graffitiWall);
-        
-        // Apply graffiti lightmap only to graffiti wall
-        await this.loadGraffitiLightmap();
-        if (this.graffitiLightmapTexture) {
-            this.applyGraffitiLightmap();
+        try {
+            // You can either:
+            // 1. Load from a separate GLB file: 'assets/graffiti-wall.glb'
+            // 2. Load from the same file and extract just the graffiti wall
+            const graffitiGltf = await this.loadGLTF(loader, 'assets/graffiti-wall.glb');
+            
+            this.graffitiWall = graffitiGltf.scene;
+            
+            // Position the graffiti wall exactly where it should be
+            // Adjust these coordinates based on your model
+            this.graffitiWall.position.set(0, 0, 0); // Set to exact position
+            this.graffitiWall.rotation.set(0, 0, 0); // Set to exact rotation
+            this.graffitiWall.scale.set(1, 1, 1);    // Set to exact scale
+            
+            this.optimizeModel(this.graffitiWall);
+            this.scene.add(this.graffitiWall);
+            
+            // Apply graffiti lightmap only to graffiti wall
+            await this.loadGraffitiLightmap();
+            if (this.graffitiLightmapTexture) {
+                this.applyGraffitiLightmap();
+            }
+            
+            console.log('Graffiti wall loaded and positioned successfully');
+            
+        } catch (error) {
+            console.warn('Failed to load separate graffiti wall, trying to extract from main model:', error);
+            // Fallback: try to extract from main model if separate file doesn't exist
+            await this.extractGraffitiFromMain(loader);
         }
         
-        console.log('Graffiti wall loaded and positioned successfully');
-        
-    } catch (error) {
-        console.warn('Failed to load separate graffiti wall, trying to extract from main model:', error);
-        // Fallback: try to extract from main model if separate file doesn't exist
-        await this.extractGraffitiFromMain(loader);
+        this.isLoadingGraffitiWall = false;
     }
-    
-    this.isLoadingGraffitiWall = false;
-}
 
     optimizeModel(model) {
         let meshCount = 0;
@@ -1203,68 +1306,63 @@ async loadGraffitiWall(loader) {
         }
     }
 
-
     // Update fan animations 
-updateFanAnimations(currentTime) {
-    if (this.fanObjects.size === 0) return;
-    
-    let hasActiveFans = false;
-    
-    this.fanObjects.forEach((fanData, fanName) => {
-        if (!fanData.settings.enabled) return;
+    updateFanAnimations(currentTime) {
+        if (this.fanObjects.size === 0) return;
         
-        const deltaTime = (currentTime - fanData.lastTime) / 1000;
+        let hasActiveFans = false;
         
-        // Skip if deltaTime is too large (first frame or pause)
-        if (deltaTime > 0.1) {
-            fanData.lastTime = currentTime;
-            return;
-        }
-        
-        const rotationAmount = fanData.settings.speed * fanData.settings.direction * deltaTime;
-        
-        // Debug logging (remove after testing)
-        if (Math.random() < 0.01) { // Only log occasionally
-            console.log(`Fan ${fanName}: deltaTime=${deltaTime.toFixed(4)}, rotation=${rotationAmount.toFixed(4)}`);
-        }
-        
-        // Apply rotation to the pivot group
-        const pivotGroup = fanData.pivotGroup;
-        if (pivotGroup) {
-            switch (fanData.settings.axis.toLowerCase()) {
-                case 'x':
-                    pivotGroup.rotation.x += rotationAmount;
-                    break;
-                case 'y':
-                    pivotGroup.rotation.y += rotationAmount;
-                    break;
-                case 'z':
-                    pivotGroup.rotation.z += rotationAmount;
-                    break;
+        this.fanObjects.forEach((fanData, fanName) => {
+            if (!fanData.settings.enabled) return;
+            
+            const deltaTime = (currentTime - fanData.lastTime) / 1000;
+            
+            // Skip if deltaTime is too large (first frame or pause)
+            if (deltaTime > 0.1) {
+                fanData.lastTime = currentTime;
+                return;
             }
-            hasActiveFans = true;
-        } else {
-            console.warn(`No pivot group found for fan: ${fanName}`);
-        }
+            
+            const rotationAmount = fanData.settings.speed * fanData.settings.direction * deltaTime;
+            
+            // Apply rotation to the pivot group
+            const pivotGroup = fanData.pivotGroup;
+            if (pivotGroup) {
+                switch (fanData.settings.axis.toLowerCase()) {
+                    case 'x':
+                        pivotGroup.rotation.x += rotationAmount;
+                        break;
+                    case 'y':
+                        pivotGroup.rotation.y += rotationAmount;
+                        break;
+                    case 'z':
+                        pivotGroup.rotation.z += rotationAmount;
+                        break;
+                }
+                hasActiveFans = true;
+            } else {
+                console.warn(`No pivot group found for fan: ${fanName}`);
+            }
+            
+            fanData.lastTime = currentTime;
+        });
         
-        fanData.lastTime = currentTime;
-    });
-    
-    if (hasActiveFans) {
-        this.needsRender = true;
+        if (hasActiveFans) {
+            this.needsRender = true;
+        }
     }
-}
 
     animate() {
-    this.animationId = requestAnimationFrame(() => this.animate());
+        this.animationId = requestAnimationFrame(() => this.animate());
 
         const currentTime = performance.now();
         const deltaTime = currentTime - (this.lastFrameTime || currentTime);
         const isInteracting = (currentTime - this.lastInteraction) < 100;
         const needsUpdate = this.needsRender || isInteracting || this.controls.autoRotate;
 
+        // Update animations
         this.updateFanAnimations(currentTime);
-
+        this.updateBackgroundLight(currentTime);
         
         if (needsUpdate) {
             this.controls.update();
@@ -1324,54 +1422,86 @@ updateFanAnimations(currentTime) {
         container.appendChild(errorDiv);
     }
 
+    // NEW: Methods to control background light
+    setBackgroundLightColor(color) {
+        if (this.backgroundLight.material) {
+            this.backgroundLight.color.set(color);
+            this.backgroundLight.material.uniforms.color.value = this.backgroundLight.color;
+            this.needsRender = true;
+        }
+    }
+
+    setBackgroundLightIntensity(intensity) {
+        this.backgroundLight.intensity = intensity;
+        if (this.backgroundLight.material) {
+            this.backgroundLight.material.uniforms.intensity.value = intensity;
+            this.needsRender = true;
+        }
+    }
+
+    toggleBackgroundLight() {
+        this.backgroundLight.enabled = !this.backgroundLight.enabled;
+        if (this.backgroundLight.mesh) {
+            this.backgroundLight.mesh.visible = this.backgroundLight.enabled;
+            this.needsRender = true;
+        }
+    }
+
     dispose() {
-    if (this.animationId) {
-        cancelAnimationFrame(this.animationId);
-    }
-    
-    if (this.lightmapTexture) {
-        this.lightmapTexture.dispose();
-        this.lightmapTexture = null;
-    }
-    
-    if (this.graffitiLightmapTexture) {
-        this.graffitiLightmapTexture.dispose();
-        this.graffitiLightmapTexture = null;
-    }
-    
-    // Dispose graffiti wall
-    if (this.graffitiWall) {
-        this.graffitiWall.traverse((child) => {
-            if (child.geometry) child.geometry.dispose();
-            if (child.material) {
-                if (Array.isArray(child.material)) {
-                    child.material.forEach(mat => mat.dispose());
-                } else {
-                    child.material.dispose();
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+        
+        // Dispose background light
+        if (this.backgroundLight.mesh) {
+            this.backgroundLight.mesh.geometry.dispose();
+            this.backgroundLight.material.dispose();
+            this.scene.remove(this.backgroundLight.mesh);
+        }
+        
+        if (this.lightmapTexture) {
+            this.lightmapTexture.dispose();
+            this.lightmapTexture = null;
+        }
+        
+        if (this.graffitiLightmapTexture) {
+            this.graffitiLightmapTexture.dispose();
+            this.graffitiLightmapTexture = null;
+        }
+        
+        // Dispose graffiti wall
+        if (this.graffitiWall) {
+            this.graffitiWall.traverse((child) => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => mat.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
                 }
-            }
-        });
-        this.scene.remove(this.graffitiWall);
-        this.graffitiWall = null;
-    }
-    
-    if (this.model) {
-        this.model.traverse((child) => {
-            if (child.geometry) child.geometry.dispose();
-            if (child.material) {
-                if (Array.isArray(child.material)) {
-                    child.material.forEach(mat => mat.dispose());
-                } else {
-                    child.material.dispose();
+            });
+            this.scene.remove(this.graffitiWall);
+            this.graffitiWall = null;
+        }
+        
+        if (this.model) {
+            this.model.traverse((child) => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => mat.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
                 }
-            }
-        });
+            });
+        }
+        
+        if (this.renderer) {
+            this.renderer.dispose();
+        }
     }
-    
-    if (this.renderer) {
-        this.renderer.dispose();
-    }
-}
 }
 
 // Initialize viewer
@@ -1397,3 +1527,6 @@ window.addEventListener('beforeunload', () => {
         viewer.dispose();
     }
 });
+
+// Export viewer for external control (optional)
+window.viewer = viewer;
