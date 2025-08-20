@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to set theme
     function setTheme(theme) {
         body.setAttribute('data-theme', theme);
+
+        // Dispatch custom event for Three.js to listen to
+        document.dispatchEvent(new CustomEvent('darkModeToggle', { detail: { theme } }));
         
         if (theme === 'dark') {
             moonIcon.style.display = 'none';

@@ -29,6 +29,11 @@ class OptimizedViewer {
         this.graffitiWall = null;
         this.isLoadingGraffitiWall = false;
 
+        //dark mode for background
+        this.isDarkMode = false;
+        this.lightModeColor = new THREE.Color(0x0b859d);
+        this.darkModeColor = new THREE.Color(0x000000);
+
         // Fan animation system
         this.fanObjects = new Map();
 
@@ -91,6 +96,7 @@ class OptimizedViewer {
             this.setupRenderer(container);
             this.setupControls();
             this.setupEventListeners();
+            this.setupDarkModeDetection();
             
             this.setupBackgroundLight();
             
@@ -110,6 +116,82 @@ class OptimizedViewer {
             }
         });
     }
+    
+
+    //Dark Mode background listener
+    setupDarkModeDetection() {
+    // Check initial dark mode state
+    this.updateDarkModeState();
+
+    // Listen for your custom dark mode toggle event
+    document.addEventListener('darkModeToggle', () => {
+        this.updateDarkModeState();
+    });
+
+    // Also observe data-theme changes on body
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                this.updateDarkModeState();
+            }
+        });
+    });
+
+    observer.observe(document.body, { 
+        attributes: true, 
+        attributeFilter: ['data-theme'] 
+    });
+}
+
+updateDarkModeState() {
+    const wasDarkMode = this.isDarkMode;
+    
+    // Check if body has data-theme="dark"
+    this.isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+
+    // Update background if dark mode state changed
+    if (wasDarkMode !== this.isDarkMode) {
+        this.updateSceneBackground();
+    }
+}
+
+updateSceneBackground() {
+    if (!this.scene) return;
+
+    const targetColor = this.isDarkMode ? this.darkModeColor : this.lightModeColor;
+    
+    console.log(`Switching to ${this.isDarkMode ? 'dark' : 'light'} mode background`);
+    
+    // Smooth transition between colors
+    const currentColor = this.scene.background;
+    if (currentColor && currentColor.isColor) {
+        this.animateColorTransition(currentColor, targetColor, 800);
+    } else {
+        this.scene.background = targetColor.clone();
+        this.needsRender = true;
+    }
+}
+
+animateColorTransition(fromColor, toColor, duration = 800) {
+    const startTime = performance.now();
+    const startColor = fromColor.clone();
+    
+    const animate = (currentTime) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = this.easeInOut(progress);
+        
+        const currentColor = startColor.clone().lerp(toColor, easedProgress);
+        this.scene.background = currentColor;
+        this.needsRender = true;
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    };
+    
+    requestAnimationFrame(animate);
+}
 
     setupBackgroundLight() {
         if (!this.backgroundLight.enabled) return;
@@ -623,7 +705,7 @@ class OptimizedViewer {
 
     setupScene() {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x0b859d);
+        this.scene.background = this.lightModeColor.clone(); // CHANGE THIS LINE
         this.scene.matrixAutoUpdate = true;
     }
 
