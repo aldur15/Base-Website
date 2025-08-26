@@ -211,35 +211,32 @@ body {
 
 .status-badge.completed {
     background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
     padding: 0.75rem 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-  border-radius: var(--border-radius-small);
-  
-  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-  font-weight: 500;
+    border-radius: var(--neuro-border-radius-sm);
+    box-shadow: 8px 8px 16px var(--neuro-shadow-dark), -8px -8px 16px var(--neuro-shadow-light);
+    font-weight: 600;
+    transition: var(--neuro-transition);
 }
 
 .status-badge.in-progress {
     background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
     padding: 0.75rem 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-  border-radius: var(--border-radius-small);
-  
-  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-  font-weight: 500;
+    border-radius: var(--neuro-border-radius-sm);
+    box-shadow: 8px 8px 16px var(--neuro-shadow-dark), -8px -8px 16px var(--neuro-shadow-light);
+    font-weight: 600;
+    transition: var(--neuro-transition);
 }
 
 .status-badge.planning {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
     padding: 0.75rem 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-  border-radius: var(--border-radius-small);
-  
-  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-  font-weight: 500;
+    border-radius: var(--neuro-border-radius-sm);
+    box-shadow: 8px 8px 16px var(--neuro-shadow-dark), -8px -8px 16px var(--neuro-shadow-light);
+    font-weight: 600;
+    transition: var(--neuro-transition);
 }
 /*
 .status-badge:hover {
