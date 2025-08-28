@@ -1,4 +1,3 @@
-
 class PortfolioManager {
     constructor() {
         this.lastScrollTop = 0;
@@ -52,18 +51,22 @@ class PortfolioManager {
     }
 
     initScrollEffects() {
-        if (!this.navbar) return;
-
+        // Removed the navbar hide/show functionality
+        // The navbar will now scroll naturally with the page
+        
+        // You can add other scroll effects here if needed
+        // For example, changing navbar background opacity based on scroll position:
+        
         window.addEventListener('scroll', () => {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             
-            // Hide/show navbar based on scroll direction
-            if (scrollTop > this.lastScrollTop && scrollTop > 100) {
-                // Scrolling down - hide navbar
-                this.navbar.style.transform = 'translateY(-100%)';
-            } else {
-                // Scrolling up - show navbar
-                this.navbar.style.transform = 'translateY(0)';
+            // Optional: Add background blur/opacity effect when scrolling
+            if (this.navbar) {
+                if (scrollTop > 50) {
+                    this.navbar.classList.add('scrolled');
+                } else {
+                    this.navbar.classList.remove('scrolled');
+                }
             }
             
             this.lastScrollTop = Math.max(0, scrollTop);
