@@ -154,12 +154,6 @@ body {
     cursor: pointer;
 }
 
-.contact-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-        8px 8px 16px var(--shadow-dark),
-        -8px -8px 16px var(--shadow-light);
-}
 
 .contact-item:last-child {
     margin-bottom: 0;
