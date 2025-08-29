@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { paperData } from './paperData.js';
 
 class OptimizedViewer {
@@ -13,6 +14,8 @@ class OptimizedViewer {
         this.model = null;
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
+        this.dracoLoader = null;
+        this.gltfLoader = null;
         
         // Render optimization
         this.needsRender = true;
@@ -97,6 +100,7 @@ class OptimizedViewer {
             this.setupControls();
             this.setupEventListeners();
             this.setupDarkModeDetection();
+            this.setupDracoLoader(); // ADD THIS LINE
             
             this.setupBackgroundLight();
             
@@ -115,6 +119,28 @@ class OptimizedViewer {
                 viewer.focusOnBlackboardCamera();
             }
         });
+    }
+
+     setupDracoLoader() {
+        // Initialize DRACO loader
+        this.dracoLoader = new DRACOLoader();
+        
+        // Set the path to the DRACO decoder files
+        // You can host these yourself or use the CDN version
+        this.dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+        
+        // Alternative: if you want to host the decoder files locally
+        // this.dracoLoader.setDecoderPath('./draco/');
+        
+        // Configure DRACO loader
+        this.dracoLoader.setDecoderConfig({ type: 'js' }); // Use JS decoder (slower but more compatible)
+        // this.dracoLoader.setDecoderConfig({ type: 'wasm' }); // Use WASM decoder (faster)
+        
+        // Initialize GLTF loader with DRACO support
+        this.gltfLoader = new GLTFLoader();
+        this.gltfLoader.setDRACOLoader(this.dracoLoader);
+        
+        console.log('DRACO loader initialized');
     }
     
 
@@ -821,13 +847,12 @@ animateColorTransition(fromColor, toColor, duration = 800) {
         
         this.showLoadingMessage();
         
-        const loader = new GLTFLoader();
-        
+        // The loader variable is no longer needed since we're using this.gltfLoader
         try {
-            const mainGltf = await this.loadGLTF(loader, 'assets/coffeeshop.glb');
+            const mainGltf = await this.loadGLTF('assets/coffeeshop.glb');
             await this.handleMainModelLoad(mainGltf);
             
-            await this.loadGraffitiWall(loader);
+            await this.loadGraffitiWall();
 
             setTimeout(() => {
                 this.focusOnBlackboardCamera();
@@ -842,11 +867,13 @@ animateColorTransition(fromColor, toColor, duration = 800) {
         this.isLoading = false;
     }
 
-    loadGLTF(loader, url) {
+    loadGLTF(url) {
         return new Promise((resolve, reject) => {
-            loader.load(url, resolve, undefined, reject);
+            // Use the DRACO-enabled GLTF loader instead of creating a new one
+            this.gltfLoader.load(url, resolve, undefined, reject);
         });
     }
+
 
     async handleMainModelLoad(gltf) {
         this.model = gltf.scene;
@@ -884,12 +911,12 @@ animateColorTransition(fromColor, toColor, duration = 800) {
         console.log('Main model loaded successfully');
     }
 
-    async loadGraffitiWall(loader) {
+    async loadGraffitiWall() {
         if (this.isLoadingGraffitiWall) return;
         this.isLoadingGraffitiWall = true;
         
         try {
-            const graffitiGltf = await this.loadGLTF(loader, 'assets/graffiti-wall.glb');
+            const graffitiGltf = await this.loadGLTF('assets/graffiti-wall.glb');
             
             this.graffitiWall = graffitiGltf.scene;
             
@@ -900,7 +927,6 @@ animateColorTransition(fromColor, toColor, duration = 800) {
             this.optimizeModel(this.graffitiWall);
             this.scene.add(this.graffitiWall);
             
-            // Apply graffiti lightmap to graffiti wall
             this.applyGraffitiLightmapToWall();
             
             console.log('Graffiti wall loaded and positioned successfully');
@@ -1277,6 +1303,16 @@ animateColorTransition(fromColor, toColor, duration = 800) {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
         }
+        
+        // Clean up DRACO loader
+        if (this.dracoLoader) {
+            this.dracoLoader.dispose();
+            this.dracoLoader = null;
+        }
+        
+        this.gltfLoader = null;
+        
+        // ... rest of existing dispose method ...
         
         if (this.backgroundLight.mesh) {
             this.backgroundLight.mesh.geometry.dispose();

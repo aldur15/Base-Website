@@ -14,23 +14,117 @@ class PortfolioManager {
     }
 
     initMobileNavigation() {
-        const navToggle = document.getElementById('nav-toggle');
-        const navMenu = document.getElementById('nav-menu');
-        
-        if (!navToggle || !navMenu) return;
+    console.log('Initializing mobile navigation...');
+    
+    const navToggle = document.getElementById('nav-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const mobileClose = document.getElementById('mobile-close');
+    
+    if (!navToggle || !mobileMenu || !mobileMenuOverlay) {
+        console.error('Mobile navigation elements not found!');
+        return;
+    }
 
-        // Toggle mobile menu
-        navToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
+    
 
-        // Close mobile menu when clicking on navigation links
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-            });
+    // Open mobile menu
+    navToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openMobileMenu();
+    });
+
+    // Close mobile menu via close button
+    if (mobileClose) {
+        mobileClose.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.closeMobileMenu();
         });
     }
+
+    // Close mobile menu via overlay
+    mobileMenuOverlay.addEventListener('click', () => {
+        this.closeMobileMenu();
+    });
+
+    // Close mobile menu when clicking on navigation links
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            this.closeMobileMenu();
+        });
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+            this.closeMobileMenu();
+        }
+    });
+
+    
+}
+
+openMobileMenu() {
+    console.log('Opening mobile menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const navToggle = document.getElementById('nav-toggle');
+    
+    mobileMenu.classList.add('active');
+    mobileMenuOverlay.classList.add('active');
+    navToggle.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent body scroll
+}
+
+closeMobileMenu() {
+    console.log('Closing mobile menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const navToggle = document.getElementById('nav-toggle');
+    
+    mobileMenu.classList.remove('active');
+    mobileMenuOverlay.classList.remove('active');
+    navToggle.classList.remove('active');
+    document.body.style.overflow = ''; // Restore body scroll
+}
+toggleTheme() {
+    const body = document.body;
+    const currentTheme = body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    console.log('Theme changed to:', newTheme);
+}
+
+
+initThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const body = document.body;
+    
+    // Check for saved theme preference or default to light mode
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    body.setAttribute('data-theme', currentTheme);
+
+    // Desktop theme toggle
+    if (themeToggle) {
+        themeToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.toggleTheme();
+        });
+    }
+
+    // Mobile theme toggle
+    if (mobileThemeToggle) {
+        mobileThemeToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.toggleTheme();
+        });
+    }
+}
 
     initSmoothScrolling() {
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
