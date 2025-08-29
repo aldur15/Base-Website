@@ -1,10 +1,9 @@
 // paperData.js - Export file for paper content
 
 export const paperData = {
-  paper_1: {
-    title:
-      "The Influence of Persona and Conversational Task on Social Interactions with a LLM-Controlled Embodied Conversational Agent",
-    content: `
+	paper_1: {
+		title: "The Influence of Persona and Conversational Task on Social Interactions with a LLM-Controlled Embodied Conversational Agent",
+		content: `
       <h2>Abstract</h2>
       <p>
         Large Language Models (LLMs) can be embodied as virtual humans in Virtual Reality (VR),
@@ -71,12 +70,11 @@ export const paperData = {
         and assess individual differences in user responses.
       </p>
     `,
-  },
+	},
 
-  paper_2: {
-    title:
-      "Affective Interactions with AI-Controlled Conversational Agents in Virtual Reality",
-    content: `
+	paper_2: {
+		title: "Affective Interactions with AI-Controlled Conversational Agents in Virtual Reality",
+		content: `
       <h2>Abstract</h2>
       <p>
         The exchange of affective information lies at the core of social interactions.
@@ -136,12 +134,11 @@ export const paperData = {
         agents.
       </p>
     `,
-  },
+	},
 
-  paper_3: {
-    title:
-      "The Impact of Binaural Auralizations on Sound Source Localization and Social Presence in Audiovisual Virtual Reality",
-    content: `
+	paper_3: {
+		title: "The Impact of Binaural Auralizations on Sound Source Localization and Social Presence in Audiovisual Virtual Reality",
+		content: `
       <h2>Abstract</h2>
       <p>
         This study investigated whether head-tracked binaural auralizations in Virtual Reality (VR)
@@ -204,12 +201,11 @@ export const paperData = {
         examine long-term user experience with binaural audio in VR.
       </p>
     `,
-  },
+	},
 
-  paper_4: {
-    title:
-      "Impact of Visual Virtual Scene and Localization Task on Auditory Distance Perception in Virtual Reality",
-    content: `
+	paper_4: {
+		title: "Impact of Visual Virtual Scene and Localization Task on Auditory Distance Perception in Virtual Reality",
+		content: `
       <h2>Abstract</h2>
       <p>
         This study examined how visual scene context and task type affect auditory distance perception
@@ -271,5 +267,5 @@ export const paperData = {
         study goals.
       </p>
     `,
-  },
+	},
 };

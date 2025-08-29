@@ -81,6 +81,29 @@ class OptimizedViewer {
             }
         };
 
+        this.mobileCameraTargets = {
+    'nav-about': {
+        position: new THREE.Vector3(-2, -2, 15),
+        lookAt: new THREE.Vector3(0, 1.5, 0)
+    },
+    'nav-projects': {
+        position: new THREE.Vector3(8, 28, 15),
+        lookAt: new THREE.Vector3(0, 1.5, 0)
+    },
+    'nav-research': {
+        position: new THREE.Vector3(25, -2, -15),
+        lookAt: new THREE.Vector3(0, 1.5, 0)
+    },
+    'nav-contact': {
+        position: new THREE.Vector3(-18, -2, 8),
+        lookAt: new THREE.Vector3(0, 1.5, 0)
+    },
+    blackboard: {
+        position: new THREE.Vector3(18, -2, 10),
+        lookAt: new THREE.Vector3(0, 1.5, 0)
+    }
+};
+
         this.collisionObjects = new Map();
         
         this.init();
@@ -120,6 +143,12 @@ class OptimizedViewer {
             }
         });
     }
+
+    isMobileDevice() {
+    return window.innerWidth <= 768 || 
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 
      setupDracoLoader() {
         // Initialize DRACO loader
@@ -773,15 +802,18 @@ animateColorTransition(fromColor, toColor, duration = 800) {
     }
 
     focusOnBlackboardCamera() {
-        if (!this.cameraTargets?.blackboard) return;
+    const targets = this.isMobileDevice() ? this.mobileCameraTargets : this.cameraTargets;
+    const blackboardTarget = targets.blackboard;
+    
+    if (!blackboardTarget) return;
 
-        this.focusCameraTo({
-            ...this.cameraTargets.blackboard,
-            duration: 2.5
-        });
+    this.focusCameraTo({
+        ...blackboardTarget,
+        duration: 2.5
+    });
 
-        this.closeBackdoor?.();
-    }
+    this.closeBackdoor?.();
+}
 
     setupControls() {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -1041,18 +1073,20 @@ animateColorTransition(fromColor, toColor, duration = 800) {
     }
 
     handleNavigation(name) {
-        const target = this.cameraTargets[name];
-        if (target) {
-            this.focusCameraTo(target);
-            this.showBackButton();
+    const targets = this.isMobileDevice() ? this.mobileCameraTargets : this.cameraTargets;
+    const target = targets[name];
+    
+    if (target) {
+        this.focusCameraTo(target);
+        this.showBackButton();
 
-            if (name === 'nav-contact') {
-                setTimeout(() => {
-                    this.openBackdoor();
-                }, 1500);
-            }
+        if (name === 'nav-contact') {
+            setTimeout(() => {
+                this.openBackdoor();
+            }, 1500);
         }
     }
+}
 
     focusCameraTo({ position, lookAt, duration = 2.0 }) {
         const startPos = this.camera.position.clone();
