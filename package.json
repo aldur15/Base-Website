@@ -1,5 +1,16 @@
 {
+  "name": "base-website",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "three": "^0.177.0"
+    "three": "^0.179.1"
+  },
+  "devDependencies": {
+    "vite": "^7.1.3"
   }
 }
