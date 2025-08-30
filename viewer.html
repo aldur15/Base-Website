@@ -16,6 +16,52 @@
 </head>
 
 <body>
+    <div id="loadingScreen" class="loading-screen">
+    <div class="loading-container">
+        <div class="loading-logo">Alexander May</div>
+        <div class="loading-title">Loading 3D Environment</div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div id="progressText" class="progress-text">0%</div>
+        </div>
+        
+        <!-- Loading Stages -->
+        <div class="loading-stages">
+            <div id="stage-init" class="stage-item">
+                <div class="stage-dot"></div>
+                <span>Initializing Scene</span>
+            </div>
+            <div id="stage-lightmap" class="stage-item">
+                <div class="stage-dot"></div>
+                <span>Loading Lightmaps</span>
+            </div>
+            <div id="stage-main" class="stage-item">
+                <div class="stage-dot"></div>
+                <span>Loading Main Model</span>
+            </div>
+            <div id="stage-graffiti" class="stage-item">
+                <div class="stage-dot"></div>
+                <span>Loading Graffiti Wall</span>
+            </div>
+            <div id="stage-optimize" class="stage-item">
+                <div class="stage-dot"></div>
+                <span>Optimizing</span>
+            </div>
+            <div id="stage-complete" class="stage-item">
+                <div class="stage-dot"></div>
+                <span>Complete</span>
+            </div>
+        </div>
+        
+        <div class="loading-tip">
+            Use mouse to rotate • Scroll to zoom • Click objects to interact
+        </div>
+    </div>
+</div>
     <!-- Mobile Menu -->
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
