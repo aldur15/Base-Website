@@ -185,24 +185,24 @@ class OptimizedViewer {
 
 		this.mobileCameraTargets = {
 			'nav-about': {
-				position: new THREE.Vector3(-2, -2, 15),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
+				position: new THREE.Vector3(-2, -3, 18),
+				lookAt: new THREE.Vector3(-2.5, -7 ,-11)
 			},
 			'nav-projects': {
 				position: new THREE.Vector3(8, 28, 15),
 				lookAt: new THREE.Vector3(0, 1.5, 0)
 			},
 			'nav-research': {
-				position: new THREE.Vector3(25, -2, -15),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
+				position: new THREE.Vector3(15.3, -5, -15),
+				lookAt: new THREE.Vector3(5, -4, -2)
 			},
 			'nav-contact': {
-				position: new THREE.Vector3(-14, -3, 12),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
+				position: new THREE.Vector3(-14, -3, 5),
+				lookAt: new THREE.Vector3(0, 0, 6)
 			},
 			blackboard: {
-				position: new THREE.Vector3(18, -2, 10),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
+				position: new THREE.Vector3(16, -4,11),
+				lookAt: new THREE.Vector3(0, 1.5, 2)
 			}
 		};
 
