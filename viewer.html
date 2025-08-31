@@ -1,143 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Viewer - Alexander May</title>
-
     <!--   <link rel="stylesheet" href="assets/style.css"> -->
-
     <link rel="stylesheet" href="assets/viewer.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-
-
-</head>
-
-<body>
+  </head>
+  <body>
     <div id="loadingScreen" class="loading-screen">
-    <div class="loading-container">
+      <div class="loading-container">
         <div class="loading-logo">Alexander May</div>
         <div class="loading-title">Loading 3D Environment</div>
-        
         <!-- Progress Bar -->
         <div class="progress-container">
-            <div class="progress-bar">
-                <div id="progressFill" class="progress-fill"></div>
-            </div>
-            <div id="progressText" class="progress-text">0%</div>
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+          <div id="progressText" class="progress-text">0%</div>
         </div>
-        
         <!-- Loading Stages -->
         <div class="loading-stages">
-            <div id="stage-init" class="stage-item">
-                <div class="stage-dot"></div>
-                <span>Initializing Scene</span>
-            </div>
-            <div id="stage-lightmap" class="stage-item">
-                <div class="stage-dot"></div>
-                <span>Loading Lightmaps</span>
-            </div>
-            <div id="stage-main" class="stage-item">
-                <div class="stage-dot"></div>
-                <span>Loading Main Model</span>
-            </div>
-            <div id="stage-graffiti" class="stage-item">
-                <div class="stage-dot"></div>
-                <span>Loading Graffiti Wall</span>
-            </div>
-            <div id="stage-optimize" class="stage-item">
-                <div class="stage-dot"></div>
-                <span>Optimizing</span>
-            </div>
-            <div id="stage-complete" class="stage-item">
-                <div class="stage-dot"></div>
-                <span>Complete</span>
-            </div>
+          <div id="stage-init" class="stage-item">
+            <div class="stage-dot"></div>
+            <span>Initializing Scene</span>
+          </div>
+          <div id="stage-lightmap" class="stage-item">
+            <div class="stage-dot"></div>
+            <span>Loading Lightmaps</span>
+          </div>
+          <div id="stage-main" class="stage-item">
+            <div class="stage-dot"></div>
+            <span>Loading Main Model</span>
+          </div>
+          <div id="stage-graffiti" class="stage-item">
+            <div class="stage-dot"></div>
+            <span>Loading Graffiti Wall</span>
+          </div>
+          <div id="stage-optimize" class="stage-item">
+            <div class="stage-dot"></div>
+            <span>Optimizing</span>
+          </div>
+          <div id="stage-complete" class="stage-item">
+            <div class="stage-dot"></div>
+            <span>Complete</span>
+          </div>
         </div>
-        
-        <div class="loading-tip">
-            Use mouse to rotate • Scroll to zoom • Click objects to interact
-        </div>
+        <div class="loading-tip"> Use mouse to rotate • Scroll to zoom • Click objects to interact </div>
+      </div>
     </div>
-</div>
     <!-- Mobile Menu -->
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
-
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
-        <div class="mobile-menu-header">
-            <div class="mobile-logo">
-                <a href="index.html">Alexander May</a>
-            </div>
-            <button class="mobile-close" id="mobile-close" aria-label="Close menu">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
+      <div class="mobile-menu-header">
+        <div class="mobile-logo">
+          <a href="index.html">Alexander May</a>
         </div>
-        <nav class="mobile-nav-links">
-            <a href="index.html" class="mobile-nav-link">About</a>
-            <a href="projects.html" class="mobile-nav-link">Projects</a>
-            <a href="research.html" class="mobile-nav-link">Research</a>
-            <a href="cv.html" class="mobile-nav-link">CV</a>
-            <a href="viewer.html" class="mobile-nav-link active">3D-View</a>
-            <a href="contact.html" class="mobile-nav-link">Contact</a>
-        </nav>
+        <button class="mobile-close" id="mobile-close" aria-label="Close menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <nav class="mobile-nav-links">
+        <a href="index.html" class="mobile-nav-link">About</a>
+        <a href="projects.html" class="mobile-nav-link">Projects</a>
+        <a href="research.html" class="mobile-nav-link">Research</a>
+        <a href="cv.html" class="mobile-nav-link">CV</a>
+        <a href="viewer.html" class="mobile-nav-link active">3D-View</a>
+        <a href="contact.html" class="mobile-nav-link">Contact</a>
+      </nav>
     </div>
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <a href="index.html">Alexander May</a>
-            </div>
-            <div class="nav-menu" id="nav-menu">
-                <a href="index.html" class="nav-link">About</a>
-                <a href="projects.html" class="nav-link">Projects</a>
-                <a href="research.html" class="nav-link">Research</a>
-                <a href="cv.html" class="nav-link">CV</a>
-                <a href="viewer.html" class="nav-link active">3D-View</a>
-                <a href="contact.html" class="nav-link">Contact</a>
-            </div>
-            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-                <svg class="moon-icon" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                </svg>
-                <svg class="sun-icon" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                    clip-rule="evenodd"></path>
-                </svg>
-            </button>
-            <div class="nav-toggle" id="nav-toggle">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="index.html">Alexander May</a>
         </div>
+        <div class="nav-menu" id="nav-menu">
+          <a href="index.html" class="nav-link">About</a>
+          <a href="projects.html" class="nav-link">Projects</a>
+          <a href="research.html" class="nav-link">Research</a>
+          <a href="cv.html" class="nav-link">CV</a>
+          <a href="viewer.html" class="nav-link active">3D-View</a>
+          <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+          <svg class="moon-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+          </svg>
+          <svg class="sun-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+        <div class="nav-toggle" id="nav-toggle">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
     </nav>
-
     <!-- Fullscreen 3D Viewer -->
     <div class="fullscreen-viewer">
-        <div id="threejs-container" class="threejs-container">
-            <div class="placeholder-3d">
-                <div class="placeholder-cube"></div>
-                <p>3D Coffee Shop Environment</p>
-                <p style="font-size: 0.9rem; margin-top: 1rem;">Use mouse to rotate • Scroll to zoom</p>
-            </div>
+      <div id="threejs-container" class="threejs-container">
+        <div class="placeholder-3d">
+          <div class="placeholder-cube"></div>
+          <p>3D Coffee Shop Environment</p>
+          <p style="font-size: 0.9rem; margin-top: 1rem;">Use mouse to rotate • Scroll to zoom</p>
         </div>
-
+      </div>
     </div>
-
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+    <script type="importmap"> { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
     </script>
-
     <script type="module" src="js/viewer-three-js-script.js"></script>
     <script type="module" src="js/script.js"></script>
     <script type="module" src="js/dark-mode-toggle.js"></script>
-</body>
-
+  </body>
 </html>

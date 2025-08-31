@@ -17,81 +17,81 @@ import {
 
 
 class LoadingScreenController {
-    constructor() {
-        this.loadingScreen = document.getElementById('loadingScreen');
-        this.progressFill = document.getElementById('progressFill');
-        this.progressText = document.getElementById('progressText');
-        
-        this.stages = [
-            'stage-init',
-            'stage-lightmap', 
-            'stage-main',
-            'stage-graffiti',
-            'stage-optimize',
-            'stage-complete'
-        ];
-        
-        this.currentStage = 0;
-        this.progress = 0;
-        
-        // Show loading screen initially
-        this.show();
-    }
-    
-    show() {
-        if (this.loadingScreen) {
-            this.loadingScreen.classList.remove('hidden');
-        }
-    }
-    
-    hide() {
-        if (this.loadingScreen) {
-            this.loadingScreen.classList.add('hidden');
-        }
-    }
-    
-    updateProgress(percentage) {
-        this.progress = Math.max(0, Math.min(100, percentage));
-        if (this.progressFill) {
-            this.progressFill.style.width = this.progress + '%';
-        }
-        if (this.progressText) {
-            this.progressText.textContent = Math.round(this.progress) + '%';
-        }
-    }
-    
-    setStage(stageName, status = 'active') {
-        const stageIndex = this.stages.findIndex(s => s === stageName);
-        if (stageIndex === -1) return;
-        
-        this.currentStage = stageIndex;
-        
-        this.stages.forEach((stageId, index) => {
-            const element = document.getElementById(stageId);
-            if (!element) return;
-            
-            element.classList.remove('completed', 'active');
-            
-            if (index < stageIndex) {
-                element.classList.add('completed');
-            } else if (index === stageIndex) {
-                element.classList.add(status);
-            }
-        });
-    }
-    
-    completeStage(stageName) {
-        const element = document.getElementById(stageName);
-        if (element) {
-            element.classList.remove('active');
-            element.classList.add('completed');
-        }
-    }
-    
-    setError(message) {
-        if (this.loadingScreen) {
-            const container = this.loadingScreen.querySelector('.loading-container');
-            container.innerHTML = `
+	constructor() {
+		this.loadingScreen = document.getElementById('loadingScreen');
+		this.progressFill = document.getElementById('progressFill');
+		this.progressText = document.getElementById('progressText');
+
+		this.stages = [
+			'stage-init',
+			'stage-lightmap',
+			'stage-main',
+			'stage-graffiti',
+			'stage-optimize',
+			'stage-complete'
+		];
+
+		this.currentStage = 0;
+		this.progress = 0;
+
+		// Show loading screen initially
+		this.show();
+	}
+
+	show() {
+		if (this.loadingScreen) {
+			this.loadingScreen.classList.remove('hidden');
+		}
+	}
+
+	hide() {
+		if (this.loadingScreen) {
+			this.loadingScreen.classList.add('hidden');
+		}
+	}
+
+	updateProgress(percentage) {
+		this.progress = Math.max(0, Math.min(100, percentage));
+		if (this.progressFill) {
+			this.progressFill.style.width = this.progress + '%';
+		}
+		if (this.progressText) {
+			this.progressText.textContent = Math.round(this.progress) + '%';
+		}
+	}
+
+	setStage(stageName, status = 'active') {
+		const stageIndex = this.stages.findIndex(s => s === stageName);
+		if (stageIndex === -1) return;
+
+		this.currentStage = stageIndex;
+
+		this.stages.forEach((stageId, index) => {
+			const element = document.getElementById(stageId);
+			if (!element) return;
+
+			element.classList.remove('completed', 'active');
+
+			if (index < stageIndex) {
+				element.classList.add('completed');
+			} else if (index === stageIndex) {
+				element.classList.add(status);
+			}
+		});
+	}
+
+	completeStage(stageName) {
+		const element = document.getElementById(stageName);
+		if (element) {
+			element.classList.remove('active');
+			element.classList.add('completed');
+		}
+	}
+
+	setError(message) {
+		if (this.loadingScreen) {
+			const container = this.loadingScreen.querySelector('.loading-container');
+			container.innerHTML = `
                 <div class="loading-logo">Alexander May</div>
                 <div style="color: #ff6b6b; font-size: 1.2rem; margin: 2rem 0;">
                     <strong>Loading Failed</strong>
@@ -103,8 +103,8 @@ class LoadingScreenController {
                     Please refresh the page to try again.
                 </div>
             `;
-        }
-    }
+		}
+	}
 }
 class OptimizedViewer {
 	constructor() {
@@ -212,99 +212,99 @@ class OptimizedViewer {
 	}
 
 	async init() {
-    const container = document.getElementById('threejs-container');
-    if (!container) {
-        console.error('Three.js container not found');
-        this.loadingController.setError('Three.js container not found');
-        return;
-    }
+		const container = document.getElementById('threejs-container');
+		if (!container) {
+			console.error('Three.js container not found');
+			this.loadingController.setError('Three.js container not found');
+			return;
+		}
 
-    try {
-        // Stage 1: Initialize Scene
-        this.loadingController.setStage('stage-init', 'active');
-        this.loadingController.updateProgress(5);
-        
-        this.setupScene();
-        this.setupCamera(container);
-        this.setupRenderer(container);
-        this.setupControls();
-        this.setupEventListeners();
-        this.setupDarkModeDetection();
-        this.setupDracoLoader();
-        this.setupBackgroundLight();
-        
-        this.loadingController.completeStage('stage-init');
-        this.loadingController.updateProgress(15);
-        
-        // Start animation loop
-        this.animate();
+		try {
+			// Stage 1: Initialize Scene
+			this.loadingController.setStage('stage-init', 'active');
+			this.loadingController.updateProgress(5);
 
-        // Stage 2: Load Lightmaps
-        this.loadingController.setStage('stage-lightmap', 'active');
-        await this.loadLightmap();
-        this.loadingController.completeStage('stage-lightmap');
-        this.loadingController.updateProgress(35);
+			this.setupScene();
+			this.setupCamera(container);
+			this.setupRenderer(container);
+			this.setupControls();
+			this.setupEventListeners();
+			this.setupDarkModeDetection();
+			this.setupDracoLoader();
+			this.setupBackgroundLight();
 
-        // Stage 3: Load Main Model
-        this.loadingController.setStage('stage-main', 'active');
-        await this.loadModel();
-        this.loadingController.completeStage('stage-main');
-        this.loadingController.updateProgress(70);
+			this.loadingController.completeStage('stage-init');
+			this.loadingController.updateProgress(15);
 
-        // Stage 4: Load Graffiti Wall (handled in loadModel)
-        this.loadingController.setStage('stage-graffiti', 'active');
-        // The graffiti wall loading is handled in loadModel method
-        this.loadingController.completeStage('stage-graffiti');
-        this.loadingController.updateProgress(85);
+			// Start animation loop
+			this.animate();
 
-        // Stage 5: Optimize
-        this.loadingController.setStage('stage-optimize', 'active');
-        // Add any final optimizations here
-        await this.finalizeLoading();
-        this.loadingController.completeStage('stage-optimize');
-        this.loadingController.updateProgress(95);
+			// Stage 2: Load Lightmaps
+			this.loadingController.setStage('stage-lightmap', 'active');
+			await this.loadLightmap();
+			this.loadingController.completeStage('stage-lightmap');
+			this.loadingController.updateProgress(35);
 
-        // Stage 6: Complete
-        this.loadingController.setStage('stage-complete', 'active');
-        this.loadingController.updateProgress(100);
-        
-        // Focus on blackboard after a brief delay
-        setTimeout(() => {
-            this.focusOnBlackboardCamera();
-            this.loadingController.completeStage('stage-complete');
-            
-            // Hide loading screen
-            setTimeout(() => {
-                this.loadingController.hide();
-            }, 800);
-        }, 500);
+			// Stage 3: Load Main Model
+			this.loadingController.setStage('stage-main', 'active');
+			await this.loadModel();
+			this.loadingController.completeStage('stage-main');
+			this.loadingController.updateProgress(70);
 
-    } catch (error) {
-        console.error('Error initializing Three.js:', error);
-        this.loadingController.setError('Failed to initialize 3D viewer. Please check your connection and refresh the page.');
-    }
-}
+			// Stage 4: Load Graffiti Wall (handled in loadModel)
+			this.loadingController.setStage('stage-graffiti', 'active');
+			// The graffiti wall loading is handled in loadModel method
+			this.loadingController.completeStage('stage-graffiti');
+			this.loadingController.updateProgress(85);
 
-async finalizeLoading() {
-    return new Promise((resolve) => {
-        // Add any final setup here
-        setTimeout(() => {
-            // Hide placeholder if it exists
-            const placeholder = document.querySelector('.placeholder-3d');
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
-            resolve();
-        }, 200);
-    });
-}
+			// Stage 5: Optimize
+			this.loadingController.setStage('stage-optimize', 'active');
+			// Add any final optimizations here
+			await this.finalizeLoading();
+			this.loadingController.completeStage('stage-optimize');
+			this.loadingController.updateProgress(95);
+
+			// Stage 6: Complete
+			this.loadingController.setStage('stage-complete', 'active');
+			this.loadingController.updateProgress(100);
+
+			// Focus on blackboard after a brief delay
+			setTimeout(() => {
+				this.focusOnBlackboardCamera();
+				this.loadingController.completeStage('stage-complete');
+
+				// Hide loading screen
+				setTimeout(() => {
+					this.loadingController.hide();
+				}, 800);
+			}, 500);
+
+		} catch (error) {
+			console.error('Error initializing Three.js:', error);
+			this.loadingController.setError('Failed to initialize 3D viewer. Please check your connection and refresh the page.');
+		}
+	}
+
+	async finalizeLoading() {
+		return new Promise((resolve) => {
+			// Add any final setup here
+			setTimeout(() => {
+				// Hide placeholder if it exists
+				const placeholder = document.querySelector('.placeholder-3d');
+				if (placeholder) {
+					placeholder.style.display = 'none';
+				}
+				resolve();
+			}, 200);
+		});
+	}
 
 	isMobileDevice() {
 		return window.innerWidth <= 768 ||
 			/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
 
-	
+
 
 
 	setupDracoLoader() {
@@ -509,64 +509,64 @@ async finalizeLoading() {
 	}
 
 	async loadLightmap() {
-    if (this.isLoadingLightmap || (this.lightmapTexture && this.graffitiLightmapTexture)) return;
+		if (this.isLoadingLightmap || (this.lightmapTexture && this.graffitiLightmapTexture)) return;
 
-    this.isLoadingLightmap = true;
-    console.log('Loading lightmaps...');
+		this.isLoadingLightmap = true;
+		console.log('Loading lightmaps...');
 
-    const loader = new RGBELoader();
+		const loader = new RGBELoader();
 
-    try {
-        // Load main lightmap
-        const mainTexture = await new Promise((resolve, reject) => {
-            loader.load('assets/lightmap.hdr', resolve, (progress) => {
-                // Update progress during lightmap loading
-                const progressPercent = 20 + (progress.loaded / progress.total) * 10;
-                this.loadingController.updateProgress(progressPercent);
-            }, reject);
-        });
+		try {
+			// Load main lightmap
+			const mainTexture = await new Promise((resolve, reject) => {
+				loader.load('assets/lightmap.hdr', resolve, (progress) => {
+					// Update progress during lightmap loading
+					const progressPercent = 20 + (progress.loaded / progress.total) * 10;
+					this.loadingController.updateProgress(progressPercent);
+				}, reject);
+			});
 
-        mainTexture.mapping = THREE.EquirectangularReflectionMapping;
-        mainTexture.wrapS = THREE.ClampToEdgeWrapping;
-        mainTexture.wrapT = THREE.ClampToEdgeWrapping;
-        mainTexture.flipY = false;
-        mainTexture.generateMipmaps = false;
-        mainTexture.minFilter = THREE.LinearFilter;
-        mainTexture.magFilter = THREE.LinearFilter;
+			mainTexture.mapping = THREE.EquirectangularReflectionMapping;
+			mainTexture.wrapS = THREE.ClampToEdgeWrapping;
+			mainTexture.wrapT = THREE.ClampToEdgeWrapping;
+			mainTexture.flipY = false;
+			mainTexture.generateMipmaps = false;
+			mainTexture.minFilter = THREE.LinearFilter;
+			mainTexture.magFilter = THREE.LinearFilter;
 
-        this.lightmapTexture = mainTexture;
-        console.log('Main lightmap loaded successfully');
+			this.lightmapTexture = mainTexture;
+			console.log('Main lightmap loaded successfully');
 
-        // Load graffiti lightmap
-        const graffitiTexture = await new Promise((resolve, reject) => {
-            loader.load('assets/graffiti_lightmap.hdr', resolve, (progress) => {
-                const progressPercent = 30 + (progress.loaded / progress.total) * 5;
-                this.loadingController.updateProgress(progressPercent);
-            }, reject);
-        });
+			// Load graffiti lightmap
+			const graffitiTexture = await new Promise((resolve, reject) => {
+				loader.load('assets/graffiti_lightmap.hdr', resolve, (progress) => {
+					const progressPercent = 30 + (progress.loaded / progress.total) * 5;
+					this.loadingController.updateProgress(progressPercent);
+				}, reject);
+			});
 
-        graffitiTexture.mapping = THREE.EquirectangularReflectionMapping;
-        graffitiTexture.wrapS = THREE.ClampToEdgeWrapping;
-        graffitiTexture.wrapT = THREE.ClampToEdgeWrapping;
-        graffitiTexture.flipY = false;
-        graffitiTexture.generateMipmaps = false;
-        graffitiTexture.minFilter = THREE.LinearFilter;
-        graffitiTexture.magFilter = THREE.LinearFilter;
+			graffitiTexture.mapping = THREE.EquirectangularReflectionMapping;
+			graffitiTexture.wrapS = THREE.ClampToEdgeWrapping;
+			graffitiTexture.wrapT = THREE.ClampToEdgeWrapping;
+			graffitiTexture.flipY = false;
+			graffitiTexture.generateMipmaps = false;
+			graffitiTexture.minFilter = THREE.LinearFilter;
+			graffitiTexture.magFilter = THREE.LinearFilter;
 
-        this.graffitiLightmapTexture = graffitiTexture;
-        console.log('Graffiti lightmap loaded successfully');
+			this.graffitiLightmapTexture = graffitiTexture;
+			console.log('Graffiti lightmap loaded successfully');
 
-        if (this.model) {
-            this.applyLightmapsToModel();
-        }
+			if (this.model) {
+				this.applyLightmapsToModel();
+			}
 
-    } catch (error) {
-        console.error('Failed to load lightmaps:', error);
-        this.setupFallbackLighting();
-    } finally {
-        this.isLoadingLightmap = false;
-    }
-}
+		} catch (error) {
+			console.error('Failed to load lightmaps:', error);
+			this.setupFallbackLighting();
+		} finally {
+			this.isLoadingLightmap = false;
+		}
+	}
 
 	applyLightmapsToModel() {
 		if (!this.model) return;
@@ -1067,56 +1067,56 @@ async finalizeLoading() {
 	}
 
 	async loadModel() {
-    if (this.isLoading) return;
-    this.isLoading = true;
+		if (this.isLoading) return;
+		this.isLoading = true;
 
-    try {
-        // Load main model
-        const mainGltf = await this.loadGLTF('assets/coffeeshop.glb');
-        await this.handleMainModelLoad(mainGltf);
-        this.loadingController.updateProgress(60);
+		try {
+			// Load main model
+			const mainGltf = await this.loadGLTF('assets/coffeeshop.glb');
+			await this.handleMainModelLoad(mainGltf);
+			this.loadingController.updateProgress(60);
 
-        // Load graffiti wall
-        this.loadingController.setStage('stage-graffiti', 'active');
-        await this.loadGraffitiWall();
-        this.loadingController.updateProgress(75);
+			// Load graffiti wall
+			this.loadingController.setStage('stage-graffiti', 'active');
+			await this.loadGraffitiWall();
+			this.loadingController.updateProgress(75);
 
-    } catch (error) {
-        console.error('Failed to load models:', error);
-        this.loadingController.setError('Failed to load 3D models. Please check your connection and refresh the page.');
-        throw error;
-    } finally {
-        this.isLoading = false;
-    }
-}
+		} catch (error) {
+			console.error('Failed to load models:', error);
+			this.loadingController.setError('Failed to load 3D models. Please check your connection and refresh the page.');
+			throw error;
+		} finally {
+			this.isLoading = false;
+		}
+	}
 
 	loadGLTF(url) {
-    return new Promise((resolve, reject) => {
-        this.gltfLoader.load(
-            url, 
-            resolve, 
-            (progress) => {
-                if (progress.lengthComputable) {
-                    const percentComplete = (progress.loaded / progress.total) * 100;
-                    console.log(`Loading ${url}: ${percentComplete.toFixed(1)}%`);
-                    
-                    // Update progress based on which model is loading
-                    let baseProgress = 35;
-                    let progressRange = 25;
-                    
-                    if (url.includes('graffiti')) {
-                        baseProgress = 65;
-                        progressRange = 10;
-                    }
-                    
-                    const currentProgress = baseProgress + (percentComplete / 100) * progressRange;
-                    this.loadingController.updateProgress(currentProgress);
-                }
-            }, 
-            reject
-        );
-    });
-}
+		return new Promise((resolve, reject) => {
+			this.gltfLoader.load(
+				url,
+				resolve,
+				(progress) => {
+					if (progress.lengthComputable) {
+						const percentComplete = (progress.loaded / progress.total) * 100;
+						console.log(`Loading ${url}: ${percentComplete.toFixed(1)}%`);
+
+						// Update progress based on which model is loading
+						let baseProgress = 35;
+						let progressRange = 25;
+
+						if (url.includes('graffiti')) {
+							baseProgress = 65;
+							progressRange = 10;
+						}
+
+						const currentProgress = baseProgress + (percentComplete / 100) * progressRange;
+						this.loadingController.updateProgress(currentProgress);
+					}
+				},
+				reject
+			);
+		});
+	}
 
 
 	async handleMainModelLoad(gltf) {
@@ -1497,21 +1497,21 @@ async finalizeLoading() {
 
 
 	showErrorMessage(message) {
-    if (this.loadingController) {
-        this.loadingController.setError(message);
-    } else {
-        // Fallback for cases where loading controller isn't available
-        const container = document.getElementById('threejs-container');
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.innerHTML = `
+		if (this.loadingController) {
+			this.loadingController.setError(message);
+		} else {
+			// Fallback for cases where loading controller isn't available
+			const container = document.getElementById('threejs-container');
+			const errorDiv = document.createElement('div');
+			errorDiv.className = 'error-message';
+			errorDiv.innerHTML = `
             <h3>Unable to Load 3D Model</h3>
             <p>${message}</p>
             <p style="margin-top: 1rem; font-size: 0.9rem;">Please check that the model file exists in the assets folder.</p>
         `;
-        container.appendChild(errorDiv);
-    }
-}
+			container.appendChild(errorDiv);
+		}
+	}
 
 	setBackgroundLightColor(color) {
 		if (this.backgroundLight.material) {
@@ -1539,14 +1539,14 @@ async finalizeLoading() {
 
 	dispose() {
 		if (this.animationId) {
-        cancelAnimationFrame(this.animationId);
-    }
+			cancelAnimationFrame(this.animationId);
+		}
 
-    // Hide loading screen if it's still visible
-    if (this.loadingController) {
-        this.loadingController.hide();
-        this.loadingController = null;
-    }
+		// Hide loading screen if it's still visible
+		if (this.loadingController) {
+			this.loadingController.hide();
+			this.loadingController = null;
+		}
 
 		// Clean up DRACO loader
 		if (this.dracoLoader) {

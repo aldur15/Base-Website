@@ -579,7 +579,6 @@ body {
   }
 }
 
-
 /* Loading Screen Styles */
 .loading-screen {
   position: fixed;
@@ -697,7 +696,8 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -724,20 +724,20 @@ body {
   .loading-container {
     padding: 1.5rem;
   }
-  
+
   .loading-logo {
     font-size: 2rem;
   }
-  
+
   .loading-title {
     font-size: 1rem;
     margin-bottom: 2rem;
   }
-  
+
   .loading-stages {
     max-width: 250px;
   }
-  
+
   .stage-item {
     font-size: 0.8rem;
   }
