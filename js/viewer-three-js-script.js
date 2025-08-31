@@ -193,7 +193,7 @@ class OptimizedViewer {
 				lookAt: new THREE.Vector3(0, 1.5, 0)
 			},
 			'nav-research': {
-				position: new THREE.Vector3(15.3, -5, -15),
+				position: new THREE.Vector3(17.3, -5, -17),
 				lookAt: new THREE.Vector3(5, -4, -2)
 			},
 			'nav-contact': {
