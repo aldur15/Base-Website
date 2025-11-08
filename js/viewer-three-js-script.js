@@ -160,51 +160,7 @@ class OptimizedViewer {
 			interactionTimeout: 10000
 		};
 
-		this.cameraTargets = {
-			'nav-about': {
-				position: new THREE.Vector3(-1, -4, 20),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
-			},
-			'nav-projects': {
-				position: new THREE.Vector3(5, 32, 10),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
-			},
-			'nav-research': {
-				position: new THREE.Vector3(20, -5, -19.01),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
-			},
-			'nav-contact': {
-				position: new THREE.Vector3(-13.5, -4.18, 6.01),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
-			},
-			blackboard: {
-				position: new THREE.Vector3(14.85, -4.14, 6.68),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
-			}
-		};
-
-		this.mobileCameraTargets = {
-			'nav-about': {
-				position: new THREE.Vector3(-2, -3, 18),
-				lookAt: new THREE.Vector3(-2.5, -7 ,-11)
-			},
-			'nav-projects': {
-				position: new THREE.Vector3(8, 28, 15),
-				lookAt: new THREE.Vector3(0, 1.5, 0)
-			},
-			'nav-research': {
-				position: new THREE.Vector3(17.3, -5, -17),
-				lookAt: new THREE.Vector3(5, -4, -2)
-			},
-			'nav-contact': {
-				position: new THREE.Vector3(-14, -3, 5),
-				lookAt: new THREE.Vector3(0, 0, 6)
-			},
-			blackboard: {
-				position: new THREE.Vector3(16, -4,11),
-				lookAt: new THREE.Vector3(0, 1.5, 2)
-			}
-		};
+		
 
 		this.collisionObjects = new Map();
 
@@ -220,6 +176,11 @@ class OptimizedViewer {
 		}
 
 		try {
+
+			 // Firefox needs extra initialization delay
+        if (this.isFirefox()) {
+            await new Promise(resolve => setTimeout(resolve, 150));
+        }
 			// Stage 1: Initialize Scene
 			this.loadingController.setStage('stage-init', 'active');
 			this.loadingController.updateProgress(5);
@@ -298,6 +259,192 @@ class OptimizedViewer {
 			}, 200);
 		});
 	}
+
+	getCameraTargets() {
+    const isFirefox = this.isFirefox();
+    const isMobile = this.isMobileDevice();
+    
+    // Base targets (your original desktop targets)
+    const baseTargets = {
+        'nav-about': {
+            position: new THREE.Vector3(-1, -4, 20),
+            lookAt: new THREE.Vector3(0, 1.5, 0)
+        },
+        'nav-projects': {
+            position: new THREE.Vector3(5, 32, 10),
+            lookAt: new THREE.Vector3(0, 1.5, 0)
+        },
+        'nav-research': {
+            position: new THREE.Vector3(20, -5, -19.01),
+            lookAt: new THREE.Vector3(0, 1.5, 0)
+        },
+        'nav-contact': {
+            position: new THREE.Vector3(-13.5, -4.18, 6.01),
+            lookAt: new THREE.Vector3(0, 1.5, 0)
+        },
+        blackboard: {
+            position: new THREE.Vector3(14.85, -4.14, 6.68),
+            lookAt: new THREE.Vector3(0, 1.5, 2)
+        }
+    };
+
+    // Mobile targets (your original mobile targets)
+    const mobileTargets = {
+        'nav-about': {
+            position: new THREE.Vector3(-2, -3, 18),
+            lookAt: new THREE.Vector3(-2.5, -7, -11)
+        },
+        'nav-projects': {
+            position: new THREE.Vector3(8, 28, 15),
+            lookAt: new THREE.Vector3(0, 1.5, 0)
+        },
+        'nav-research': {
+            position: new THREE.Vector3(17.3, -5, -17),
+            lookAt: new THREE.Vector3(5, -4, -2)
+        },
+        'nav-contact': {
+            position: new THREE.Vector3(-14, -3, 5),
+            lookAt: new THREE.Vector3(0, 0, 6)
+        },
+        blackboard: {
+            position: new THREE.Vector3(16, -4, 11),
+            lookAt: new THREE.Vector3(0, 1.5, 2)
+        }
+    };
+
+    // Firefox-specific adjustments
+    const firefoxAdjustments = {
+        desktop: {
+            // Firefox desktop tends to have slightly different perspective calculations
+            'nav-about': {
+                position: new THREE.Vector3(-0.8, -3.8, 19.5),
+                lookAt: new THREE.Vector3(0.2, 1.3, 0.2)
+            },
+            'nav-projects': {
+                position: new THREE.Vector3(4.8, 31.5, 10.2),
+                lookAt: new THREE.Vector3(-0.2, 1.3, -0.2)
+            },
+            'nav-research': {
+                position: new THREE.Vector3(19.8, -4.8, -18.8),
+                lookAt: new THREE.Vector3(0.2, 1.3, 0.2)
+            },
+            'nav-contact': {
+                position: new THREE.Vector3(-13.3, -3.98, 6.18),
+                lookAt: new THREE.Vector3(0.2, 1.3, 0.2)
+            },
+            blackboard: {
+                position: new THREE.Vector3(14.68, -3.94, 6.85),
+                lookAt: new THREE.Vector3(0.2, 1.3, 0.2)
+            }
+        },
+        mobile: {
+            // Firefox mobile has more significant coordinate system differences
+            'nav-about': {
+                position: new THREE.Vector3(-1.8, -2.8, 17.5),
+                lookAt: new THREE.Vector3(-2.3, -6.8, -10.8)
+            },
+            'nav-projects': {
+                position: new THREE.Vector3(7.8, 27.5, 14.8),
+                lookAt: new THREE.Vector3(-0.2, 1.3, -0.2)
+            },
+            'nav-research': {
+                position: new THREE.Vector3(17.1, -4.8, -16.8),
+                lookAt: new THREE.Vector3(4.8, -3.8, -1.8)
+            },
+            'nav-contact': {
+                position: new THREE.Vector3(-13.8, -2.8, 4.8),
+                lookAt: new THREE.Vector3(-0.2, -0.2, 5.8)
+            },
+            blackboard: {
+                position: new THREE.Vector3(15.8, -3.8, 10.8),
+                lookAt: new THREE.Vector3(-0.2, 1.3, 1.8)
+            }
+        }
+    };
+
+    // Select appropriate targets based on browser and device
+    if (isFirefox) {
+        if (isMobile) {
+            console.log('Using Firefox mobile camera targets');
+            return firefoxAdjustments.mobile;
+        } else {
+            console.log('Using Firefox desktop camera targets');
+            return firefoxAdjustments.desktop;
+        }
+    } else {
+        if (isMobile) {
+            console.log('Using standard mobile camera targets');
+            return mobileTargets;
+        } else {
+            console.log('Using standard desktop camera targets');
+            return baseTargets;
+        }
+    }
+}
+
+focusCameraTo({ position, lookAt, duration = 2.0 }) {
+    const startPos = this.camera.position.clone();
+    const startLookAt = this.controls.target.clone();
+    const targetLookAt = lookAt || new THREE.Vector3(0, 1.5, 0);
+
+    // Firefox-specific duration and easing adjustments
+    if (this.isFirefox()) {
+        duration *= 1.2; // Firefox needs slightly longer transitions
+    }
+
+    const startTime = performance.now();
+    const totalTime = duration * 1000;
+
+    const animate = (now) => {
+        const elapsed = now - startTime;
+        let t = Math.min(elapsed / totalTime, 1);
+        
+        // Firefox-specific easing curve
+        const easedT = this.isFirefox() ? 
+            this.firefoxEaseInOut(t) : 
+            this.easeInOut(t);
+
+        const newPos = startPos.clone().lerp(position, easedT);
+        this.camera.position.copy(newPos);
+
+        const newLookAt = startLookAt.clone().lerp(targetLookAt, easedT);
+        this.camera.lookAt(newLookAt);
+        this.controls.target.copy(newLookAt);
+        
+        // Firefox needs explicit controls update
+        if (this.isFirefox()) {
+            this.controls.update();
+        }
+
+        this.needsRender = true;
+
+        if (t < 1) {
+            requestAnimationFrame(animate);
+        } else if (this.isFirefox()) {
+            // Firefox needs a final update after animation completes
+            setTimeout(() => {
+                this.controls.update();
+                this.needsRender = true;
+            }, 50);
+        }
+    };
+
+    requestAnimationFrame(animate);
+}
+
+firefoxEaseInOut(t) {
+    // Firefox responds better to a slightly different easing curve
+    if (t < 0.5) {
+        return 2 * t * t * t;
+    } else {
+        const p = 2 * t - 2;
+        return 1 + p * p * p / 2;
+    }
+}
+
+	isFirefox() {
+    return navigator.userAgent.toLowerCase().includes('firefox');
+}
 
 	isMobileDevice() {
 		return window.innerWidth <= 768 ||
@@ -958,113 +1105,302 @@ class OptimizedViewer {
 	}
 
 	setupCamera(container) {
-		this.camera = new THREE.PerspectiveCamera(
-			45,
-			container.clientWidth / container.clientHeight,
-			0.1,
-			1000
-		);
-		this.camera.position.set(8, 0, 8);
-		this.camera.matrixAutoUpdate = true;
-	}
+    const rect = container.getBoundingClientRect();
+    let aspect = container.clientWidth / container.clientHeight;
+    
+    if (this.isFirefox()) {
+        // Firefox sometimes reports incorrect aspect ratios
+        aspect = Math.max(aspect, rect.width / rect.height);
+        
+        // Clamp aspect ratio for Firefox stability
+        aspect = Math.max(0.5, Math.min(3.0, aspect));
+    }
+    
+    this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
+    this.camera.position.set(8, 0, 8);
+    this.camera.matrixAutoUpdate = true;
+    
+    console.log(`Camera setup - Firefox: ${this.isFirefox()}, Aspect: ${aspect}`);
+}
+
 
 	setupRenderer(container) {
-		this.renderer = new THREE.WebGLRenderer({
-			antialias: window.devicePixelRatio <= 1,
-			powerPreference: "high-performance",
-			stencil: false,
-			depth: true,
-			alpha: false,
-			preserveDrawingBuffer: false,
-			failIfMajorPerformanceCaveat: false
-		});
+    // Get container dimensions with Firefox-specific handling
+    const rect = container.getBoundingClientRect();
+    let width = container.clientWidth;
+    let height = container.clientHeight;
+    
+    if (this.isFirefox()) {
+        // Firefox sometimes reports incorrect clientWidth/Height
+        width = Math.max(width, rect.width, container.offsetWidth);
+        height = Math.max(height, rect.height, container.offsetHeight);
+        
+        // Ensure even numbers for Firefox (odd dimensions can cause issues)
+        width = Math.floor(width);
+        height = Math.floor(height);
+        if (width % 2 !== 0) width += 1;
+        if (height % 2 !== 0) height += 1;
+    }
 
-		this.renderer.setSize(container.clientWidth, container.clientHeight);
-		this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer = new THREE.WebGLRenderer({
+        antialias: this.isFirefox() ? false : window.devicePixelRatio <= 1, // Firefox has antialias issues
+        powerPreference: "high-performance",
+        stencil: false,
+        depth: true,
+        alpha: false,
+        preserveDrawingBuffer: this.isFirefox(), // Firefox needs this sometimes
+        failIfMajorPerformanceCaveat: false
+    });
 
-		this.renderer.shadowMap.enabled = false;
-		this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-		this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-		this.renderer.toneMappingExposure = 1.0;
-		this.renderer.sortObjects = true;
-		this.renderer.setViewport(0, 0, container.clientWidth, container.clientHeight);
+    this.renderer.setSize(width, height);
+    
+    // Firefox-specific pixel ratio handling
+    let pixelRatio = window.devicePixelRatio || 1;
+    if (this.isFirefox()) {
+        // Firefox has issues with high pixel ratios
+        pixelRatio = Math.min(pixelRatio, 1.5);
+        
+        // Mobile Firefox needs even more conservative handling
+        if (this.isMobileDevice()) {
+            pixelRatio = 1;
+        }
+    }
+    
+    this.renderer.setPixelRatio(pixelRatio);
 
-		const placeholder = container.querySelector('.placeholder-3d');
-		if (placeholder) placeholder.style.display = 'none';
-		container.appendChild(this.renderer.domElement);
-	}
+    // Firefox-specific canvas styling
+    this.renderer.domElement.style.width = '100%';
+    this.renderer.domElement.style.height = '100%';
+    this.renderer.domElement.style.display = 'block';
+    
+    if (this.isFirefox()) {
+        this.renderer.domElement.style.touchAction = 'none';
+        this.renderer.domElement.style.userSelect = 'none';
+    }
+
+    this.renderer.shadowMap.enabled = false;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.0;
+    this.renderer.sortObjects = true;
+
+    const placeholder = container.querySelector('.placeholder-3d');
+    if (placeholder) placeholder.style.display = 'none';
+    container.appendChild(this.renderer.domElement);
+}
+
+handleResize() {
+    const container = document.getElementById('threejs-container');
+    if (!container) return;
+
+    let width, height;
+    
+    if (this.isFirefox()) {
+        // Firefox-specific dimension calculation
+        const rect = container.getBoundingClientRect();
+        width = Math.floor(Math.max(
+            container.clientWidth,
+            container.offsetWidth,
+            rect.width,
+            window.innerWidth
+        ));
+        height = Math.floor(Math.max(
+            container.clientHeight,
+            container.offsetHeight,
+            rect.height,
+            window.innerHeight
+        ));
+        
+        // Ensure even dimensions for Firefox
+        if (width % 2 !== 0) width += 1;
+        if (height % 2 !== 0) height += 1;
+        
+        // Firefox mobile needs viewport size fallback
+        if (this.isMobileDevice()) {
+            width = Math.min(width, window.innerWidth);
+            height = Math.min(height, window.innerHeight);
+        }
+    } else {
+        // Standard calculation for other browsers
+        const rect = container.getBoundingClientRect();
+        width = Math.max(container.clientWidth, rect.width);
+        height = Math.max(container.clientHeight, rect.height);
+    }
+
+    // Ensure minimum dimensions
+    width = Math.max(width, 320);
+    height = Math.max(height, 240);
+
+    // Check if size actually changed (with Firefox tolerance)
+    const tolerance = this.isFirefox() ? 2 : 1;
+    if (Math.abs(this.renderer.domElement.width - width) > tolerance || 
+        Math.abs(this.renderer.domElement.height - height) > tolerance) {
+        
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        
+        this.renderer.setSize(width, height, !this.isFirefox()); // Firefox needs CSS update
+        
+        this.needsRender = true;
+        
+        console.log(`Firefox resize: ${width}x${height}, aspect: ${this.camera.aspect}`);
+        
+        // Firefox needs additional render after resize
+        if (this.isFirefox()) {
+            setTimeout(() => {
+                this.needsRender = true;
+            }, 50);
+        }
+    }
+}
 
 	focusOnBlackboardCamera() {
-		const targets = this.isMobileDevice() ? this.mobileCameraTargets : this.cameraTargets;
-		const blackboardTarget = targets.blackboard;
+    const targets = this.getCameraTargets();
+    const blackboardTarget = targets.blackboard;
 
-		if (!blackboardTarget) return;
+    if (!blackboardTarget) {
+        console.error('No blackboard target found for current browser');
+        return;
+    }
 
-		this.focusCameraTo({
-			...blackboardTarget,
-			duration: 2.5
-		});
+    console.log('Focusing on blackboard with browser-specific target:', blackboardTarget);
 
-		this.closeBackdoor?.();
-	}
+    this.focusCameraTo({
+        ...blackboardTarget,
+        duration: this.isFirefox() ? 3.0 : 2.5 // Firefox needs longer duration
+    });
+
+    this.closeBackdoor?.();
+}
+
 
 	setupControls() {
-		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-		this.controls.enableDamping = true;
-		this.controls.dampingFactor = 0.08;
-		this.controls.enableZoom = true;
-		this.controls.zoomSpeed = 0.8;
-		this.controls.enablePan = true;
-		this.controls.panSpeed = 0.8;
-		this.controls.maxDistance = 50;
-		this.controls.minDistance = 1;
-		this.controls.maxPolarAngle = Math.PI * 0.8;
-		this.controls.autoRotate = false;
-		this.controls.autoRotateSpeed = 0.5;
-		this.controls.hasChanged = false;
+    // Firefox-specific control parameters
+    if (this.isFirefox()) {
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.12; // Higher damping for Firefox
+        this.controls.enableZoom = true;
+        this.controls.zoomSpeed = 0.6; // Slower zoom for Firefox
+        this.controls.enablePan = true;
+        this.controls.panSpeed = 0.6; // Slower pan for Firefox
+        this.controls.rotateSpeed = 0.8; // Slower rotation for Firefox
+    } else {
+        // Standard parameters for other browsers
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.08;
+        this.controls.enableZoom = true;
+        this.controls.zoomSpeed = 0.8;
+        this.controls.enablePan = true;
+        this.controls.panSpeed = 0.8;
+        this.controls.rotateSpeed = 1.0;
+    }
 
-		this.controls.addEventListener('change', () => {
-			this.needsRender = true;
-			this.lastInteraction = performance.now();
-			this.controls.hasChanged = true;
-		});
+    this.controls.maxDistance = 50;
+    this.controls.minDistance = 1;
+    this.controls.maxPolarAngle = Math.PI * 0.8;
+    this.controls.autoRotate = false;
+    this.controls.autoRotateSpeed = 0.5;
+    this.controls.hasChanged = false;
 
-		this.controls.addEventListener('start', () => {
-			this.lastInteraction = performance.now();
-			this.isInteracting = true;
-		});
+    this.controls.addEventListener('change', () => {
+        this.needsRender = true;
+        this.lastInteraction = performance.now();
+        this.controls.hasChanged = true;
+    });
 
-		this.controls.addEventListener('end', () => {
-			this.lastInteraction = performance.now();
-			this.isInteracting = false;
-			setTimeout(() => {
-				this.needsRender = true;
-			}, 16);
-		});
-	}
+    this.controls.addEventListener('start', () => {
+        this.lastInteraction = performance.now();
+        this.isInteracting = true;
+    });
 
+    this.controls.addEventListener('end', () => {
+        this.lastInteraction = performance.now();
+        this.isInteracting = false;
+        
+        // Firefox needs longer delay before render optimization kicks in
+        const delay = this.isFirefox() ? 32 : 16;
+        setTimeout(() => {
+            this.needsRender = true;
+        }, delay);
+    });
+
+    console.log(`Controls configured for ${this.isFirefox() ? 'Firefox' : 'other browser'}`);
+}
 	setupEventListeners() {
-		this.renderer.domElement.addEventListener('click', (event) => {
-			this.handleClick(event);
-		});
+    // Use standard click event for all browsers - it handles touch events properly
+    this.renderer.domElement.addEventListener('click', (event) => {
+        this.handleClick(event);
+    });
 
-		let resizeTimeout;
-		window.addEventListener('resize', () => {
-			clearTimeout(resizeTimeout);
-			resizeTimeout = setTimeout(() => {
-				this.handleResize();
-			}, 100);
-		});
+    // Firefox-specific resize timing
+    const resizeDelay = this.isFirefox() ? 250 : 100;
+    let resizeTimeout;
+    
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            this.handleResize();
+        }, resizeDelay);
+    });
 
-		document.addEventListener('visibilitychange', () => {
-			if (document.hidden) {
-				this.pauseRendering();
-			} else {
-				this.resumeRendering();
-			}
-		});
-	}
+    // Firefox mobile needs orientation change handling
+    if (this.isFirefox() && this.isMobileDevice()) {
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                this.handleResize();
+                this.needsRender = true;
+            }, 500);
+        });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            this.pauseRendering();
+        } else {
+            this.resumeRendering();
+            // Firefox needs extra time after visibility change
+            if (this.isFirefox()) {
+                setTimeout(() => this.handleResize(), 200);
+            }
+        }
+    });
+}
+debugRaycastObjects() {
+    if (!this.model) return;
+    
+    console.log('=== Debugging Raycast Objects ===');
+    
+    const navObjects = [];
+    this.model.traverse((child) => {
+        if (child.isMesh && child.name && child.name.toLowerCase().startsWith('nav-')) {
+            navObjects.push({
+                name: child.name,
+                position: child.position,
+                visible: child.visible,
+                material: child.material ? child.material.constructor.name : 'No material'
+            });
+        }
+    });
+    
+    console.log('Navigation objects found:', navObjects);
+    
+    // Test raycaster from center of screen
+    this.mouse.x = 0;
+    this.mouse.y = 0;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    
+    const allObjects = [];
+    this.model.traverse((child) => {
+        if (child.isMesh) {
+            allObjects.push(child);
+        }
+    });
+    
+    const centerIntersects = this.raycaster.intersectObjects(allObjects, false);
+    console.log('Center screen intersections:', centerIntersects.map(i => i.object.name));
+}
 
 	async loadModel() {
 		if (this.isLoading) return;
@@ -1226,32 +1562,37 @@ class OptimizedViewer {
 	}
 
 	handleClick(event) {
-		if (!this.model) return;
+    if (!this.model) return;
 
-		const bounds = this.renderer.domElement.getBoundingClientRect();
-		this.mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
-		this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+    const bounds = this.renderer.domElement.getBoundingClientRect();
+    
+    // Use the same coordinate calculation for all browsers (Chrome's working method)
+    this.mouse.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+    this.mouse.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
 
-		this.raycaster.setFromCamera(this.mouse, this.camera);
+    // Standard clamping
+    this.mouse.x = Math.max(-1, Math.min(1, this.mouse.x));
+    this.mouse.y = Math.max(-1, Math.min(1, this.mouse.y));
 
-		const allObjects = [];
-		this.model.traverse((child) => {
-			if (child.isMesh) {
-				allObjects.push(child);
-			}
-		});
+    this.raycaster.setFromCamera(this.mouse, this.camera);
 
-		const intersects = this.raycaster.intersectObjects(allObjects, false);
+    const allObjects = [];
+    this.model.traverse((child) => {
+        if (child.isMesh) {
+            allObjects.push(child);
+        }
+    });
 
-		if (intersects.length > 0) {
-			const clickedObject = intersects[0].object;
-			const name = clickedObject.name;
+    const intersects = this.raycaster.intersectObjects(allObjects, false);
 
-			console.log('Clicked object:', name);
-			this.handleClickByName(name, clickedObject);
-		}
-	}
+    if (intersects.length > 0) {
+        const clickedObject = intersects[0].object;
+        const name = clickedObject.name;
 
+        console.log('Clicked object:', name, 'Mouse coords:', this.mouse.x, this.mouse.y);
+        this.handleClickByName(name, clickedObject);
+    }
+}
 	handleClickByName(name, clickedObject) {
 		if (!name) return false;
 
@@ -1285,20 +1626,25 @@ class OptimizedViewer {
 	}
 
 	handleNavigation(name) {
-		const targets = this.isMobileDevice() ? this.mobileCameraTargets : this.cameraTargets;
-		const target = targets[name];
+    const targets = this.getCameraTargets(); // Use the new browser-aware method
+    const target = targets[name];
 
-		if (target) {
-			this.focusCameraTo(target);
-			this.showBackButton();
+    if (target) {
+        console.log(`Navigating to ${name} with browser-specific target:`, target);
+        this.focusCameraTo(target);
+        this.showBackButton();
 
-			if (name === 'nav-contact') {
-				setTimeout(() => {
-					this.openBackdoor();
-				}, 1500);
-			}
-		}
-	}
+        if (name === 'nav-contact') {
+            // Firefox needs longer delay for contact door animation
+            const delay = this.isFirefox() ? 2000 : 1500;
+            setTimeout(() => {
+                this.openBackdoor();
+            }, delay);
+        }
+    } else {
+        console.warn(`No target found for ${name} in current browser configuration`);
+    }
+}
 
 	focusCameraTo({
 		position,
